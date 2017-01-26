@@ -376,7 +376,7 @@ C rhoDet - detector density
 
 C!  ICE CUBE
       if(forSun.eq.1) then 
-         write(*,fmt='("IceCube22 pval=",1PE8.2)')  pvalIC22(FluxN,FluxNb,NULL)
+         write(*,fmt='("IceCube22 exclusion confidence level = ",1PE8.2,"%")')  100*exLevIC22(FluxN,FluxNb,NULL)
       endif
 
   

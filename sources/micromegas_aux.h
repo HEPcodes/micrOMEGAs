@@ -114,6 +114,7 @@ extern int  nsub22;
 extern double  vcs22(numout * cc,int nsub,int * err); 
 
 
+
 #define NTOF(X) extern forCalchep1 X; double X(double ok){return findValW(#X);}
 
 typedef  double (forCalchep1)(double);
@@ -154,6 +155,11 @@ extern double lAAhSM(double Mh, double aQCDh, double Mcp,double Mbp,double Mtp,d
 
 extern int makePdtConv(void);
 extern int initPDFconv(void);
+
+// Statistics
+extern double FeldmanCousins(int n0, double b, double cl);
+
+
 
 #include"../CalcHEP_src/include/num_in.h"
 

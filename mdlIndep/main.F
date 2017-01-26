@@ -221,6 +221,11 @@ C flux normalization in  in Year*km^2
 #endif
       write(*,fmt='("E>", 1PE8.2," GeV neutrino flux =", E8.2," [1/Year/km^2]")') Emin,spectrInfo(Emin,FluxN,NULL)
       write(*,fmt='("E>", 1PE8.2," GeV anti-neutrino flux =", E8.2," [1/Year/km^2]")') Emin,spectrInfo(Emin,FluxNb,NULL) 
+C!  ICE CUBE
+      if(forSun.eq.1) then 
+         write(*,fmt='("IceCube22 exclusion confidence level = ",1PE8.2,"%")')  100*exLevIC22(FluxN,FluxNb,NULL)
+      endif
+
   
 C ======  Upward events
   

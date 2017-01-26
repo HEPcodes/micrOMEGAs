@@ -41,10 +41,12 @@ c!      integer iargc
 
       external sortOddParticles,assignVal,findVal,readVar,
      >displaySpectrum,nucleonAmplitudes,displayRecoilPlot,
-     >basicSpectra,basicNuSpectra,qNumbers, slhaDecayPrint  
+     >basicSpectra,basicNuSpectra,qNumbers, slhaDecayPrint,
+     >   ic22event 
       integer  sortOddParticles,assignVal,findVal,readVar,
      >displaySpectrum,nucleonAmplitudes,displayRecoilPlot,
-     >basicSpectra,basicNuSpectra,qNumbers, slhaDecayPrint
+     >basicSpectra,basicNuSpectra,qNumbers, slhaDecayPrint,
+     >  IC22event
 
       external cs22,pWidth2,decay2Info,findValW,calcSpectrum,
      >         HaloFactor,RhoQisotermic,RhoMO,RhoMOSq, 
@@ -94,9 +96,9 @@ C              procInfo1,procInfo2
       integer neutrinoFlux
       external neutrinoFlux
 
-      real*8 IC22nuAr,IC22nuBarAr,IC22BGdCos,IC22sigma,pvalIC22,
+      real*8 IC22nuAr,IC22nuBarAr,IC22BGdCos,IC22sigma,exLevIC22,
      >fluxFactorIC22,spectrInt
-      external  IC22nuAr,IC22nuBarAr,IC22BGdCos,IC22sigma,pvalIC22,
+      external  IC22nuAr,IC22nuBarAr,IC22BGdCos,IC22sigma,exLevIC22,
      >fluxFactorIC22,spectrInt
 
       integer  setpdt

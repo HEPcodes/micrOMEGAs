@@ -334,6 +334,10 @@ C rhoDet - detector density
       write(*,fmt='("E>", 1PE8.2," GeV neutrino flux =", E8.2," [1/Year/km^2]")') Emin,IntFlux
       call  spectrInfo(Emin/Mcdm,FluxNb, IntFlux,NULL)
       write(*,fmt='("E>", 1PE8.2," GeV anti-neutrino flux =", E8.2," [1/Year/km^2]")') Emin,IntFlux 
+
+      if(forSun.eq.1) then 
+         write(*,fmt='("IceCube22 exclusion confidence level = ",1PE8.2,"%")')  100*exLevIC22(FluxN,FluxNb,NULL)
+      endif
   
 C ======  Upward events
   

@@ -20,7 +20,7 @@ extern double IC22BGdCos(double cs);  // background  distribution for cos(Sun,ne
                                      // based on  DS/shared/DarkSusy/IC_data/BG_distributions_IC22.dat
 extern double IC22sigma(double E);     // angle(degree) resolution as a function of energy 
                                      //  based on DS/shared/DarkSusy/IC_data/nuEffArea_IC22.dat
-                                     
+                                                                          
 typedef   struct { double E1; double E2; double s2; double n; double prob[17];}  IC22chanStr;                                    
 
 extern IC22chanStr*IC22chan;
@@ -29,9 +29,11 @@ extern int IC22histRead(void);  // reads file data_nu/ic22hist.dat to fill 21 el
                                 // zero^th one corresponds to background. Next 20 present  channel distribution for different 
                                 // energy regions.      
 
-extern double pvalIC22(double * nu, double*NU, double*L);
+extern double exLevIC22(double * nu, double*NU, double*B);
 
-extern double  fluxFactorIC22(double pval,double *NU,double*NUbar);
+extern double  fluxFactorIC22(double exl,double *NU,double*NUbar);
+
+int  IC22events(double *nu, double * nuB, double phi_cut, double *Nsig, double *Nbg, int*Nobs);
 
 #ifdef __cplusplus
 }

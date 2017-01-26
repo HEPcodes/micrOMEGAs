@@ -154,13 +154,12 @@ printf("\n==== Indirect detection =======\n");
   int forSun=1;
   double Emin=1;
   int i,err;
+  double yrs=31556925.2;
   
   printf("\n===============Neutrino Telescope=======  for  "); 
   if(forSun) printf("Sun\n"); else printf("Earth\n"); 
   
   Crate=captureAux(Maxwell,forSun, Mcdm,csSIp,csSIn,csSDp,csSDn);
-
-
     
   nu[0]=nu_bar[0]=Mcdm;
   for(i=1;i<NZ;i++){ nu[i]=nu_bar[i]=0;}
@@ -174,23 +173,54 @@ printf("\n==== Indirect detection =======\n");
 
 // neutrino flux at Earth
   if(forSun) R=150E6; else  R=6378.1;  // distance in km 
-  Prop=31556925.2/(4*M_PI*R*R);        // in Year*km^2
+  Prop=yrs/(4*M_PI*R*R);        // in Year*km^2
 
-  for(i=1;i<NZ;i++) 
-  { nu[i]*= 0.5*Crate*Prop  ;   
-    nu_bar[i]*=0.5*Crate*Prop ; 
-  }
+  for(i=1;i<NZ;i++) { nu[i]*= 0.5*Crate*Prop;  nu_bar[i]*=0.5*Crate*Prop; }
 
-printf("IceCube22 pval=%.2E\n", pvalIC22(nu,nu_bar,NULL));
+  if(forSun) printf("IceCube22 exclusion confidence level = %.2E%%\n", exLevIC22(nu,nu_bar,NULL));
       
 #ifdef SHOWPLOTS
-  displaySpectrum("nu flux from Sun [1/Year/km^2/GeV]",Emin,Mcdm,nu);
-  displaySpectrum("nu-bar from Sun [1/Year/km^2/GeV]",Emin,Mcdm,nu_bar);
+  displaySpectra("neutrino fluxes [1/Year/km^2/GeV]",Emin,Mcdm,2, nu,"nu",nu_bar,"nu_bar");
 #endif
 { 
     printf(" E>%.1E GeV neutrino flux       %.3E [1/Year/km^2] \n",Emin,spectrInfo(Emin,nu,NULL));
     printf(" E>%.1E GeV anti-neutrino flux  %.3E [1/Year/km^2]\n", Emin,spectrInfo(Emin,nu_bar,NULL));  
 } 
+
+
+if(forSun)
+{
+ double  nu[NZ],nuB[NZ]; // arrays for neutrino and antineutrino spectra 
+ double  csSDp[6]={1.E-40,9.51E-41,1.04E-40, 2.67E-40,2.06e-39,6.0e-39};
+                         // cross section TAB_1 4-th collumn  
+ double  Mdm[6]={100,250,500,1000,3000,5000}; // DM masses 
+ double exLev=0.9; // 90% exclusion confidence level 
+ double Nsig;      // for number of signal events 
+             
+ WIMPSIM=1;
+ 
+ printf("W channel:\n");
+ 
+ for(int k=0;k<6;k++)   
+ {  
+    double Crate=captureAux(Maxwell,forSun,Mdm[k],0,0,csSDp[k]*1E36,0); // DM capture rate [s]
+    double gamma=Crate*Prop/2;
+    double f_90; // improving factor for 90% confidence level exclusion 
+    printf("Dark matter mass is %.2f\n",Mdm[k]);
+    basicNuSpectra(forSun,Mdm[k],24/*W*/, 0, nu, nu_bar);              // neurtuno spectra 
+    for(int i=1;i<NZ;i++) { nu[i]*=gamma; nu_bar[i]*=gamma;}           // neutrino fluxes 
+    if(k)
+    {  IC22events(nu,nu_bar, 10, &Nsig,NULL, NULL);
+       printf("     csSDp=%.2E[cm^2] ==>  Nsignal=%.2f (TAB_1 column 1)\n",csSDp[k],Nsig);
+    } 
+    f_90=fluxFactorIC22( exLev,nu,nu_bar);  
+    printf("     90%%  exclusion limit for csSDp is %.2E[cm^2]\n",csSDp[k]*f_90);
+    for(int i=1;i<NZ;i++) {nu[i]*=f_90; nu_bar[i]*=f_90;}
+    IC22events(nu,nu_bar, 10,&Nsig,NULL,NULL);
+    printf("     90%% exclusion limit for number of signal events: %.2f \n",Nsig/1.2);
+ }
+}  
+
   
 /* Upward events */
   

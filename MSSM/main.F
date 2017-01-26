@@ -484,17 +484,14 @@ C* PDF 1 - box ; 2 = Gaussian; 3 box+Gaussia
 
 #ifdef SMODELS
       call smodels(4000.,5, 0.1, 'smodels.in',0)
-      call system("make -C " SMODELS) 
+      call system("make -C "//SMODELS) 
       call system(SMODELS//"/runTools.py xseccomputer -p -N -O -f smodels.in")
       call system(SMODELS//"/runSModelS.py -f smodels.in -s smodels.res  > smodels.out ") 
       err=slhaRead("smodels.res", 1)
-      res=slhaVal("SModelS-Exclusion",0.,2,0,0) 
-      if(res.eq.-1)  write(*,*) "SMODELS: no channels for testing")
-      if(res.eq.0)   write(*,*) "SMODELS: not excluded")
-      if(res.eq.1)   write(*,*) "SMODELS: excluded")
-   }  
- 
-
+      res=slhaVal2("SModelS-Exclusion",0.d0,0,0) 
+      if(res.eq.-1)  write(*,*) "SMODELS: no channels for testing"
+      if(res.eq.0)   write(*,*) "SMODELS: not excluded"
+      if(res.eq.1)   write(*,*) "SMODELS: excluded"
 
 #endif
 
@@ -727,7 +724,7 @@ C rhoDet - detector density
  
 C!  ICE CUBE
       if(forSun.eq.1) then 
-         write(*,fmt='("IceCube22 pval=",1PE8.2)')  pvalIC22(FluxN,FluxNb,NULL)
+         write(*,fmt='("IceCube22 exclusion confidence level = ",1PE8.2,"%")')  100*exLevIC22(FluxN,FluxNb,NULL)
       endif
 C ======  Upward events
   

@@ -286,7 +286,7 @@ printf("\n======== Direct Detection ========\n");
           spectrInfo(Emin,nu,NULL), spectrInfo(Emin,nu_bar,NULL));
 
 //  ICE CUBE
-  if(forSun) printf("IceCube22 pval=%.2E\n", pvalIC22(nu,nu_bar,NULL));
+  if(forSun) printf("IceCube22 confedence level = %.2E%%\n", 100*exLevIC22(nu,nu_bar,NULL));
 /* Upward events */
 
   muonUpward(nu,nu_bar, mu);

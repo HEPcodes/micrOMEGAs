@@ -571,3 +571,46 @@ void splint(double xa[], double ya[], double y2a[], int n, double x, double *y)
 	b=(x-xa[klo])/h;
 	*y=a*ya[klo]+b*ya[khi]+((a*a*a-a)*y2a[klo]+(b*b*b-b)*y2a[khi])*(h*h)/6.0;
 }
+
+
+
+static int findMinLimit(double mu,double b,double cl)
+{
+  double r[300],p[300],s,rMax;
+  int N,n,n0,nMin,nMax;
+  
+  r[0]=exp(-mu);
+  p[0]=exp(-mu-b);
+  nMax=0;
+  rMax=r[0];
+   for(n=1;n<300;n++) p[n]=1;
+  for(n=1,s=0; 1-s> cl/100 ;n++)
+  {  double mu_best;
+     if(n>b) mu_best=n-b; else mu_best=0;
+     r[n]=pow((mu+b)/(mu_best+b),n)*exp(mu_best-mu);
+     if(r[n]>rMax) {rMax=r[n];nMax=n;}
+     p[n]=p[n-1]*(mu+b)/n;
+     s+=p[n];
+  }
+
+  N=n;
+  cl-=p[nMax]; nMin=nMax-1; nMax++; 
+  for( ;cl>0;)
+  {
+    if(nMin>=0) { if(nMax<N && r[nMax]>r[nMin]) cl-=p[nMax++];  else  cl-=p[nMin--];}
+    else  cl-=p[nMax++];
+  }
+  if(nMin>0) return nMin; else return 0; 
+} 
+
+
+double FeldmanCousins(int n0, double b, double cl)
+{
+   double delta,mu;
+   
+   for(mu=0,delta=1; delta>0.01; delta/=2, mu-=delta)
+   {  
+     for(;findMinLimit(mu, b,cl)<n0;mu+=delta);
+   }    
+   return mu;
+}

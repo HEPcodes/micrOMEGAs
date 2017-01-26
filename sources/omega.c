@@ -1470,8 +1470,8 @@ printf("Tstart=%e\n",Tstart);
     Ttab[Ntab]=Tend;
     Ntab++;
   }
-printf("Ntab=%d\n",Ntab);
-for(int i=0;i<Ntab;i++) printf("Y(%.2E)=%.2E\n",Ttab[i], Ytab[i]); 
+//printf("Ntab=%d\n",Ntab);
+//for(int i=0;i<Ntab;i++) printf("Y(%.2E)=%.2E\n",Ttab[i], Ytab[i]); 
   
   if(Xf) *Xf=0.5*(Xf1+Xt);
   Yi=1/( (Mcdm/Xt)*sqrt(M_PI/45)*MPlank*aRate(Xt,1,Fast,NULL,NULL,NULL));

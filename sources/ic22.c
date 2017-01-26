@@ -117,8 +117,10 @@ static   double LLL(double x)
        { double xx[16]={0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.1,1.2,1.3,1.4,1.5};
             return polint3(x,16,xx,L);
                }
-   
-   double pvalIC22(double * nu, double*NU, double *LL)
+               
+//double fiMax=8;   
+
+   double exLevIC22(double * nu, double*NU, double *B)
    {  int i;
       double cs,cs_;
       typedef struct{double cs; int n;} eventStr;
@@ -180,16 +182,15 @@ static   double LLL(double x)
       
       for(k=1;k<16;k++) L[k]-=L[0];
       L[0]=0;
-      
-     if(L[15]>L[0]-0.1) return 1;
+     if(L[15]>L[0]-0.1) return 0;     
       double dI=exp(L[15])/(2*(L[10]-L[15]));
 //displayFunc(P, 0,1.5,"P"); 
 //for(int i=0;i<16;i++) printf("L[%d]=%E %E\n",i,L[i], LLL(0.1*i));   
 //displayFunc(LLL,0,1.5,"LL");        
       double int1=simpson(P,0.,1 ,1E-3);
       double int2=simpson(P,1.,1.5,1E-2);
-      if(LL) *LL=-log(P(1)/P(0));
-      return (int2+dI)/(int1+int2+dI);
+      if(B) *B=P(1)/P(0);
+      return (int1)/(int1+int2+dI);
    }
 #ifdef TEST_ANOMALY   
    double pvalIC22_randon(double * nu, double*NU, double fiMax, int in)
@@ -230,7 +231,7 @@ for(;;)
   if(c>drand48()) break; 
 }
 
-printf("Nev=%d\n",Nev);
+//printf("Nev=%d\n",Nev);
 for(i=0;i<Nev;i++)
 { double cs;
   for(;;)
@@ -284,19 +285,67 @@ for(i=0;i<Nev;i++)
    }
 #endif
 
-double  fluxFactorIC22(double pval,double *NU,double*NUbar)
+int  IC22events(double *nu, double * nuB, double phi_cut, double *Nsig,double *Nbg, int*Nobs)
+{ double dfi,cs,cs_=cos(phi_cut*M_PI/180);                           
+  if(phi_cut>25) { printf(" Too large angle cut\n");  return 1;}   
+  if(Nbg) *Nbg=simpson(IC22BGdCos,cs_,1,1E-3);                        
+  if(Nobs)                                                            
+  {  FILE*F;                                                          
+     char fname[300];                                                 
+     int i;                                                           
+     sprintf(fname,"%s/sources/data_nu/IC22_events_25.dat",micrO);    
+     F=fopen(fname,"r");                                              
+     for(*Nobs=0;fscanf(F," %lf %lf %*d",&cs,&dfi)==2; ) if(cs>=cs_)(*Nobs)++;
+     fclose(F);                                                       
+  }                                                                   
+  if(Nsig)                                                            
+  { double Mdm,E,s,n[NZ];                                             
+    int i;                                                            
+    *Nsig=0;                                                          
+    if(nu)                                                            
+    { Mdm= nu[0];                                                      
+      n[0]=Mdm;                                                       
+      for(i=1;i<NZ;i++)                                               
+      { E= Mdm*exp(Zi(i));                                            
+        s=IC22sigma(E); 
+//        printf("i=%d E=%e sigma=%e (1-exp((cs_-1)/s))=%e IC22nuAr(E)=%E n[i]=%e\n",
+//        i,E,s,1-exp((cs_-1)/s), IC22nuAr(E),n[i]);                                                
+        n[i]=nu[i]*IC22nuAr(E)*(1-exp((cs_-1)/(s*s))) ;
+      }
+//       displaySpectrum("nu",10,Mdm,n);                                                               
+      *Nsig+=spectrInt(50,Mdm,n);                                     
+    }                                                                 
+    if(nuB)                                                           
+    { Mdm= nuB[0];                                                     
+      n[0]=Mdm;                                                       
+      for(i=1;i<NZ;i++)                                               
+      { E= Mdm*exp(Zi(i));                                            
+        s=IC22sigma(E);                                                
+        n[i]=nuB[i]*IC22nuBarAr(E)*(1-exp((cs_-1)/(s*s)));             
+      }                                                               
+      *Nsig+=spectrInt(50,Mdm,n);                                     
+    }
+     (*Nsig)*=104./365.; //  Explosure time                                                                 
+  }                                                                   
+  return 0;                                                           
+}                                                                     
+
+
+double  fluxFactorIC22(double cl,double *NU,double*NUbar)
 { 
   double nu[NZ],nu_[NZ];
   for(int i=0;i<NZ;i++) { nu[i]=NU[i]; nu_[i]=NUbar[i];}
-  double f=1; 
+  double f=1,pv=1-cl; 
   for(;;)
   {
-     double p0= pvalIC22(nu,nu_, NULL);
+     double p0= 1-exLevIC22(nu,nu_, NULL);
      double x;
-     if(p0==0) x=0.1; else  x=log(pval)/log(p0);
+     if(p0<0.1*pv) p0=0.1*pv; else  if(p0>0.5*(pv+1)) p0=0.5*(pv+1);
+     x=log(pv)/log(p0);
+     
      f*=x;
      for(int i=1;i<NZ;i++) { nu[i]*=x; nu_[i]*=x;}
-     if(fabs(x-1)<0.01) break;
+     if(fabs(x-1)<0.005) break;
   }
   return f;
 }
@@ -307,10 +356,13 @@ double ic22nubarar_(double*E){ return IC22nuBarAr(*E);}
 
 double ic22bgdcos_(double*cs){ return IC22BGdCos(*cs); }
 double ic22sigma_(double*E)  { return IC22sigma(*E); }
+
+int  ic22events_(double *nu, double * nuB, double * phi_cut, double *Nsig,double *Nbg, int*Nobs) 
+{ return IC22events(nu,nuB, *phi_cut,Nsig,Nbg,Nobs);}
                                      
 
-double pvalic22_(double*nu,double*NU,double*L)
-                             { return  pvalIC22(nu,NU,L); }
+double exlevic22_(double*nu,double*NU,double*L)
+                             { return  exLevIC22(nu,NU,L); }
 
 double fluxfactoric22_( double* pval,double *NU,double*NUbar)
                              { return fluxFactorIC22(*pval,NU,NUbar);} 
