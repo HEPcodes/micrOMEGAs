@@ -70,7 +70,7 @@ double nucleusrecoil_(
   
   if(fDv  == maxwell_)
     return  nucleusRecoil(Maxwell, *A,*Z,*J,Sxx_,LF_,dNdE);
-  else  if(fDv=fdvdelta_)  
+  else  if(fDv==fdvdelta_)  
     return  nucleusRecoil(fDvDelta, *A,*Z,*J,Sxx_,LF_,dNdE);
   else  
   { _fDv=fDv;
@@ -87,7 +87,7 @@ double nucleusrecoilaux_(
   _Sxx=Sxx;
   
   if(fDv  == maxwell_) c_fDv=Maxwell;
-  else  if(fDv=fdvdelta_) c_fDv=fDvDelta;
+  else  if(fDv==fdvdelta_) c_fDv=fDvDelta;
   else { _fDv=fDv; c_fDv=fDv_;}
    
     return  nucleusRecoilAux(c_fDv, *A,*Z,*J,Sxx_,*LmbdP,*XiP,*LmbdN,*XiN, dNdE);
@@ -122,7 +122,7 @@ double nucleusrecoil0aux_( double (*fDv)(double*),
   double (*c_fDv)(double);
 
   if(fDv  == maxwell_) c_fDv=Maxwell;
-  else  if(fDv=fdvdelta_) c_fDv=fDvDelta;
+  else  if(fDv==fdvdelta_) c_fDv=fDvDelta;
   else { _fDv=fDv; c_fDv=fDv_;}
 
   return nucleusRecoil0Aux(c_fDv,*A,*Z,*J,*Sp,*Sn,*LmbdP,*XiP,*LmbdN,*XiN,dNdE);

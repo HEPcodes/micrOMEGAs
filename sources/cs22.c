@@ -336,7 +336,7 @@ static void getPoles(numout*cc, int nsub, char * s0,double mMin, double mMax, in
      } else i++;
   }
   
-  for(n=1;s=CI->den_info(nsub,n,&m,&w);n++) 
+  for(n=1;(s=CI->den_info(nsub,n,&m,&w));n++) 
   if(strcmp(s0,s)==0 && fabs(CI->va[m])>mMin && fabs(CI->va[m]) < mMax)
   { 
 //printf(" %s %E %E  x= %E \n",CI->varName[m],CI->va[m], CI->va[w],(CI->va[m]-mMin)/(mMax-mMin) );

@@ -517,7 +517,7 @@ static int testSubprocesses(void)
   for(k1=0;k1<NC;k1++)  for(k2=0;k2<NC;k2++) 
   {  if(code22_0[k1*NC+k2]) code22_0[k1*NC+k2]->init=0;
      if(code22_1[k1*NC+k2]) code22_1[k1*NC+k2]->init=0;
-     if(code22_2[k1*NC+k2]) code22_1[k1*NC+k2]->init=0;
+     if(code22_2[k1*NC+k2]) code22_2[k1*NC+k2]->init=0;
   }             
   cleanDecayTable();
 
@@ -2039,23 +2039,6 @@ static double Y2SQ_Y1(double T)
 }                          
 
 
-static double y1_y2_Q(double T)
-{ double r,f;
-  f=(Mcdm2-Mcdm1)/T;
-  if(f<-100) return 0;
-   r=geff1_(T)/geff2_(T)*exp(f);
-  return r*r;
-} 
-
-static double y2_y1_Q(double T)
-{ double r,f;
-     f=(Mcdm1-Mcdm2)/T;
-     if(f<-100) return 0;
-     r=geff2_(T)/geff1_(T)*exp(f);    
-  return r*r;
-} 
-
-
 
 
 static int DMEQ0(double T, 
@@ -2206,13 +2189,43 @@ static void TderivZ4(double T, double *Y, double *dYdT)
 }
 
 
+static void stiffDerives(double T, double*Y,double*f,double h,double*dfdx,double*dfdy)
+{
+
+ double C[2], L[4], Q[6],dy1,dy2;
+ double dT=-0.001*T;
+ int n=2;   
+ DMEQ(T, C, L, Q);
+        
+ dy1=Y[0];
+ dy2=Y[1];
+              
+  f[0]= -C[0] + L[0]*dy1 + L[1]*dy2 + Q[0]*dy1*dy1 + Q[1]*dy1*dy2 + Q[2]*dy2*dy2;
+  f[1]= -C[1] + L[2]*dy1 + L[3]*dy2 + Q[3]*dy1*dy1 + Q[4]*dy1*dy2 + Q[5]*dy2*dy2;
+ 
+  if(dfdy)
+  { dfdy[0*n+0]= L[0]+2*Q[0]*dy1+Q[1]*dy2;               
+    dfdy[0*n+1]= L[1]+2*Q[2]*dy2+Q[1]*dy1;
+    dfdy[1*n+0]= L[2]+2*Q[3]*dy1+Q[4]*dy2;
+    dfdy[1*n+1]= L[3]+2*Q[5]*dy2+Q[4]*dy1;
+  }
+
+  if(dfdx)
+  { DMEQ(T+dT, C, L, Q);
+    dfdx[0]= -C[0] + L[0]*dy1 + L[1]*dy2 + Q[0]*dy1*dy1 + Q[1]*dy1*dy2 + Q[2]*dy2*dy2;
+    dfdx[1]= -C[1] + L[2]*dy1 + L[3]*dy2 + Q[3]*dy1*dy1 + Q[4]*dy1*dy2 + Q[5]*dy2*dy2;
+    dfdx[0]-=f[0]; dfdx[0]/=dT;
+    dfdx[1]-=f[1]; dfdx[1]/=dT;
+  }
+}
+
 static void TabDmEq(double step, int show)
 {
   int i,N;
   double T;
 
 //printf("TabDmEq:  Tstart=%E Tend=%E\n",Tstart,Tend);  
-  N=log(Tstart/Tend)/log(step)+1;
+  N=log(Tstart/Tend)/log(step)+2;
   if(N!=Ntab)
   {                 
     Ttab    = realloc(Ttab,   N*sizeof(double));
@@ -2230,8 +2243,8 @@ static void TabDmEq(double step, int show)
     vs2210T = realloc(vs2210T,N*sizeof(double));
     vs2221T = realloc(vs2221T,N*sizeof(double));
     vs1211T = realloc(vs1211T,N*sizeof(double));
-    Y1T     = realloc(Y1T,(N+1)*sizeof(double));
-    Y2T     = realloc(Y2T,(N+1)*sizeof(double)); 
+    Y1T     = realloc(Y1T,    N*sizeof(double));
+    Y2T     = realloc(Y2T,    N*sizeof(double)); 
     Ntab=N;
   }  
   for(T=Tstart,i=0;i<N;i++)
@@ -2297,48 +2310,6 @@ static void TderivZ4tab(double T, double *Y, double *dYdT)
   dYdT[1]= -C[1] + L[2]*dy1 + L[3]*dy2 + Q[3]*dy1*dy1 + Q[4]*dy1*dy2 + Q[5]*dy2*dy2;
 }
 
-static double dy2_approx(double T,double y1)
-{
-  double C[2], L[4], Q[6],dy1,dy2;
-
-  DMEQtab(T,C,L,Q);
-  
-  dy1=y1;
-  dy2= (C[1] - L[2]*dy1  - Q[3]*dy1*dy1)/(L[3]+Q[4]*dy1); 
-  return dy2;
-}
-
-// integer function  smallRadu2(N,FCN,X,Y,XEND,H,eps)
-
-extern int smallradu2_( int *N, void (*fcn)(int *, double*,double*,double*,double*,int*), 
-                double *x,double *y, double *xend, double *h,double *eps); 
-
-//SUBROUTINE FCN(N,X,Y,F,RPAR,IPAR)
-
-static void fcn_fort(int *N, double *x,double*y,double*F,double*RPAR,int*IPAR)
-{ double z[2];
-  z[0]=y[0];
-  z[1]=y[1];
-  if(z[0]<0) z[0]*=-1;
-  if(z[1]<0) z[1]*=-1;
-   TderivZ4tab(*x,z,F);
-   
-//   printf("N=%d x=%E y=(%E %E) F=(%e %e)\n", *N,*x, y[0],y[1],F[0],F[1]); 
-}    
-
-
-
-static double dy1_approx(double T,double y2)
-{
-  double C[2], L[4], Q[6],dy1,dy2;
-
-  DMEQtab(T,C,L,Q);  
-  dy2=y2;
-  dy1=( C[0] - L[1]*dy2 - Q[2]*dy2*dy2 )/(L[0]   + Q[1]*dy2);
-
-  return dy1;
-}
-
 
 static void TderivZ4tab2(double T, double *Y, double *dYdT)
 {
@@ -2372,100 +2343,6 @@ dy2= -D + sqrt( (C[1]-L[2]*dy1-Q[3]*dy1*dy1)/Q[5] +D*D);
 }
 
 
-static void TderivZ4tab_1(double T, double *Y, double *dYdT)
-{
-  double C[2], L[4], Q[6],dy1,dy2;
-  double s,d ,al,Lmin,Lmax;
-  double a11,a12,a21,a22,c1,c2;
-
-  DMEQtab(T,C,L,Q); 
-
-  a11=L[0],a12=L[1],a21=L[2],a22=L[3],c1=C[0],c2=C[1];
-  s=0.5*(a11+a22);
-  d= s*s + a12*a21-a11*a22;
-  if(1.E-5*s*s > fabs(a12*a21-a11*a22)) Lmin=-0.5*(a12*a21-a11*a22)/s; else Lmin=s-sqrt(d);
-  Lmax=s+sqrt(d);
-
-  if( 1.E-5*fabs(a11-a22)> fabs(a12*a21))  al= a21/(a22-a11); 
-  else   al=0.5*( (a11-a22)+sqrt((a11-a22)*(a11-a22) +4*a12*a21))/a12; 
-  dy1=Y[0];
-//  dy2=(c2-Q[5]*dy1*dy1 +al*(c1-Q[3]*dy1*dy1))/(Lmax+Q[4]*dy1+al*Q[1]*dy1 ) -al*dy1; 
-   dy2=(c2 +al*c1)/Lmax -al*dy1; 
-//   if(dy2<0) dy2=0;
-//   dy2=0;
-//printf("al=%E  dy2=%E(%E,%E) Lmax=%E %E\n",al,dy2,(c2+al*c1)/Lmax,-al*dy1,Lmax, a22+a12*al);   
-//  dYdT[0]= -c1  + a11*dy1 +  Q[0]*dy1*dy1;
-//  printf("T=%E dy1=%E dYdT=%E\n", T,dy1,dYdT[0]);
-
- dYdT[0]= -C[0] + L[0]*dy1 + L[1]*dy2 + Q[0]*dy1*dy1 + Q[1]*dy1*dy2 + Q[2]*dy2*dy2;  
-
-//  dYdT[0]= -c1  +a12*(c2+al*c1)/Lmax  + Lmin*dy1 +   Q[0]*dy1*dy1 + Q[1]*dy1*dy2 + Q[2]*dy2*dy2;
-  if(!finite(dYdT[0])) { printf("dYdT[0]=%E  T=%E a11-a22=%E a12=%E a21=%E   al=%E\n",dYdT[0],T,a11-a22,a12,a21,  al ); 
-  printf("dy1=%E dy2=%E\n",dy1,dy2);
-   exit(1);}
-}
-
-
-
-static void TderivZ4tab_2(double T, double *Y, double *dYdT)
-{
-  double C[2], L[4], Q[6],dy1,dy2;
-  double s,d,al,Lmin,Lmax; 
-  double a11,a12,a21,a22,c1,c2;
-
-  DMEQtab(T,C,L,Q); 
-
-  a11=L[0],a12=L[1],a21=L[2],a22=L[3],c1=C[0],c2=C[1];
-
-  if( 1.E-5*fabs(a11-a22)> fabs(a12*a21))  al= a12/(a11-a22); 
-           else   al=0.5*( (a22-a11)+sqrt((a11-a22)*(a11-a22) +4*a12*a21))/a21;
-                    
-  s=0.5*(a11+a22);
-  d= 0.25*(a11-a22)*(a11-a22)-a12*a21  ;
-  Lmin=s-sqrt(d);
-  Lmax=s+sqrt(d);
-
-  dy2=Y[0];
-  dy1=(c1+al*c2)/Lmax-al*dy2;
-  dYdT[0]= -c2  +a21*(c1+al*c2)/Lmax  + Lmin*dy2 +   Q[3]*dy1*dy1 + Q[4]*dy1*dy2 + Q[5]*dy2*dy2;
-}
-
-
-
-
-
-
-static int RungeKuta2minus( double*Y, double T1,double T2,int info)
-{
-  double C[2],L[4],Q[6],D,Lmin,Lmax;
-  double a11,a12,a21,a22,c1,c2;
-  double s,d,al,step;
-  int err=0;
-
-  { int N=2;
-    double h=0.1;
-    double ips=0.00001;
-if(info)
-{  DMEQtab(T1, C, L,Q);
-
-  a11=L[0],a12=L[1],a21=L[2],a22=L[3],c1=C[0],c2=C[1];
-            
-  D=L[0]*L[3]-L[1]*L[2];
-  s=0.5*(a11+a22);
-  d= s*s + a12*a21-a11*a22;
-  if(1.E-5*s*s > fabs(a12*a21-a11*a22)) Lmin=-0.5*(a12*a21-a11*a22)/s; else Lmin=s-sqrt(d);
-  Lmax=s+sqrt(d);        
-  if(Lmin<0.1) Lmin=0;
-  if(Lmax<0.1) Lmax=0;   
-  printf("T1=%.1E  Yeq=(%.1E %.1E)  Y=(%.1E %.1E)   Lmin=%.0E Lmax=%.0E ",T1, Yeq1(T1),Yeq2(T1), Y[0],Y[1], Lmin, Lmax);
-}    
-        
-    err= smallradu2_( &N,fcn_fort,&T1,Y, &T2, &h,&ips);
-    
-    return err-1;
-  }              
-} 
-
 
 
 double darkOmega2( double fast, double Beps0)
@@ -2476,7 +2353,7 @@ double darkOmega2( double fast, double Beps0)
   double Y[2],YY[2],T;
   double Lmin,Lmax;
   double step=1.1;
-  
+  double ips=0.01,ips_=0.005;  
   int i,err,N; 
   
   Tend=1.E-3;
@@ -2497,28 +2374,37 @@ double darkOmega2( double fast, double Beps0)
       while(fabs(Y[0])<0.005*Yeq1(Tstart)) { Tstart/=1.05; dYstart(Tstart,Y,&Lmin,&Lmax);} 
   } else
   {           
-     while(fabs(Y[0])>0.01*Yeq1(Tstart) || fabs(Y[1])>0.01*Yeq2(Tstart)) { Tstart*=1.05; dYstart(Tstart,Y,&Lmin,&Lmax);} 
-     while(fabs(Y[0])<0.005*Yeq1(Tstart)&&fabs(Y[1])<0.005*Yeq2(Tstart)) { Tstart/=1.05; dYstart(Tstart,Y,&Lmin,&Lmax);} 
+     while(fabs(Y[0])>ips*Yeq1(Tstart) || fabs(Y[1])>ips*Yeq2(Tstart)) { Tstart*=1.05; dYstart(Tstart,Y,&Lmin,&Lmax);} 
+     while(fabs(Y[0])<ips_*Yeq1(Tstart)&&fabs(Y[1])<ips_*Yeq2(Tstart)) { Tstart/=1.05; dYstart(Tstart,Y,&Lmin,&Lmax);} 
   }
   
   if(info) printf("Tstart=%.2E  dY1=%.2E(%.2E) dY2=%.2E(%.2E)  Lmin=%.2E Lmax=%.2E \n",Tstart, Y[0],Yeq1(Tstart),Y[1],Yeq2(Tstart),Lmin,Lmax);  
 
+//Tstart=Tstart*pow(step,10);
+//dYstart(Tstart,Y,&Lmin,&Lmax);
+
   TabDmEq(step,0);
+
+//Y[0]*=5;
+//Y[1]*=5;
+
   
+
   Y1T[0]=Y[0];
   Y1T[1]=Y[1]; 
+  
  
   if(!CDM1)
   {
-    for(i=0,err=0,T=Tstart; T> Tend && !err;i++ )
+    for(i=1,err=0,T=Tstart; T> Tend && !err;i++ )
     { double T2=T/step;
       if(T2<Tend) T2=Tend;
       if(info) printf(" CMD2 : T1=%.2E Y=%.2E ",T,Y[1]);
       err=odeint(Y+1,1 , T ,T2 , 1.E-3, (T-T2) , &TderivZ4tab2);
       if(err) { printf(" error in odeint\n");  return  -1;}
       if(info)  printf(" CMD2 : T2=%.2E Y=%.2E\n",T2,Y[1]);
-      Y1T[i+1]=0;      
-      Y2T[i+1]=Y[1];
+      Y1T[i]=0;      
+      Y2T[i]=Y[1];
       T=T2;
     }
     fracCDM2=1;
@@ -2526,31 +2412,37 @@ double darkOmega2( double fast, double Beps0)
   } else if(!CDM2) 
   { 
   
-    for(i=0,err=0,T=Tstart; T> Tend && !err;i++ )
+    for(i=1,err=0,T=Tstart; T> Tend && !err;i++ )
     { double T2=T/step;
       if(T2<Tend) T2=Tend;
       if(info) printf(" CMD1 : T1=%.2E Y=%.2E ",T,Y[0]);
       err=odeint(Y,1 , T ,T2 , 1.E-3, (T-T2) , &TderivZ4tab1);
       if(err) { printf(" error in odeint\n");  return  -1;}
       if(info)  printf(" CMD1 : T2=%.2E Y=%.2E\n",T2,Y[0]);
-      Y1T[i+1]=Y[0];      
-      Y2T[i+1]=0;
+      Y1T[i]=Y[0];      
+      Y2T[i]=0;
       T=T2;
     }
     fracCDM2=0;
     return Y[0]*2.742E8*Mcdm1;
   }  else  
-  {
+  { double h=0.01*Tstart*(1-1/step);
     for(i=1,err=0,T=Tstart; T> Tend && !err;i++ )
     { double T2=T/step;
+      double Yscal[2]={1,1};
       if(T2<Tend) T2=Tend;
       
-      err= RungeKuta2minus(Y,T,T2,info);
-      if(err) { printf(" error in odeint\n");  return  -1;}
-      Y1T[i+1]=Y[0];      
-      Y2T[i+1]=Y[1];
+      
+//      if(fast) err= RungeKuta2minus(Y,T,T2,info); else err=odeint(Y,2 , T ,T2 , 1.E-3, (T-T2) , TderivZ4tab);    
+      err=stiff(T,T2,2,Y, Yscal,1.E-3, &h, stiffDerives);
+//    err=stiffbs(i==1,T, T2, 2, Y, Yscal, 1.E-3, &h,stiffDerives);
+             
+      if(err) { printf(" error in stiff\n");  return  -1;}
+      Y1T[i]=Y[0];      
+      Y2T[i]=Y[1];
       T=T2;
 //    printf(" RungeKuta2minus: T=%.2E  Y[0]=%E(%E) Y[1]=%E(%E)\n",T, Y[0],Yeq1(T),Y[1],Yeq2(T));
+//printf("T=%.5E h=%.2E Y={%.3E %.3E}\n",T2,h,Y[0],Y[1]);
     }
     fracCDM2=Y[1]*Mcdm2/( Y[0]*Mcdm1 +Y[1]*Mcdm2);
 
@@ -2688,7 +2580,7 @@ double vSigmaCC(double T,numout* cc)
       { int n,m,w;
         char s0[3],*s;
         s0[0]=kin[k][1]+1; s0[1]=kin[k][2]+1; s0[2]=0;        
-        for(n=1;s=CI->den_info(1,n,&m,&w);n++) 
+        for(n=1;(s=CI->den_info(1,n,&m,&w));n++) 
         if(strcmp(s0,s)==0 && fabs(CI->va[m]) > pmass[kin[k][1]]+pmass[kin[k][2]]
           && fabs(CI->va[m]) < sqrtSmax23 - pmass[kin[k][0]]
           && fabs(CI->va[m]*CI->va[w])< wMax)
@@ -2698,7 +2590,7 @@ double vSigmaCC(double T,numout* cc)
              return -1;
            } 
            k0=k;    
-           printf("pole(%s %s) %E(%s) %E \n", pname[s[0]-1],pname[s[1]-1], CI->varName[m],  CI->va[m], CI->va[w]);
+           printf("pole(%s %s) %s(%E) %E \n", pname[s[0]-1],pname[s[1]-1], CI->varName[m],  CI->va[m], CI->va[w]);
         }                                                       
       }
       i3=kin[k0][0]; i4=kin[k0][1]; i5=kin[k0][2];

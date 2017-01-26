@@ -543,13 +543,13 @@ C  velocity distribution.
       write(*,*)'======Calculations of widths======='
 
 C      pname = "h";
-      width=pWidth('h1',txtL,dim)
+      width=pWidth('h1',txtL)
       write(*,fmt="('h1->',I1,'*x :  total width ',1PE8.2,'[GeV]')")
      >dim,width
       write(*,*)'and Branchings:'
       call printTxtList(txtL,6)
 
-      width=pWidth('l',txtL,dim)
+      width=pWidth('l',txtL)
       write(*,fmt="('l->',I1,'*x :  total width ',1PE8.2,'[GeV]')")
      >dim,width
       write(*,*)'and Branchings:'
@@ -558,7 +558,7 @@ C      pname = "h";
       write(*,fmt="('Br(e,Ne,nl)=',F4.2)") findBr(txtL,"e,Ne,nl")
 
 C   pname = "~o2";
-      width=pWidth('~o2',txtL,dim)
+      width=pWidth('~o2',txtL)
       write(*,fmt="('~o2->',I1,'*x :  total width ',1PE8.2,'[GeV]')")
      >dim,width
       write(*,*)'and Branchings:'

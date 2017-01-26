@@ -60,7 +60,12 @@ extern double vegas_chain(int ndim, double (*Integrand)(double*, double),
 extern int  odeint(double*ystart,int nvar,double x1,double x2, double eps,
                    double h1, void(*derivs)(double,double*,double *));
 
-
+extern int stiff(            double xstart, double xend, int n, double*y, double *yscal, double eps, double*htry,
+    void (*derivs)(double, double*, double*, double,double*,double*));
+extern int stiffbs(int first,double xstart, double xend, int nv, double*y, double *yscal, double eps, double*htry,
+    void (*derivs)(double,double*,double*,double,double*,double*));
+   
+    
 /*==== Tool  for interpolation  ====*/
 extern double polint2Exp(double x, int n,  double *xa, double *ya);
 extern double polint2(double x, int n,  double *xa, double *ya);

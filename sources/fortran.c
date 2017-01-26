@@ -232,7 +232,7 @@ void muoncontained_(double*nu,double*Nu,double *rho, double*mu) { muonContained(
 double captureaux_(double(*fDv)(double*),int*forSun, double*csIp,double*csIn,double*csDp, double*csDn)
 {
   _fDv=fDv; 
-  captureAux(fDv_, *forSun,*csIp, *csIn,*csDp,*csDn);
+  return captureAux(fDv_, *forSun,*csIp, *csIn,*csDp,*csDn);
 }
 
 

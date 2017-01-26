@@ -262,7 +262,7 @@ C  Use SpectdNdE(E, SpX) to calculate energy distribution in 1/GeV units.
 #ifdef SHOWPLOTS      
       write(mess,fmt="('gamma flux[cm^2 s GeV]^{-1} at fi=',F4.2,
      > ' from cone with angle=',F4.2,'[rad]')")fi,dfi*2  
-      err= displaySpectrum(FluxA,mess,Emin,Mcdm,1)
+      err= displaySpectrum(FluxA,mess,Emin,Mcdm)
 #endif
       write(*,fmt="('Photon flux =',1PE8.2,
      >'[cm^2 s GeV]^{-1} for E=',0PF5.1,'[GeV]')")
@@ -273,7 +273,7 @@ C  Use SpectdNdE(E, SpX) to calculate energy distribution in 1/GeV units.
 
 #ifdef SHOWPLOTS      
       err=displaySpectrum(FluxE,'positron flux [cm^2 s sr GeV]^{-1}',
-     >Emin,Mcdm,1)
+     >Emin,Mcdm)
 #endif
       write(*,fmt="('Positron flux  = ',1PE8.2,
      >'[cm^2 sr s GeV]^{-1} for E=',0PF6.1,'[GeV]')")
@@ -284,7 +284,7 @@ C  Use SpectdNdE(E, SpX) to calculate energy distribution in 1/GeV units.
 
 #ifdef SHOWPLOTS      
       err=displaySpectrum(FluxP,'a-proton flux [cm^2 s sr GeV]^{-1}',
-     >Emin,Mcdm,1)
+     >Emin,Mcdm)
 #endif
       write(*,fmt="('Anti proton flux  = ',1PE8.2,
      >'[cm^2 sr s GeV]^{-1} for E=',0PF6.1,'[GeV]')")
@@ -415,8 +415,8 @@ C rhoDet - detector density
 
       err=neutrinoFlux(Maxwell,forSun, FluxN,FluxNb)
 #ifdef SHOWPLOTS
-      err=displaySpectrum(FluxN, "nu flux from Sun [1/Year/km^2/GeV]",Emin,Mcdm,1)
-      err=displaySpectrum(FluxNb,"nu-bar from Sun  [1/Year/km^2/GeV]",Emin,Mcdm,1)
+      err=displaySpectrum(FluxN, "nu flux from Sun [1/Year/km^2/GeV]",Emin,Mcdm)
+      err=displaySpectrum(FluxNb,"nu-bar from Sun  [1/Year/km^2/GeV]",Emin,Mcdm)
 #endif
       call spectrInfo(Emin/Mcdm,FluxN, IntFlux,NULL)
       write(*,fmt='("E>", 1PE8.2," GeV neutrino flux =", E8.2," [1/Year/km^2]")') Emin,IntFlux
@@ -427,7 +427,7 @@ C ======  Upward events
   
       call muonUpward(FluxN,FluxNb,FluxMu)
 #ifdef SHOWPLOTS  
-      err= displaySpectrum(FluxMu,"Upward muons[1/Year/km^2/GeV]",Emin,Mcdm/2,1)
+      err= displaySpectrum(FluxMu,"Upward muons[1/Year/km^2/GeV]",Emin,Mcdm/2)
 #endif
 
       call spectrInfo(Emin/Mcdm,FluxMu, IntFlux,NULL)
@@ -436,7 +436,7 @@ C ======  Upward events
 C ======  Contained events
       call muonContained(FluxN,FluxNb,rhoDet, FluxMu)
 #ifdef SHOWPLOTS  
-      err=displaySpectrum(FluxMu,"Contained  muons[1/Year/km^3/GeV]",Emin,Mcdm,1)
+      err=displaySpectrum(FluxMu,"Contained  muons[1/Year/km^3/GeV]",Emin,Mcdm)
 #endif
       call spectrInfo(Emin/Mcdm,FluxMu, IntFlux,NULL)
       write(*,fmt='("E>", 1PE8.2," Contained muon flux =", E8.2," [1/Year/km^3]")') Emin,IntFlux

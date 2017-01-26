@@ -218,7 +218,7 @@ double complex hGGeven(double MH, double aQCD, int Nitems, ...)
   va_end(ap);
   
   for(i=0;i<Nitems;i++)
-  {  complex  res;
+  {  double complex  res;
      double mass=part[i].mass; 
      double tau=MH/2/mass;
      double cf,lf;
@@ -276,7 +276,7 @@ double complex hAAeven(double MH, double aQCD, int Nitems, ...)
   va_end(ap);
   
   for(i=0;i<Nitems;i++)
-  {  complex  res,lf;
+  {  double complex  res,lf;
      double mass=part[i].mass; 
      double tau,cf;
 
@@ -330,7 +330,7 @@ double complex hGGodd(double MH, double aQCD, int Nitems, ...)
   va_end(ap);
   
   for(i=0;i<Nitems;i++)
-  {  complex  res;
+  {  double complex  res;
      double mass=part[i].mass; 
      double tau=MH/2/mass;
      double cf,lf;
@@ -382,7 +382,7 @@ double complex hAAodd(double MH, double aQCD, int Nitems, ...)
   va_end(ap);
   
   for(i=0;i<Nitems;i++)
-  {  complex  res,lf;
+  {  double complex  res,lf;
      double mass=part[i].mass; 
      double tau,cf;
       

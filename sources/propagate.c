@@ -238,6 +238,7 @@ void gammaFluxTabGC(double l,double b, double dl,double db, double sigmaV, doubl
   if(vcsMode) Norm*=Norm/2;
   hf=Norm*HaloFactorGC(l,b,dl,db)*sigmaV; 
   for(i=0;i<NZ;i++) Sobs[i]=hf*Sp[i]; 
+  Sobs[0]=Sp[0];
 }
 
 

@@ -87,12 +87,12 @@
 	common /abbrev/ AbbSum73, AbbSum31, AbbSum47, AbbSum80
 	common /abbrev/ AbbSum130, AbbSum59, AbbSum48
 
-	integer iint1, iint2, iint3, iint4, iint5, iint6, iint7, iint8
-	integer iint9, iint10, iint11, iint12, iint13, iint14, iint15
-	integer iint16, iint17, iint18, iint19, iint20, iint21, iint22
-	integer iint23, iint24, iint25, iint26, iint27, iint28, iint29
-	integer iint30, iint31, iint32, iint33, iint34, iint35, iint36
-	integer iint37, iint38, iint39, iint40
+	integer*8 iint1, iint2, iint3, iint4, iint5, iint6, iint7, iint8
+	integer*8 iint9, iint10, iint11, iint12, iint13, iint14, iint15
+	integer*8 iint16, iint17, iint18, iint19, iint20, iint21, iint22
+	integer*8 iint23, iint24, iint25, iint26, iint27, iint28, iint29
+	integer*8 iint30, iint31, iint32, iint33, iint34, iint35, iint36
+	integer*8 iint37, iint38, iint39, iint40
 	common /loopint/ iint1, iint2, iint3, iint4, iint5, iint6
 	common /loopint/ iint7, iint8, iint9, iint10, iint11, iint12
 	common /loopint/ iint13, iint14, iint15, iint16, iint17
@@ -102,7 +102,7 @@
 	common /loopint/ iint33, iint34, iint35, iint36, iint37
 	common /loopint/ iint38, iint39, iint40
 
-	integer ij
+	integer* ij
 	common /indices/ ij
 
 	double complex Cloop(1)

@@ -445,9 +445,6 @@ printf("\n==== Indirect detection =======\n");
 
      printf("Photon flux = %.2E[cm^2 s GeV]^{-1} for E=%.1f[GeV]\n",SpectdNdE(Etest, FluxA), Etest);
 
-     gammaFluxTab(fi,dfi*2, sigmaV, SpA, FluxA);
-
-
 #ifdef SHOWPLOTS
      sprintf(txt,"Photon flux for angle of sight %.2f[rad] and cone angle %.2f[rad]",fi,2*dfi);
      displaySpectrum(FluxA,txt,Emin,Mcdm);
@@ -482,18 +479,14 @@ printf("\n==== Indirect detection =======\n");
 
 #ifdef LoopGAMMA
 {    double vcs_gz,vcs_gg;
-    double fi=0.,dfi=M_PI/180.; /* angle of sight and 1/2 of cone angle in [rad] */
-                                                       /* dfi corresponds to solid angle 1.E-3sr */
+     double fi=0.,dfi=M_PI/180.; /* fi angle of sight[rad], dfi  1/2 of cone angle in [rad] */
+                                 /* dfi corresponds to solid angle  pi*(1-cos(dfi)) [sr] */
                                                        
      if(loopGamma(&vcs_gz,&vcs_gg)==0)
      {
          printf("\nGamma  ray lines:\n");
          printf("E=%.2E[GeV]  vcs(Z,A)= %.2E[cm^3/s], flux=%.2E[cm^2 s]^{-1}\n",Mcdm-91.19*91.19/4/Mcdm,vcs_gz,
                                gammaFlux(fi,dfi,vcs_gz));  
-
-         printf("E=%.2E[GeV]  vcs(Z,A)= %.2E[cm^3/s], flux=%.2E[cm^2 s]^{-1}\n",Mcdm-91.19*91.19/4/Mcdm,vcs_gz,
-                               gammaFlux(fi,dfi/2,vcs_gz));  
-
          printf("E=%.2E[GeV]  vcs(A,A)= %.2E[cm^3/s], flux=%.2E[cm^2 s]^{-1}\n",Mcdm,vcs_gg, 
                              2*gammaFlux(fi,dfi,vcs_gg));
      }

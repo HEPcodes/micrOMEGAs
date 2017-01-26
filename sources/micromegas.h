@@ -291,7 +291,7 @@ extern double pbarFlux(double ek, double dSigmadE);
                                                                                 
 extern char * outNames[6];
 
-extern int basicSpectra(double Mass,int pgdN, int outN, double * tab);
+extern int basicSpectra(double Mass,int pdgN, int outN, double * tab);
 
 extern void displayFunc(double (*F)(double), double x1,double x2, char * mess);
 extern void displayFunc10(double (*F)(double), double x1,double x2, char * mess);

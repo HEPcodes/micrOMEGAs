@@ -804,7 +804,7 @@ void setQforParticle(REAL *Q,char*pname)
   
   if(cdim==1)
   { int err=calcMainFunc();  *Q=fabs(*ma); err=calcMainFunc(); 
-    if(err) printf("Cannot calculate %s\n",err,varNames[err]);   
+    if(err) printf("Cannot calculate %s\n",varNames[err]);   
     return;
   }
   switch(pdg)

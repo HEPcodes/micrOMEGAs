@@ -3,14 +3,16 @@
 * this file is part of LoopTools
 * last modified 16 Jun 04 th
 
+
 #include "lt.h"
 
+#define QEXT DBLE
 
-	integer function Cget(p1, p2, p1p2, m1, m2, m3)
+	integer*8 function Cget(p1, p2, p1p2, m1, m2, m3)
 	implicit none
 	double precision p1, p2, p1p2, m1, m2, m3
 
-	integer cachelookup
+	integer*8 cachelookup
 	external cachelookup, Cijk
 
 	double precision para(6)

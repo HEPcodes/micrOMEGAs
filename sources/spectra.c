@@ -334,8 +334,12 @@ static int readSpectra(void)
 
   for(n=0;n<Nin;n++)
   {  sprintf(buff,"%s/sources/data/%s",micrO,fnames[n]);
-     f=  fopen(buff,"r"); 
-     if(f==NULL) { free(buff);return 1;}    
+     f=  fopen(buff,"r");
+//     printf("f=%p\n",f);       
+//     fclose(f); f=NULL;
+     
+     if(f==NULL) { free(buff);return 1;} 
+//printf("%s\n", buff);        
      for(i=0;i<6;i++)
      { fscanf(f,"%*s"); 
        for(k=0;k<NEn;k++)
@@ -345,6 +349,7 @@ static int readSpectra(void)
          for(;l<NZ;l++)phidiff[n][i][k][l]=0;
        }
      }
+//printf("ok before fclose\n");     
      fclose(f);
   }
   

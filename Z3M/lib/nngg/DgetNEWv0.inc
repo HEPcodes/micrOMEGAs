@@ -10,14 +10,14 @@
 #include "lt.h"
 
 
-	integer function Dget(p1, p2, p3, p4, p1p2, p2p3,
+	integer*8 function Dget(p1, p2, p3, p4, p1p2, p2p3,
      &    m1, m2, m3, m4)
 	implicit none
 	double precision p1, p2, p3, p4, p1p2, p2p3
 	double precision m1, m2, m3, m4
 	double precision p12, p13, p14, p23, p24, p34
 
-	integer cachelookup
+	integer*8 cachelookup
 	external cachelookup, Dijkl
 
 	double precision para(10)
@@ -73,7 +73,7 @@ c	write(*,*) 'k23', p1*p3-p13**2+p2*p3-p23**2+2*(p3*p12-p13*p23)
 	double precision P(10)
 	double complex D(46)
 
-	integer Cget
+	integer*8 Cget
 	double complex D0
 	external Cget, D0
 
@@ -92,7 +92,7 @@ c	write(*,*) 'k23', p1*p3-p13**2+p2*p3-p23**2+2*(p3*p12-p13*p23)
 	double complex DD123, DD133, DD222, DD223, DD233, DD333, DD111a
 	double complex c1, c2, c3, c4, c5
         double precision e1, e2, e3, e4 
-	integer C234, C134, C124, C123, indx
+	integer*8 C234, C134, C124, C123, indx
 
 	f1 = .5D0*(QEXT(P(1)) + QEXT(P(5)) - P(2))
 	f2 = .5D0*(QEXT(P(1)) + QEXT(P(4)) - P(6))

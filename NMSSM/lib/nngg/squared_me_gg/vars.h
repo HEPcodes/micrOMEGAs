@@ -578,47 +578,47 @@
 	common /abbrev/ AbbSum492, AbbSum1124, AbbSum1085, AbbSum1008
 	common /abbrev/ AbbSum1153
 
-	integer iint1, iint2, iint3, iint4(3), iint5(3), iint6(3)
-	integer iint7(3), iint8(3), iint9(3), iint10(3), iint11(3)
-	integer iint12(3), iint13(3), iint14(3), iint15(3), iint16(2)
-	integer iint17(2), iint18, iint19, iint20(3), iint21(3)
-	integer iint22(3), iint23(3), iint24(3), iint25(3), iint26(3)
-	integer iint27(3), iint28(3), iint29(3), iint30(3), iint31(3)
-	integer iint32(3), iint33(3), iint34(3), iint35(3), iint36(3)
-	integer iint37(3), iint38(3), iint39(3), iint40(3), iint41(3)
-	integer iint42(3), iint43(3), iint44(3), iint45(3), iint46(3)
-	integer iint47(3), iint48(3), iint49(3), iint50(3), iint51(3)
-	integer iint52(3), iint53(3), iint54(3), iint55(3), iint56(3)
-	integer iint57(3), iint58(3), iint59(3), iint60(3), iint61(3)
-	integer iint62(3), iint63(3), iint64(3), iint65(3), iint66(3)
-	integer iint67(3), iint68(3), iint69(3), iint70(3), iint71(3)
-	integer iint72(3), iint73(3), iint74(3), iint75(3), iint76(3)
-	integer iint77(2), iint78(2), iint79(2), iint80(2), iint81(2)
-	integer iint82(2), iint83(2), iint84(2), iint85(2), iint86(2)
-	integer iint87(2), iint88(2), iint89(2), iint90(2), iint91(2)
-	integer iint92(2), iint93, iint94(2), iint95(2), iint96(2)
-	integer iint97(2), iint98(2), iint99(2), iint100(2)
-	integer iint101(2), iint102(2)
-	common /loopint/ iint1, iint2, iint3, iint4, iint5, iint6
-	common /loopint/ iint7, iint8, iint9, iint10, iint11, iint12
-	common /loopint/ iint13, iint14, iint15, iint16, iint17
-	common /loopint/ iint18, iint19, iint20, iint21, iint22
-	common /loopint/ iint23, iint24, iint25, iint26, iint27
-	common /loopint/ iint28, iint29, iint30, iint31, iint32
-	common /loopint/ iint33, iint34, iint35, iint36, iint37
-	common /loopint/ iint38, iint39, iint40, iint41, iint42
-	common /loopint/ iint43, iint44, iint45, iint46, iint47
-	common /loopint/ iint48, iint49, iint50, iint51, iint52
-	common /loopint/ iint53, iint54, iint55, iint56, iint57
-	common /loopint/ iint58, iint59, iint60, iint61, iint62
-	common /loopint/ iint63, iint64, iint65, iint66, iint67
-	common /loopint/ iint68, iint69, iint70, iint71, iint72
-	common /loopint/ iint73, iint74, iint75, iint76, iint77
-	common /loopint/ iint78, iint79, iint80, iint81, iint82
-	common /loopint/ iint83, iint84, iint85, iint86, iint87
-	common /loopint/ iint88, iint89, iint90, iint91, iint92
-	common /loopint/ iint93, iint94, iint95, iint96, iint97
-	common /loopint/ iint98, iint99, iint100, iint101, iint102
+	integer*8 iint1,iint2,iint3,iint4(3),iint5(3),iint6(3)
+	integer*8 iint7(3),iint8(3),iint9(3),iint10(3),iint11(3)
+	integer*8 iint12(3),iint13(3),iint14(3),iint15(3),iint16(2)
+	integer*8 iint17(2),iint18,iint19,iint20(3),iint21(3)
+	integer*8 iint22(3),iint23(3),iint24(3),iint25(3),iint26(3)
+	integer*8 iint27(3),iint28(3),iint29(3),iint30(3),iint31(3)
+	integer*8 iint32(3),iint33(3),iint34(3),iint35(3),iint36(3)
+	integer*8 iint37(3),iint38(3),iint39(3),iint40(3),iint41(3)
+	integer*8 iint42(3),iint43(3),iint44(3),iint45(3),iint46(3)
+	integer*8 iint47(3),iint48(3),iint49(3),iint50(3),iint51(3)
+	integer*8 iint52(3),iint53(3),iint54(3),iint55(3),iint56(3)
+	integer*8 iint57(3),iint58(3),iint59(3),iint60(3),iint61(3)
+	integer*8 iint62(3),iint63(3),iint64(3),iint65(3),iint66(3)
+	integer*8 iint67(3),iint68(3),iint69(3),iint70(3),iint71(3)
+	integer*8 iint72(3),iint73(3),iint74(3),iint75(3),iint76(3)
+	integer*8 iint77(2),iint78(2),iint79(2),iint80(2),iint81(2)
+	integer*8 iint82(2),iint83(2),iint84(2),iint85(2),iint86(2)
+	integer*8 iint87(2),iint88(2),iint89(2),iint90(2),iint91(2)
+	integer*8 iint92(2),iint93,iint94(2),iint95(2),iint96(2)
+	integer*8 iint97(2),iint98(2),iint99(2),iint100(2)
+	integer*8 iint101(2),iint102(2)
+	common /loopint/ iint1,iint2,iint3,iint4,iint5,iint6
+	common /loopint/ iint7,iint8,iint9,iint10,iint11,iint12
+	common /loopint/ iint13,iint14,iint15,iint16,iint17
+	common /loopint/ iint18,iint19,iint20,iint21,iint22
+	common /loopint/ iint23,iint24,iint25,iint26,iint27
+	common /loopint/ iint28,iint29,iint30,iint31,iint32
+	common /loopint/ iint33,iint34,iint35,iint36,iint37
+	common /loopint/ iint38,iint39,iint40,iint41,iint42
+	common /loopint/ iint43,iint44,iint45,iint46,iint47
+	common /loopint/ iint48,iint49,iint50,iint51,iint52
+	common /loopint/ iint53,iint54,iint55,iint56,iint57
+	common /loopint/ iint58,iint59,iint60,iint61,iint62
+	common /loopint/ iint63,iint64,iint65,iint66,iint67
+	common /loopint/ iint68,iint69,iint70,iint71,iint72
+	common /loopint/ iint73,iint74,iint75,iint76,iint77
+	common /loopint/ iint78,iint79,iint80,iint81,iint82
+	common /loopint/ iint83,iint84,iint85,iint86,iint87
+	common /loopint/ iint88,iint89,iint90,iint91,iint92
+	common /loopint/ iint93,iint94,iint95,iint96,iint97
+	common /loopint/ iint98,iint99,iint100,iint101,iint102
 
 	integer cha5, hia5, his5, ij, lpd5, qud5, quu5, sld5, sle5
 	integer sqd5, sqe5, squ5, sqv5

@@ -1253,7 +1253,7 @@ static void readEXTFunc(FILE*f)
   for(;fgets(buff,199,f);)
   { 
     trim(buff);
-    if(strstr(buff,"extern ")==buff);
+    if(strstr(buff,"extern ")==buff)
     { char *c;
       c=strchr(buff,'(');
       if(c)
@@ -1339,10 +1339,9 @@ int makeVandP(int rd ,char*path,int L, int mode,char*CalcHEP)
       fprintf(f," {\"%s\",",prtclbase[i].name);
       if(i+1==anti)   fprintf(f,"\"%s\", ",prtclbase[i].name);
            else       fprintf(f,"\"%s\", ",prtclbase[anti-1].name);
-     fprintf(f,"%ld, \"%s\",\"%s\",%d,%d,%d}\n",
+       fprintf(f,"%d, \"%s\",\"%s\",%d,%d,%d}\n",
        prtclbase[i].N,  prtclbase[i].massidnt, prtclbase[i].imassidnt,  
        prtclbase[i].spin, prtclbase[i].cdim,prtclbase[i].q3);
-    
   }
   fprintf(f,"};\n");
   fprintf(f,"ModelPrtclsStr *ModelPrtcls=ModelPrtcls_; \n");

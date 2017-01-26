@@ -500,24 +500,23 @@ printf("\n======== Direct Detection ========\n");
 #ifdef DECAYS
 {  
   txtList L;
-   int dim;
    double width,br;
    char * pname;
    
    printf("\nParticle decays\n"); 
    pname = "h1";
-    width=pWidth(pname,&L,&dim);
+    width=pWidth(pname,&L);
     printf("%s->%d*x :   total width=%E \n and Branchings:\n",pname,dim,width);
     printTxtList(L,stdout);
 
    pname = "l";
-    width=pWidth(pname,&L,&dim);
+    width=pWidth(pname,&L);
     printf("%s->%d*x :   total width=%E \n and Branchings:\n",pname,dim,width);
     printTxtList(L,stdout);
     printf("Br(e,Ne,nl)= %E\n",findBr(L,"e,Ne,nl"));
 
    pname = "~o2";
-    width=pWidth(pname,&L,&dim);
+    width=pWidth(pname,&L);
     printf("%s->%d*x :   total width=%E \n and Branchings:\n",pname,dim,width);
     printTxtList(L,stdout);
 }

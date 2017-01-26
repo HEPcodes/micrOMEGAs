@@ -7,7 +7,7 @@ endif
 
 all:micromegas.a 
 
-OBJ = $(notdir $(subst .c,.o,$(filter-out $(special),$(wildcard *.c)))) $(subst .c,.o,$(wildcard stiff/c/*.c))
+OBJ = $(notdir $(subst .c,.o,$(filter-out $(special),$(wildcard *.c))))
 
 
 #ifneq ($(FC),)

@@ -1,8 +1,8 @@
 *     LanHEP output produced at Thu Oct 23 23:48:20 2014
 *     Model named 'NMSSM(../spect.slha)+hgg'
 
-#include "DgetNEWv0.F"
-#include "CgetNEWv0.F"
+#include "DgetNEWv0.inc"
+#include "CgetNEWv0.inc"
 
 
       double precision function myif(a,b,c)
