@@ -1,0 +1,83 @@
+
+Dark matter candidate is '~sc' with spin=0/2 mass=5.78E+02
+
+Dark matter candidate is '~~X' with spin=0/2 mass=8.96E+02
+
+=== MASSES OF HIGG AND ODD PARTICLES: ===
+Higgs masses and widths
+      h   125.89 4.26E-03
+
+Masses of odd sector Particles:
+~sc  : Msc   =   578.0 || ~~X  : MHX   =   895.5 || ~~H+ : MHC   =   895.6 
+~~H3 : MH3   =   900.6 || 
+
+==== Calculation of relic density =====
+omega1=5.91E-02
+omega2=6.14E-02
+
+==== Indirect detection =======
+    Channel          vcs[cm^3/s]
+ ~sc ~sc  w=6.012584E-02 c=6.012584E-02 vcs00=2.851195E-01
+ ~sc ~Sc  w=6.012584E-02 c=6.012584E-02 vcs01=8.069377E-02
+ ~sc ~~X  w=1.249540E-01 c=1.249540E-01 vcs02=2.924048E-01
+ ~Sc ~sc  w=6.012584E-02 c=6.012584E-02 vcs10=8.069377E-02
+ ~Sc ~Sc  w=6.012584E-02 c=6.012584E-02 vcs11=2.851195E-01
+ ~Sc ~~X  w=1.249540E-01 c=1.249540E-01 vcs12=2.924048E-01
+ ~~X ~sc  w=1.249540E-01 c=1.249540E-01 vcs20=1.887325E-01
+ ~~X ~Sc  w=1.249540E-01 c=1.249540E-01 vcs21=1.887325E-01
+ ~~X ~~X  w=2.596805E-01 c=2.596805E-01 vcs22=2.722705E-01
+==================================
+ annihilation cross section 5.89E-26 cm^3/s
+ contribution of processes
+  ~sc,~~X -> Z ~Sc      1.11E-01
+  ~Sc,~~X -> Z ~sc      1.11E-01
+  ~~X,~~X -> W+ W-      7.47E-02
+  ~sc,~sc -> W- ~~H+    7.24E-02
+  ~Sc,~Sc -> W+ ~~H-    7.24E-02
+  ~~X,~sc -> Z ~Sc      7.19E-02
+  ~~X,~Sc -> Z ~sc      7.19E-02
+  ~~X,~~X -> Z Z        5.20E-02
+  ~sc,~~X -> h ~Sc      3.74E-02
+  ~Sc,~~X -> h ~sc      3.74E-02
+  ~sc,~sc -> Z ~~X      2.82E-02
+  ~Sc,~Sc -> Z ~~X      2.82E-02
+  ~~X,~sc -> h ~Sc      2.41E-02
+  ~~X,~Sc -> h ~sc      2.41E-02
+  ~sc,~sc -> h ~~H3     2.30E-02
+  ~Sc,~Sc -> h ~~H3     2.30E-02
+  ~sc,~Sc -> W+ W-      1.98E-02
+  ~Sc,~sc -> W+ W-      1.98E-02
+  ~~X,~~X -> h h        1.09E-02
+  ~sc,~Sc -> Z Z        9.80E-03
+  ~Sc,~sc -> Z Z        9.80E-03
+  ~sc,~Sc -> h h        9.54E-03
+  ~Sc,~sc -> h h        9.54E-03
+  ~sc,~sc -> Z ~~H3     8.50E-03
+  ~Sc,~Sc -> Z ~~H3     8.50E-03
+  ~sc,~sc -> h ~~X      7.27E-03
+  ~Sc,~Sc -> h ~~X      7.27E-03
+  ~sc,~sc -> W+ ~~H-    5.57E-03
+  ~Sc,~Sc -> W- ~~H+    5.57E-03
+  ~sc,~Sc -> t T        1.93E-03
+  ~Sc,~sc -> t T        1.93E-03
+  ~~X,~~X -> t T        8.32E-04
+sigmav=5.89E-26[cm^3/s]
+Photon flux  for angle of sight f=0.10[rad]
+and spherical region described by cone with angle 0.10[rad]
+Photon flux = 5.03E-16[cm^2 s GeV]^{-1} for E=289.0[GeV]
+Positron flux  =  2.65E-14[cm^2 sr s GeV]^{-1} for E=289.0[GeV] 
+Antiproton flux  =  4.06E-13[cm^2 sr s GeV]^{-1} for E=289.0[GeV] 
+
+==== Calculation of CDM-nucleons amplitudes  =====
+CDM[antiCDM]-nucleon micrOMEGAs amplitudes for ~sc 
+proton:  SI  1.813E-09 [1.813E-09]  SD  0.000E+00 [0.000E+00]
+neutron: SI  1.831E-09 [1.831E-09]  SD  0.000E+00 [0.000E+00]
+CDM[antiCDM]-nucleon cross sections[pb]:
+ proton  SI 1.433E-09 [1.433E-09] SD 0.000E+00 [0.000E+00]
+ neutron SI 1.461E-09 [1.461E-09] SD 0.000E+00 [0.000E+00]
+CDM[antiCDM]-nucleon micrOMEGAs amplitudes for ~~X 
+proton:  SI  -8.929E-10 [-8.929E-10]  SD  0.000E+00 [0.000E+00]
+neutron: SI  -9.017E-10 [-9.017E-10]  SD  0.000E+00 [0.000E+00]
+CDM[antiCDM]-nucleon cross sections[pb]:
+ proton  SI 3.473E-10 [3.473E-10] SD 0.000E+00 [0.000E+00]
+ neutron SI 3.543E-10 [3.543E-10] SD 0.000E+00 [0.000E+00]
