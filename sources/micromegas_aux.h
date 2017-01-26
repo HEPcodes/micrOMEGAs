@@ -79,9 +79,10 @@ extern void spline(double*x,double*y,int n,double*y2);
 extern void splint(double*xa, double*ya, double*y2a, int n, double x, double *y);
             
 /*======= special functions ========*/
-extern double bessk0(double x);
-extern double bessk1(double x);
-extern double bessk2(double x);
+extern double bessI0(double x);
+extern double bessK0(double x);
+extern double bessK1(double x);
+extern double bessK2(double x);
 extern double K2pol(double x); /*bessk1(1/x)*exp(1/x)*sqrt(2/M_PI/x);*/
 extern double K1pol(double x); /*bessk2(1/x)*exp(1/x)*sqrt(2/M_PI/x);*/
 
@@ -158,6 +159,7 @@ extern int initPDFconv(void);
 
 // Statistics
 extern double FeldmanCousins(int n0, double b, double cl);
+extern double ch2pval(int nexp, double ch2obs);
 
 
 

@@ -108,16 +108,13 @@ static   double pp(double cs,  int n, double a)
      return s;  
    }
                  
-static   double L[16];
+static   double L[21];
+
 static    double P(double x)
-   { double xx[16]={0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.1,1.2,1.3,1.4,1.5};
-     return exp(polint3(x,16,xx,L));
+   { double xx[21]={0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
+     return exp(polint3(x,21,xx,L));
    }
-static   double LLL(double x)
-       { double xx[16]={0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.1,1.2,1.3,1.4,1.5};
-            return polint3(x,16,xx,L);
-               }
-               
+                  
 //double fiMax=8;   
 
    double exLevIC22(double * nu, double*NU, double *B)
@@ -174,75 +171,88 @@ static   double LLL(double x)
       double nData=0;
       for(i=0;i<Nev;i++) if(events[i].cs>cs_) nData++;
       int k;
-      for(k=0;k<16;k++)
+      for(k=0;k<21;k++)
       { double a= 0.1*k;
         L[k]=nData*log(Nbg+a*Ns)-Nbg-a*Ns;
         for(i=0;i<Nev;i++)if(events[i].cs>cs_) L[k]+=log(pp(events[i].cs,events[i].n-10,a)/(Nbg+a*Ns)); 
       }
       
-      for(k=1;k<16;k++) L[k]-=L[0];
+      for(k=1;k<21;k++) L[k]-=L[0];
       L[0]=0;
-     if(L[15]>L[0]-0.1) return 0;     
-      double dI=exp(L[15])/(2*(L[10]-L[15]));
-//displayFunc(P, 0,1.5,"P"); 
-//for(int i=0;i<16;i++) printf("L[%d]=%E %E\n",i,L[i], LLL(0.1*i));   
-//displayFunc(LLL,0,1.5,"LL");        
-      double int1=simpson(P,0.,1 ,1E-3);
-      double int2=simpson(P,1.,1.5,1E-2);
+      if(L[20]>L[15]) return 0;     
+      double dI=exp(L[20])/(2*(L[15]-L[20]));   
+      double int1=simpson(P,0.,1,1E-3);
+      double int2=simpson(P,1.,2,1E-2);
       if(B) *B=P(1)/P(0);
       return (int1)/(int1+int2+dI);
    }
+static int prn=0;   
+      typedef struct{double cs; int n;} eventStr;
+
+static  eventStr*  events=NULL;
+static int Nev;
+
+#define TEST_ANOMALY   
 #ifdef TEST_ANOMALY   
-   double pvalIC22_randon(double * nu, double*NU, double fiMax, int in)
+   static double exLevIC22_random(double * nu, double*NU,int rand)
    {  int i;
       double cs,cs_;
-      typedef struct{double cs; int n;} eventStr;
-      static  eventStr*  events=NULL;
-      static int Nev;
-      
+      double Nev_;
+      cs_=cos(8./180.*M_PI);    
+         
+
       if(!events)
       {  char fname[300];
          double dfi;
          int nch;
+         
          events=malloc(1000*sizeof(eventStr));
          sprintf(fname, "%s/sources/data_nu/IC22_events_25.dat",micrO); 
          FILE*F=fopen(fname,"r");
-         cs_=cos(25./180.*M_PI);    
-         for(Nev=0; fscanf(F," %lf %lf %d",&cs,&dfi, &nch)==3; ) if(cs>=cs_)
+         for(Nev=0; fscanf(F," %lf %lf %d",&cs,&dfi, &nch)==3; ) //    if(cs>=cs_) // to reproduce  experimental result
          { if(Nev==1000) break;
            events[Nev].cs=cs;
            events[Nev].n=nch;
            Nev++; 
          }
          fclose(F);
-         IC22histRead();  
+         IC22histRead(); 
       }
-      cs_=cos(10./180.*M_PI);
 
-if(in)
+      Nev_=simpson(IC22BGdCos,cs_,1,1E-3);    
+if(rand)
 {
-//printf("nData=%d\n",Nev);
-for(;;)
-{double  c=1;
-  Nev=130+drand48()*100;
-  
-  for(i=182;i<=Nev;i++) c*=182./i;
-  for(i=182;i>Nev;i--) c/=182./i;
-  if(c>drand48()) break; 
-}
+// generate random number of events in Nev_ \pm 2*sqrt(Nev_) interval
+   for(;;)
+   { double  c=1;
+     Nev= Nev_ + 2*sqrt(Nev_)*(2*drand48()-1); 
 
-//printf("Nev=%d\n",Nev);
-for(i=0;i<Nev;i++)
-{ double cs;
-  for(;;)
-  { cs=cs_+drand48()*(1-cs_);
-    if(IC22BGdCos(cs)/IC22BGdCos(1)>drand48()) break; 
-  }
-//printf("i=ok\n", i);  
-  events[i].cs=cs;
-}  
-//printf("fill ok\n");
-}
+     for(i=Nev_;i<=Nev;i++) c*=Nev_/i;
+     for(i=Nev_;i>Nev;i--)  c/=Nev_/i;
+     if(c>drand48()) break; 
+   }
+
+   for(i=0;i<Nev;i++)
+   { // printf("IC22BGdCos(0.999)/IC22BGdCos(1)=%E\n", IC22BGdCos(0.999)/IC22BGdCos(1));
+     double cs;
+     for(;;)
+     { cs=cs_+drand48()*(1-cs_);
+       if(IC22BGdCos(cs)/IC22BGdCos(1)>drand48())  break; 
+     }
+     events[i].cs=cs;
+   }
+/*   
+   double xx[20],ex[20];
+   for(i=0;i<10;i++)  xx[i]=0;
+   for(i=0;i<Nev;i++)
+   { int k= 10*(1-events[i].cs)/(1 - cs_);
+      xx[k]+=1;
+   }
+   for(i=0;i<Nev;i++) ex[i]=sqrt(xx[i]);
+   displayPlot("", cs_, 1, "cs",10,1,xx,ex,"dN/dcos");
+*/                               
+} 
+
       double  nu_[NZ], NU_[NZ];
       for(i=0;i<NZ;i++) {nu_[i]=nu[i];NU_[i]=NU[i];} 
       spectrMult(nu_,IC22nuAr);
@@ -262,26 +272,33 @@ for(i=0;i<Nev;i++)
            if(IC22chan[i].n<=0) IC22chan[i].s2=0; else
            IC22chan[i].s2=spectrInt(E1,E2,NU_)/IC22chan[i].n;
          } else {IC22chan[i].n=0; IC22chan[i].s2=0;} 
-         IC22chan[i].n*=104/365.*0.8; 
+         IC22chan[i].n*=104/365./1.2; 
       }
       double Nbg=simpson(IC22BGdCos,cs_,1,1E-3);
       double Ns=0;
-      for(i=1;i<20;i++) if(IC22chan[i].n>0) Ns+=IC22chan[i].n*(1-exp((cs_-1)/IC22chan[i].s2));
+      for(i=1;i<20;i++) if(IC22chan[i].n>0) Ns+=IC22chan[i].n*(1-exp((cs_-1)/IC22chan[i].s2));      
       double nData=0;
       for(i=0;i<Nev;i++) if(events[i].cs>cs_) nData++;
+
       int k;
-      for(k=0;k<16;k++)
+      for(k=0;k<21;k++)
       { double a= 0.1*k;
         L[k]=nData*log(Nbg+a*Ns)-Nbg-a*Ns;
         for(i=0;i<Nev;i++)if(events[i].cs>cs_) L[k]+=log(pp(events[i].cs,events[i].n-10,a)/(Nbg+a*Ns)); 
       }
-      for(k=1;k<15;k++) L[k]-=L[0];
-      L[0]=0;
-//displayFunc(P,0,1.5,"P");    
-//displayFunc(LL,0,1.5,"LL");        
-      double int1=simpson(P,0.,1. ,1E-3);
-      double int2=simpson(P,1.,1.5,1E-2);
-      return int2/(int1+int2);
+      for(k=1;k<21;k++) L[k]-=L[0];
+      L[0]=0;     
+      if(L[20]>=L[15]) return 0;
+
+      double dI=exp(L[20])/(2*(L[15]-L[20]));  
+      double int1=simpson(P,0.,1.,1E-3);
+      double int2=simpson(P,1.,2.,1E-2);
+      double exLev=int1/(int1+int2+dI);
+      if(prn)
+      {  displayFunc(P,0,2,"PPP");
+         exit(0);
+      }      
+      return int1/(int1+int2+dI);
    }
 #endif
 
@@ -334,22 +351,82 @@ int  IC22events(double *nu, double * nuB, double phi_cut, double *Nsig,double *N
 double  fluxFactorIC22(double cl,double *NU,double*NUbar)
 { 
   double nu[NZ],nu_[NZ];
-  for(int i=0;i<NZ;i++) { nu[i]=NU[i]; nu_[i]=NUbar[i];}
-  double f=1,pv=1-cl; 
-  for(;;)
-  {
-     double p0= 1-exLevIC22(nu,nu_, NULL);
-     double x;
-     if(p0<0.1*pv) p0=0.1*pv; else  if(p0>0.5*(pv+1)) p0=0.5*(pv+1);
-     x=log(pv)/log(p0);
+  double f=1,cl0; 
+  double fmin,fmax,exmin,exmax;
+  
+  nu[0]=NU[0]; nu_[0]=NUbar[0];  
+
+  cl0=exLevIC22(NU,NUbar, NULL);
+  fmax=1;exmax=cl0;
+  fmin=1;exmin=cl0; 
+  if(cl0>cl) while( exmin>cl) 
+  { 
+       fmax=fmin;
+       exmax=exmin;
+       fmin/=2;
+       for(int i=1;i<NZ;i++) { nu[i]=NU[i]*fmin; nu_[i]=NUbar[i]*fmin;}
+       exmin=exLevIC22(nu,nu_, NULL);
+  } else 
+  while( exmax<cl)
+  { 
+       fmin=fmax;
+       exmin=exmax;
+       fmax*=2;
+       for(int i=1;i<NZ;i++) { nu[i]=NU[i]*fmax; nu_[i]=NUbar[i]*fmax;}
+       exmax=exLevIC22(nu,nu_, NULL);
+  }  
      
-     f*=x;
-     for(int i=1;i<NZ;i++) { nu[i]*=x; nu_[i]*=x;}
-     if(fabs(x-1)<0.005) break;
-  }
-  return f;
+  while(exmax-exmin> 0.005*(exmax+exmin) )
+  {
+     f=0.5*(fmin+fmax);
+     for(int i=1;i<NZ;i++) { nu[i]=NU[i]*f; nu_[i]=NUbar[i]*f;}
+     cl0=exLevIC22(nu,nu_, NULL);
+     if(cl0> cl)
+     { fmax=f;exmax=cl0;} else { fmin=f;exmin=cl0;}
+  }   
+  return 0.5*(fmin+fmax);
+
 }
 
+
+double  fluxFactorIC22_random(double cl,double *NU,double*NUbar)
+{ 
+  double nu[NZ],nu_[NZ];
+  double f=1,cl0; 
+  double fmin,fmax,exmin,exmax;
+
+  nu[0]=NU[0]; nu_[0]=NUbar[0];  
+
+  cl0=exLevIC22_random(NU,NUbar, 1);
+  fmax=1;exmax=cl0;
+  fmin=1;exmin=cl0; 
+  if(cl0>cl) while( exmin>cl) 
+  { 
+       fmax=fmin;
+       exmax=exmin;
+       fmin/=2;
+       for(int i=1;i<NZ;i++) { nu[i]=NU[i]*fmin; nu_[i]=NUbar[i]*fmin;}
+       exmin=exLevIC22_random(nu,nu_,0);
+  } else 
+  while( exmax<cl)
+  { 
+       fmin=fmax;
+       exmin=exmax;
+       fmax*=2;
+       for(int i=1;i<NZ;i++) { nu[i]=NU[i]*fmax; nu_[i]=NUbar[i]*fmax;}
+       exmax=exLevIC22_random(nu,nu_,0);
+  }  
+     
+  while(exmax-exmin> 0.005*(exmax+exmin) )
+  {
+     f=0.5*(fmin+fmax);
+     for(int i=1;i<NZ;i++) { nu[i]=NU[i]*f; nu_[i]=NUbar[i]*f;}
+     cl0=exLevIC22_random(nu,nu_,0);
+     if(cl0> cl)
+     { fmax=f;exmax=cl0;} else { fmin=f;exmin=cl0;}
+  }   
+  return 0.5*(fmin+fmax);
+}
 
 double ic22nuar_(double* E)  { return IC22nuAr(*E);  }
 double ic22nubarar_(double*E){ return IC22nuBarAr(*E);}

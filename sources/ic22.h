@@ -30,8 +30,8 @@ extern int IC22histRead(void);  // reads file data_nu/ic22hist.dat to fill 21 el
                                 // energy regions.      
 
 extern double exLevIC22(double * nu, double*NU, double*B);
-
 extern double  fluxFactorIC22(double exl,double *NU,double*NUbar);
+extern double  fluxFactorIC22_random(double cl,double *NU,double*NUbar);
 
 int  IC22events(double *nu, double * nuB, double phi_cut, double *Nsig, double *Nbg, int*Nobs);
 

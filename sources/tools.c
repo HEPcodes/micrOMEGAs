@@ -119,7 +119,7 @@ int  odeint(double * ystart, int nvar, double x1, double x2, double eps,
 }
 
 
-static double bessi0(double  x)
+double bessI0(double  x)
 {
 	double ax,ans;
 	double y;
@@ -139,7 +139,7 @@ static double bessi0(double  x)
 	return ans;
 }
 
-static double bessi1(double x)
+static double bessI1(double x)
 {
 	double ax,ans;
 	double y;
@@ -160,7 +160,7 @@ static double bessi1(double x)
 	return x < 0.0 ? -ans : ans;
 }
 
-double bessk0(double x)
+double bessK0(double x)
 {
 /*
    M.Abramowitz and I.A.Stegun, Handbook of Mathematical Functions,
@@ -171,7 +171,7 @@ double bessk0(double x)
 
 	if (x <= 2.0) {
 		y=x*x/4.0;
-		ans=(-log(x/2.0)*bessi0(x))+(-0.57721566+y*(0.42278420
+		ans=(-log(x/2.0)*bessI0(x))+(-0.57721566+y*(0.42278420
 			+y*(0.23069756+y*(0.3488590e-1+y*(0.262698e-2
 			+y*(0.10750e-3+y*0.74e-5))))));
 	} else {
@@ -184,13 +184,13 @@ double bessk0(double x)
 }
 
 
-double bessk1(double x)
+double bessK1(double x)
 {
 	double y,ans;
 
 	if (x <= 2.0) {
 		y=x*x/4.0;
-		ans=(log(x/2.0)*bessi1(x))+(1.0/x)*(1.0+y*(0.15443144
+		ans=(log(x/2.0)*bessI1(x))+(1.0/x)*(1.0+y*(0.15443144
 			+y*(-0.67278579+y*(-0.18156897+y*(-0.1919402e-1
 			+y*(-0.110404e-2+y*(-0.4686e-4)))))));
 	} else {
@@ -202,13 +202,13 @@ double bessk1(double x)
 	return  ans;
 }
 
-double bessk2(double x)
+double bessK2(double x)
 {
 	double bk,bkm,bkp,tox;
 
 	tox= 2.0/x;
-	bkm=bessk0(x);
-	bk=bessk1(x);
+	bkm=bessK0(x);
+	bk=bessK1(x);
 	bkp=bkm+tox*bk;
 	bkm=bk;
 	bk=bkp;
@@ -218,13 +218,13 @@ double bessk2(double x)
 double K2pol(double x)
 {
    if(x<0.1) return 1+ 1.875*x*(1+0.4375*x*(1-0.375*x));
-   else      return bessk2(1/x)*exp(1/x)*sqrt(2/M_PI/x);
+   else      return bessK2(1/x)*exp(1/x)*sqrt(2/M_PI/x);
 }
 
 double K1pol(double x)
 {
   if(x<0.1) return 1+ 0.375*x*(1-0.3125*x*(1+0.875*x));
-  else      return bessk1(1/x)*exp(1/x)*sqrt(2/M_PI/x); 
+  else      return bessK1(1/x)*exp(1/x)*sqrt(2/M_PI/x); 
 }
 
 static double  polintN(double x, int n,  double *xa, double *ya)
@@ -614,3 +614,21 @@ double FeldmanCousins(int n0, double b, double cl)
    }    
    return mu;
 }
+
+static double alpha=0.25,cc, p_exp;
+static double ch2pva_int(double f)
+{ 
+  if(f<=0) return 0;
+  return pow(f,(1-alpha)/alpha)* pow(-log(f)/alpha,p_exp)/cc;
+
+}
+
+double ch2pval(int nexp, double ch2obs)
+{
+   p_exp=0.5*nexp-1;  
+   alpha=1/(1+p_exp/log(2));
+  cc=exp(lgamma(nexp/2.))*alpha;
+//   displayFunc(ch2pva_int,0,exp(-alpha*ch2obs/2),"ch2pva_int");   
+   return simpson(ch2pva_int, 0, exp(-alpha*ch2obs/2), 1.E-3);///exp(lgamma(nexp/2.))/alpha;
+}
+

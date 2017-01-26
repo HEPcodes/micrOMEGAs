@@ -48,8 +48,8 @@ static double s_integrandT_(double  sqrtS )
 }   
 
 /*
-bessk2(x) = exp(-x)*sqrt(M_PI/2/x)*K2pol(1/x)
-bessk1(x) = exp(-x)*sqrt(M_PI/2/x)*K1pol(1/x) 
+bessK2(x) = exp(-x)*sqrt(M_PI/2/x)*K2pol(1/x)
+bessK1(x) = exp(-x)*sqrt(M_PI/2/x)*K1pol(1/x) 
 */
 
 static double u_integrand_( double u)
@@ -90,7 +90,7 @@ static double vsigma23integrandT(double *x, double w)
    GG=sqrt(4*M_PI*parton_alpha(sqrtS));
    r*= CI->sqme(1,GG, pvect,NULL,&err);
    bess= sqrt(2*x1*x2/y/M_PI)*exp(-(y-x1-x2))*K1pol(1/y)/(K2pol(1/x1)*K2pol(1/x2));
-//   bess=bessk1(sqrtS/T_)/bessk2(M1/T_)/bessk2(M2/T_);
+//   bess=bessK1(sqrtS/T_)/bessK2(M1/T_)/bessK2(M2/T_);
 
    Rm=sqrtS/M1/M2;   
    
@@ -142,7 +142,7 @@ static double vsigma24integrandT(double *x, double w)
    GG=sqrt(4*M_PI*parton_alpha(sqrtS));
    r*= CI->sqme(1,GG, pvect,NULL,&err);
    bess=    sqrt(2*x1*x2/y/M_PI)*exp(-(y-x1-x2))*K1pol(1/y)/(K2pol(1/x1)*K2pol(1/x2));
-//   bess=bessk1(sqrtS/T_)/bessk2(M1/T_)/bessk2(M2/T_);
+//   bess=bessK1(sqrtS/T_)/bessK2(M1/T_)/bessK2(M2/T_);
 
    Rm=sqrtS/M1/M2;   
    

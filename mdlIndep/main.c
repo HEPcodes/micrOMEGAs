@@ -40,6 +40,7 @@ int main(int argc,char** argv)
    double fracCH[nCH]={0.59,0.12,0.20,0.03, 0.06};
   
    Mcdm=189.0 ;
+   
 
 #ifdef INDIRECT_DETECTION
 { 
@@ -213,12 +214,33 @@ if(forSun)
     {  IC22events(nu,nu_bar, 10, &Nsig,NULL, NULL);
        printf("     csSDp=%.2E[cm^2] ==>  Nsignal=%.2f (TAB_1 column 1)\n",csSDp[k],Nsig);
     } 
-    f_90=fluxFactorIC22( exLev,nu,nu_bar);  
-    printf("     90%%  exclusion limit for csSDp is %.2E[cm^2]\n",csSDp[k]*f_90);
+    f_90=fluxFactorIC22( exLev,nu,nu_bar);
+    printf("      90%%  exclusion limit for csSDp is %.2E[cm^2]\n", csSDp[k]*f_90);
     for(int i=1;i<NZ;i++) {nu[i]*=f_90; nu_bar[i]*=f_90;}
     IC22events(nu,nu_bar, 10,&Nsig,NULL,NULL);
-    printf("     90%% exclusion limit for number of signal events: %.2f \n",Nsig/1.2);
+    printf("      90%% exclusion limit for number of signal events: %.2f \n",Nsig/1.2);
+
+#ifdef SIGNAL_SIMULATION     
+    { 
+      double xx[15]={},dxx[15];
+      double x_=0;
+      for(i=0;i<1000;i++) 
+      {  double f_90_=fluxFactorIC22_random( exLev,nu,nu_bar);      
+         int n=f_90_*5;
+         x_+=f_90_;
+         if(n<15) xx[n]++;
+      } 
+      x_/=1000;  
+      for(i=0;i<15;i++)  dxx[i]=sqrt(xx[i]);
+      for(i=0;i<15;i++)  { xx[i]/=1000;  dxx[i]/=1000;}
+      char s[1000];
+      sprintf(s,"Mcdm=%.0f csSDp_exp=%.2E  <csSDp>=%.2E \n",Mdm[k], csSDp[k]*f_90,x_*csSDp[k]*f_90);
+      displayPlot(s,0,csSDp[k]*f_90*3,"csSDp",15,1,xx,dxx,"N");
+    } 
+#endif     
  }
+ 
+ 
 }  
 
   

@@ -894,7 +894,7 @@ double * dNdE)
       
      NfracCDM2=  fracCDM2*Mcdm1/(fracCDM2*Mcdm1 +(1-fracCDM2)*Mcdm2);      
      
-     for(i=0;i<NZ;i++) dNdE[i]=(NfracCDM2-1)*dNdE1[i]+ NfracCDM2*dNdE[i];
+     for(i=0;i<NZ;i++) dNdE[i]=(1-NfracCDM2)*dNdE1[i]+ NfracCDM2*dNdE[i];
      free(dNdE1); 
      return r1*(NfracCDM2-1)+r2*NfracCDM2;
    }

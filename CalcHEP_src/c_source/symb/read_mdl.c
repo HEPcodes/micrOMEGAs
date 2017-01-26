@@ -546,6 +546,7 @@ static int  readparticles(int  check, int ugForce )
             return 0;
          }
       }
+      
       prtclbase[nparticles-1].spin=itmp;
       
       if( 1!=sscanf(numtxt,"%ld",&prtclbase[nparticles-1].N)) prtclbase[nparticles-1].N=0;
@@ -1134,11 +1135,12 @@ exi:;
 static int find3charge(void)
 {
   int i,cont;
+  int photon=-1;
   for(i=0;i<nparticles;i++) if(prtclbase[i].nHerm) prtclbase[i].q3=0;
 
   for(cont=1;cont;)
   { cont=0;  
-    for(i=0;i<nparticles;i++) if(/*prtclbase[i].hlp!='*' && */  ghostmother(i+1)==i+1 && prtclbase[i].q3==unknownQ3)
+    for(i=0;i<nparticles;i++) if(ghostmother(i+1)==i+1 && prtclbase[i].q3==unknownQ3)
     { decaylink dec=prtclbase[i].top;
       for(;dec;dec=dec->next)
       { int j,ch,br ;
@@ -1148,8 +1150,35 @@ static int find3charge(void)
           { prtclbase[i].q3=ch; cont=1;
             if(i+1 !=prtclbase[i].anti) prtclbase[prtclbase[i].anti-1].q3=-prtclbase[i].q3;
             break;
-          }          
+          } 
       }
+    }
+    
+    if(cont==0 &&  photon!=-2)
+    { 
+      if(photon==-1) for(photon=0;photon<nparticles;photon++)
+      {
+        if( ghostmother(photon+1)==photon+1 && prtclbase[photon].N==22) break;
+           
+      }
+      if(photon==nparticles) photon=-2;      	
+      if(photon>=0) for(i=0;i<nparticles;i++) if(ghostmother(i+1)==i+1 && prtclbase[i].q3==unknownQ3)
+      {  decaylink dec=prtclbase[i].top;
+         int i_=prtclbase[i].anti-1;
+        
+         for(;dec;dec=dec->next)
+         {  
+            if(dec->part[2]==0 && ( (dec->part[0]-1==photon && dec->part[1]-1==i)
+                                 || (dec->part[1]-1==photon && dec->part[0]-1==i))) break;                   
+         }
+         if(dec==NULL)
+         {  prtclbase[i].q3=0;
+            prtclbase[i_].q3=0;
+printf(" zero charge %s %s\n", prtclbase[i].name,prtclbase[i_]);            
+            cont=1;
+         }             
+      }
+      photon=-2;
     }
   }
     

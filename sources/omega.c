@@ -1420,7 +1420,7 @@ double darkOmega(double * Xf, int Fast, double Beps)
   Xf1=Xt;
   
   Tstart=Mcdm/Xt;
-printf("Tstart=%e\n",Tstart);
+//printf("Tstart=%e\n",Tstart);
 
 //printf("Yt=%E deltaY=%E\n", Yt,deltaY);
   
@@ -1567,7 +1567,7 @@ static double geff1_(double T)
        double M=inMass[k];
        t=T/M;
        if(t<0.1) bsk2=K2pol(t)*exp((Mcdm1-M)/T)*sqrt(M_PI*t/2);
-        else     bsk2=bessk2(1/t)*exp(Mcdm1/T);
+        else     bsk2=bessK2(1/t)*exp(Mcdm1/T);
        sum+=inG[k]*M*M*bsk2;
      }
    }      
@@ -1584,7 +1584,7 @@ static double geff2_(double T)
        double M=inMass[k];
        t=T/M;
        if(t<0.1) bsk2=K2pol(t)*exp(-1/t+Mcdm2/T)*sqrt(M_PI*t/2);
-        else     bsk2=bessk2(1/t)*exp(Mcdm2/T);
+        else     bsk2=bessK2(1/t)*exp(Mcdm2/T);
        sum+=inG[k]*M*M*bsk2;
      }
    }  
@@ -1607,7 +1607,7 @@ static double s_integrandT(double  sqrtS )
    sv_tot=sigma(PcmIn);         
    t=T_/sqrtS; 
    if(t<0.1) bsk1=K1pol(t)*exp(-1/t+McdmSum/T_)*sqrt(M_PI*t/2);
-   else      bsk1=bessk1(sqrtS/T_)*exp(McdmSum/T_);
+   else      bsk1=bessK1(sqrtS/T_)*exp(McdmSum/T_);
       
    res= sqrtS*sqrtS*(PcmIn*PcmIn)*sv_tot*bsk1/T_;
    return res;
