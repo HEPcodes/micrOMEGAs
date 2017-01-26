@@ -308,7 +308,7 @@ int main(int argc,char ** argv)
         if(k==16)
         {  fprintf(lun1,"DECAY %d  %E # %s \n",pIn,width,slhaComment);
            for(j=1; allDecays(i,j,&pIn, &len,pOut,&width,&br);j++)
-           { fprintf(lun1," %E  %d ",br, len);
+           { fprintf(lun1,"   %E  %d ",br, len);
              for(k=0;k<len;k++) fprintf(lun1," %d ",pOut[k]);
              fprintf(lun1," # %s \n",slhaComment);
            }

@@ -28,6 +28,15 @@ char * pdg2name(int pdg)
   return NULL;
 } 
 
+char * antiParticle(char*name)
+{  int i; 
+   for(i=0;i<nModelParticles;i++) 
+   { if(strcmp(ModelPrtcls[i].name,name)==0) return ModelPrtcls[i].aname;
+     if(strcmp(ModelPrtcls[i].aname,name)==0) return ModelPrtcls[i].name;
+   }      
+   return NULL;
+} 
+   
 double pMass(char * name)
 {
   char *nm;
@@ -64,6 +73,8 @@ int qNumbers(char*pname, int *spin2, int * charge3, int * cdim)
   }
   return pdg;
 }
+
+
 
 REAL * varAddress(char *name)
 {int i;

@@ -112,7 +112,7 @@ static double  cross_section(double  x)
   calcscalars(x);
   for(i=0;i<16;i++) pvect4_[i]=pvect4[i];
  
-  Scale(pvect4_,&qR,&qF1,&qF2,&qS);
+  Scale(Nsub,pvect4_,&qR,&qF1,&qF2,&qS);
   GG=sqrt(4*M_PI*alpha_2(qR));
       
   r = sqme_int( Nsub,GG,pvect4,NULL,&err_code)*usrFF(2,2,pvect4_,p_names,p_codes);

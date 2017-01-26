@@ -109,7 +109,7 @@ double int_cteq6(double x, double q, pdtStr * W)
   double * q_grid=W->q_grid_aux;
   double * x_grid=W->x_grid_aux;
   int pq = leftX(W->nq, q_grid, loglogQ)-1;
-  int px = leftX(W->nx, W->x_grid_aux, x3)-1; 
+  int px = leftX(W->nx, W->x_grid_aux, x3)-1;
   int i;
   int qExt=0;
   int xExt=0;
@@ -131,9 +131,9 @@ double int_cteq6(double x, double q, pdtStr * W)
          tmp[i]= polint(x3,4,x_grid,ftmp)/(x*x);
       }         
   }
-
-  if(qExt) return  polint(loglogQ,4,q_grid+pq,tmp); 
-      else return  qSplineCteq6(loglogQ,q_grid+pq,tmp);
+             
+  if(qExt) return polint(loglogQ,4,q_grid+pq,tmp); 
+      else return qSplineCteq6(loglogQ,q_grid+pq,tmp);
 }
 
 
@@ -211,6 +211,7 @@ int getPdtData(char * file, int n_parton, pdtStr * data )
   if(!f) return -1;
 //printf("getPdtData (%d)   %s\n",n_parton,file);
   data->index=0;
+  data->set=0;
   data->nq=0;
   data->nx=0;
   data->x_grid=NULL;
@@ -242,7 +243,9 @@ int getPdtData(char * file, int n_parton, pdtStr * data )
     
     fscanf(f,"%s",buff);
     if(!strcmp(buff,"Index"))
-    {  if(1!=fscanf(f,"%d",&data->index)) goto errexit;} 
+    {  if(1!=fscanf(f,"%d",&data->index)) goto errexit;}
+    else if(!strcmp(buff,"Set"))
+    { if(1!=fscanf(f,"%d",&data->set)) goto errexit;} 
     else if(!strcmp(buff,"Mass"))
     {  if(1!=fscanf(f,"%lf",&data->mass)) goto errexit;}  
     else if(!strcmp(buff,"Q_grid"))
@@ -276,8 +279,7 @@ int getPdtData(char * file, int n_parton, pdtStr * data )
        data->x_grid=malloc(nx*sizeof(double));
        fseek(f,fpos,SEEK_SET);
        for(i=0;i<nx;i++) fscanf(f,"%lf", data->x_grid+i);
-       for(i=1;i<nx;i++) if(data->x_grid[i-1]>=data->x_grid[i])
-                goto errexit;   
+       for(i=1;i<nx;i++) if(data->x_grid[i-1]>=data->x_grid[i]) goto errexit;   
     }
     else if(!strcmp(buff,"Alpha"))    
     {  if(!data->q_grid)  goto errexit; 
@@ -290,7 +292,7 @@ int getPdtData(char * file, int n_parton, pdtStr * data )
        data->strfun=malloc(nn*sizeof(double));
        for(i=0;i<nn;i++) 
        if(fscanf(f,"%lf", data->strfun+i)!=1) goto errexit; 
-       if( fscanf(f,"%lf", &qq)==1)  goto errexit;
+       if(fscanf(f,"%lf", &qq)==1)  goto errexit;
 //{ int i; for(i=0;i<10;i++) printf(" %E ", data->strfun[i]);
 //  printf("\n");
 // }       
@@ -303,7 +305,7 @@ int getPdtData(char * file, int n_parton, pdtStr * data )
   
 //printf("q_grid=%p x_grid-%p\n", data->q_grid, data->x_grid);
   
-  if(data->strfun==NULL) {printf("AIII\n");  errNo=-2; goto errexit;}  
+  if(data->strfun==NULL) {errNo=-2; goto errexit;}  
 //printf("ok11\n"); 
 
   if(data->x_min==0.) data->x_min=data->x_grid[0];
@@ -314,22 +316,16 @@ int getPdtData(char * file, int n_parton, pdtStr * data )
     data->q_max=data->q_grid[data->nq-1];
 
     for(i=0;i<nq;i++) if(data->q_grid[i]<data->q_threshold) data->qt0=i+1;
-
  
     data->lq_grid=(double*)malloc(sizeof(double)*nq);
 
     for(i=0;i<nq;i++)data->lq_grid[i]=log(data->q_grid[i]);
-
-/*
-    if(data->q_grid[0]<=0) data->q_grid[0]=-10; else data->q_grid[0]=log(data->q_grid[0]);
-    for(i=1;i<nq;i++)data->q_grid[i]=log(data->q_grid[i]);   
-*/
   }
   
   if(data->x_grid)
   { int i;
     data->lx_grid=(double*)malloc(sizeof(double)*nx);
-    for(i=1;i<nx;i++)data->lx_grid[i]=log(data->x_grid[i]);
+    for(i=0;i<nx;i++)data->lx_grid[i]=log(data->x_grid[i]);
   }
    
   if(data->interpolation == &int_cteq6) 

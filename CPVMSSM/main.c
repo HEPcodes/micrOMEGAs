@@ -143,6 +143,8 @@ int main(int argc,char** argv)
   if(LspNlsp_LEP(NULL)) printf("LEP excluded by e+,e- -> DM q qbar Cross Section=%2E pb\n",csLim);
 }
 #endif
+
+      
   
 #ifdef HIGGSBOUNDS
 { int NH0=3, NHch=1;
@@ -160,13 +162,15 @@ int main(int argc,char** argv)
 {  double m2logL, m2logL_reference=0,pvalue;
    int exp_ndf,n_par=0,ndf;
    char call_lilith[100], Lilith_version[20];
-
    if(LiLithF("Lilith_in.xml"))
    {        
 #include "../include/Lilith.inc"
-      printf("LILITH(DB%s):  -2*log(L): %.2f; -2*log(L_reference): %.2f; ndf: %d; p-value: %.2E \n", 
-      Lilith_version,m2logL,m2logL_reference,ndf,pvalue);
-   } else printf("LILITH: there is no Higgs candidate\n");
+      if(ndf)
+      {
+        printf("LILITH(DB%s):  -2*log(L): %.2f; -2*log(L_reference): %.2f; ndf: %d; p-value: %.2E \n", 
+        Lilith_version,m2logL,m2logL_reference,ndf,pvalue);
+      }  
+   }  else printf("LILITH: there is no Higgs candidate\n");
 }     
 #endif
 
@@ -175,7 +179,11 @@ int main(int argc,char** argv)
 {  int result=0;
    double Rvalue=0;
    char analysis[30]={},topology[30]={}; 
+   pythonversion_(&n1,&n2);
+   if(n1==2)
+   {
 #include "../include/SMODELS.inc" 
+   } else printf("SMODELS  can not work with Python version 3\n"); 
 }   
 #endif 
 
@@ -195,7 +203,7 @@ int main(int argc,char** argv)
   printf("\n==== Calculation of relic density =====\n");  
   Omega=darkOmega(&Xf,fast,Beps);
   printf("Xf=%.2e Omega=%.2e\n",Xf,Omega);
-  printChannels(Xf,cut,Beps,1,stdout);
+  if(Omega>0)printChannels(Xf,cut,Beps,1,stdout);
   
   VZdecay=1; VWdecay=1; cleanDecayTable();  // restore default  
 }
@@ -443,16 +451,24 @@ if(forSun) printf("IceCube22 exclusion confidence level = %.2E%%\n", 100*exLevIC
 
 #ifdef CROSS_SECTIONS
 {
-  double cs, Pcm=4000, Qren,Qfact=pMass("~o2"),pTmin=0;
-  int nf=3;
-
-  printf("pp collision at sqrt(s)= %.2E GeV\n",2*Pcm);  
-
-  Qren=Qfact;
-  cs=hCollider(Pcm,1,nf,Qren, Qfact, "~o1","~o2",pTmin,1);
-  printf("cs(pp->~o1,~o2)=%.2E[pb]\n",cs);
+  char* next,next_;
+  double nextM;
+    
+  next=nextOdd(1,&nextM); 
+  if(next && nextM<1000)  
+  { 
+     double cs, Pcm=6500, Qren, Qfact, pTmin=0;
+     int nf=3;
+     char*next_=antiParticle(next);
+     Qren=Qfact=nextM; 
+ 
+     printf("\npp > nextOdd  at sqrt(s)=%.2E GeV\n",2*Pcm);  
+  
+     Qren=Qfact;
+     cs=hCollider(Pcm,1,nf,Qren, Qfact, next,next_,pTmin,1);
+     printf("Production of 'next' odd particle: cs(pp-> %s,%s)=%.2E[pb]\n",next,next_, cs);
+  }  
 }
-
 #endif
 
 #ifdef CLEAN

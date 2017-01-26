@@ -54,7 +54,7 @@ static void writeEvent(double *x,  double  w)
    mkmom(x, &factor_0,&x1,&x2,pvectR);
    
    for(i=0;i<4*(nin_int+nout_int);i++) pvect[i]=pvectR[i];   
-   Scale(pvect,&qR,&qF1,&qF2,&qS);
+   Scale(Nsub,pvect,&qR,&qF1,&qF2,&qS);
    
    if(cb_pow)
    {  double sum=0;
@@ -370,7 +370,7 @@ static double func_(double *x, double wgt)
     factor_0 *= calcCutFactor(pvect)*usrFF(nin_int,nout_int,pvect,p_names,p_codes); 
     if (!factor_0)   goto exi;
 
-    Scale(pvect,&qR,&qF1,&qF2,&qS);
+    Scale(Nsub,pvect,&qR,&qF1,&qF2,&qS);
 /* **  structure function  multiplication */
     if (nin_int == 2) 
     {

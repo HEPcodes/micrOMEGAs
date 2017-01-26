@@ -10,6 +10,7 @@ C#define CONSTRAINTS
 C     Display  deltarho, B_>sgamma, Bs->mumu, gmuon and
 C     check LEP mass limits 
 
+
 C#define HIGGSBOUNDS 
 #define LILITH
 C#define SMODELS 
@@ -102,7 +103,7 @@ C for SMODELS
       character*30 analysis,topology,smodels_version
 C for LILITH 
       real*8 m2logL, m2logL_reference,pvalue
-      integer exp_ndf,n_par,ndf
+      integer exp_ndf,n_par,ndf,vPython1, vPython2
       character*100 call_lilith
       character*10 lilith_version
       
@@ -122,6 +123,12 @@ C for DECAYS
        character*20 pname
 C for LoopGAMMA
        real*8 vcs_gg,vcs_zg
+
+C   for CROSS_SECTION
+       character*10 next
+       character*10 next_
+       real*8 nextM 
+
  
       write(*,*)
       write(*,*) '========= EWSB scale input For CPVMSSM ========='
@@ -198,8 +205,9 @@ C     Call writeLesH('slha.out')
       write(*,fmt='("SUSY mass diff. Bs-bar{Bs}=",1PE10.2)') deltMs()  
       if(Zinvisible().ne.0) write(*,*) "Excluded by Z->invisible"
       if(LspNlsp_LEP(csLim).ne.0) write(*,fmt='("Excluded by LEP  by e+,e- -> DM q qbar, Cross section=",E10.2,"pb")') csLim 
-
 #endif
+
+
 
 #ifdef HIGGSBOUNDS
       call system("cp cpsuperh2_slha.out HB.in");
@@ -216,7 +224,9 @@ C     Call writeLesH('slha.out')
          m2logL_reference=0
          n_par=0
 #include "../include/Lilith.inc_f"
-         write(*,fmt='("LILITH(DB",A,"):  -2*log(L): ",F5.2,"; -2*log(L_reference): ",F5.2,"; ndf: ",I3"; p-value: ",F5.2)')  lilith_version, m2logL,m2logL_reference,ndf,pvalue
+         if(ndf.ne.0) then 
+            write(*,fmt='("LILITH(DB",A,"):  -2*log(L): ",F5.2,"; -2*log(L_reference): ",F5.2,"; ndf: ",I3"; p-value: ",F5.2)')  lilith_version, m2logL,m2logL_reference,ndf,pvalue
+         endif
       else 
          write(*,*) "LILITH: there is no Higgs candidate"
       endif     
@@ -252,7 +262,7 @@ C     call setVVdecay(2,2)
       Omega=darkOmega(Xf,fast,Beps)
       write(*,fmt='(a,3x,1PE10.2)') 'Omega=',Omega
 
-      OmegaAppr=printChannels(Xf,cut,Beps,1,6)
+      if(Omega.gt.0) OmegaAppr=printChannels(Xf,cut,Beps,1,6)
 C restore default VZdecay and VWdecay
        call  setVVdecay(1,1)
 #endif
@@ -486,14 +496,18 @@ C ======  Contained events
 
 #ifdef CROSS_SECTIONS
       write(*,*)
-      write(*,*)'======Calculations of cross sections======='
-      write(*,*) ' Process p,p -> ~o1,~o2'
-      Pcm=4000 
-      Qren=pMass("~o2")
-      Qfact=Qren
-      pTmin=0
-      cs=hCollider(Pcm,1,3,Qren, Qfact, "~o1","~o2",pTmin,1)
-      write(*,fmt="(1PE8.2,'[pb]')") cs     
+      call nextOdd( next,1, nextM)
+      if((next(1:1).ne.' ') .and. (nextM.lt.1000)) then 
+         call antiparticle(next_,next)
+         write(*,*)'======Calculations of cross sections======='
+         write(*,*) ' Process p,p -> ', next,next_
+         Pcm=6500 
+         Qren=nextM
+         Qfact=Qren
+         pTmin=0
+         cs=hCollider(Pcm,1,3,Qren, Qfact, next,next_,pTmin,1)
+         write(*,fmt="('total cross section  ', 1PE8.2,'[pb]')") cs 
+      endif    
 #endif
 
 #ifdef CLEAN

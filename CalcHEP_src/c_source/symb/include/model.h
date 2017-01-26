@@ -17,6 +17,7 @@ typedef struct varrec
   double     varvalue;
   int        pwidth;
   char *     func;
+  int        line;
 } varrec;
 typedef struct varrec *varlist;
                         

@@ -17,7 +17,7 @@ int LiLithF(char*fname)
 
   double mass = pMass("h");
 
-  if(mass < 123. || mass > 128.) return 0;
+  if(mass < 123 || mass > 128) return 0;
 
   f=fopen(fname,"w");
   

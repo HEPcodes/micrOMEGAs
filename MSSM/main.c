@@ -30,11 +30,10 @@
       /* Display  deltarho, B_>sgamma, Bs->mumu, gmuon and
          check LEP mass limits 
       */ 
-
 //#define HIGGSBOUNDS 
 #define LILITH
 #define SMODELS
-       
+//#define MONOJET       
 
 #define OMEGA            
       /* Calculate relic density and display contribution of
@@ -118,6 +117,7 @@ int main(int argc,char** argv)
 // sysTimeLim=1000; 
   ForceUG=0;   /* to Force Unitary Gauge assign 1 */
 //  nPROCSS=0; /* to switch off multiprocessor calculations */
+
 /*
    if you would like to work with superIso
     setenv("superIso","./superiso_v3.1",1);  
@@ -353,28 +353,40 @@ int main(int argc,char** argv)
 {  double m2logL, m2logL_reference=0,pvalue;
    int exp_ndf,n_par=0,ndf;
    char call_lilith[100], Lilith_version[20];
-
    if(LiLithF("Lilith_in.xml"))
    {        
 #include "../include/Lilith.inc"
-      printf("LILITH(DB%s):  -2*log(L): %.2f; -2*log(L_reference): %.2f; ndf: %d; p-value: %.2E \n",
-      Lilith_version,m2logL,m2logL_reference,ndf,pvalue);
+      if(ndf)
+      {
+        printf("LILITH(DB%s):  -2*log(L): %.2f; -2*log(L_reference): %.2f; ndf: %d; p-value: %.2E \n",
+        Lilith_version,m2logL,m2logL_reference,ndf,pvalue);
+      }  
    } else printf("LILITH: there is no Higgs candidate\n");
 }     
 #endif
 
 
 #ifdef SMODELS
-{  int result=0;
-   double Rvalue=0;
-   char analysis[30]={},topology[30]={}; 
+{    
+  int result=0;
+  double Rvalue=0;
+  char analysis[30]={},topology[30]={}; 
 #include "../include/SMODELS.inc" 
+ 
 }   
 #endif 
 
+#ifdef MONOJET
+{ double CL=monoJet();
+  printf(" Monojet signal exclusion CL is %.3e\n", CL);
+}  
+#endif
+
+
+
 
 #ifdef OMEGA
-{ int fast=0;
+{ int fast=1;
   double Beps=1.E-5, cut=0.01;
   double Omega,Xf=25; 
   
@@ -390,8 +402,7 @@ int main(int argc,char** argv)
 
    Omega=darkOmega(&Xf,fast,Beps);
    printf("Xf=%.2e Omega=%.2e\n",Xf,Omega);
-
- printChannels(Xf,cut,Beps,1,stdout);
+   if(Omega>0)printChannels(Xf,cut,Beps,1,stdout);
 
 // direct access for annihilation channels 
 
@@ -412,7 +423,6 @@ if(omegaCh){
 }
 #endif
 
- VZdecay=0; VWdecay=0; cleanDecayTable();
  
 
 #ifdef INDIRECT_DETECTION
@@ -679,6 +689,7 @@ if(forSun)printf("IceCube22 exclusion confidence level = %.2E%%\n", 100*exLevIC2
    printf("\n%s :   total width=%.2E \n and Branchings:\n",pname,width);
    printTxtList(L,stdout);            
 
+   printf("Example of 1->3 decay:\n"); 
    numout*cc=newProcess("~o2->~o1,e,E");
    int err;
    printf("width(~o2->~o1,e,E)=%e\n", pWidthCC(cc,&err));
@@ -688,15 +699,23 @@ if(forSun)printf("IceCube22 exclusion confidence level = %.2E%%\n", 100*exLevIC2
 
 #ifdef CROSS_SECTIONS
 {
-  double cs, Pcm=4000, Qren,Qfact=pMass("~o2"),pTmin=0;
-  int nf=3;
-
-  printf("pp collision at sqrt(s)=%.2E GeV\n",2*Pcm);  
+  char* next,next_;
+  double nextM;
+    
+  next=nextOdd(1,&nextM); 
+  if(next && nextM<1000)  
+  { 
+     double cs, Pcm=6500, Qren, Qfact, pTmin=0;
+     int nf=3;
+     char*next_=antiParticle(next);
+     Qren=Qfact=nextM; 
+ 
+     printf("\npp > nextOdd  at sqrt(s)=%.2E GeV\n",2*Pcm);  
   
-  Qren=Qfact;
-  cs=hCollider(Pcm,1,nf,Qren, Qfact, "~o1","~o2",pTmin,1);
-  printf("cs(pp->~o1,~o2)=%.2E[pb]\n",cs);
-  
+     Qren=Qfact;
+     cs=hCollider(Pcm,1,nf,Qren, Qfact, next,next_,pTmin,1);
+     printf("Production of 'next' odd particle: cs(pp-> %s,%s)=%.2E[pb]\n",next,next_, cs);
+  }  
 }
 #endif
 

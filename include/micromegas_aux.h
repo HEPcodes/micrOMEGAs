@@ -157,6 +157,8 @@ extern int initPDFconv(void);
 extern double FeldmanCousins(int n0, double b, double cl);
 extern double ch2pval(int nexp, double ch2obs);
 
+//  python
+void  pythonversion_(int *n1,int *n2);
 
 //  LHAPDF
 

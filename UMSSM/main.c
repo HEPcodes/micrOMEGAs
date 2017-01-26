@@ -7,7 +7,7 @@
   /* Display information about mass spectrum  */
 
 #define CONSTRAINTS     
-      /* Display  deltarho, B_>sgamma, Bs->mumu, gmuon, Z1->inv,
+      /* Display  deltarho, B and K observables, gmuon, Z1->inv,
          check LEP mass limits and Zprime limits
       */
 
@@ -116,11 +116,24 @@ int main(int argc,char** argv)
            
   
   err=sortOddParticles(cdmName);
+  if(err) { printf("Can't calculate %s\n",cdmName); return 1;}
 
+   int PDG_LSP=qNumbers(cdmName, &spin2, &charge3, &cdim);
+   printf("\nDark matter candidate is '%s' with spin=%d/2\n",
+    cdmName,       spin2); 
+   if(charge3) { printf("Dark Matter has electric charge %d/3\n",charge3); exit(1);}
+   if(cdim!=1) { printf("Dark Matter is a color particle\n"); exit(1);}
+
+   if(strcmp(cdmName,"~o1")) printf("~o1 is not CDM\n"); 
+   else o1Contents(stdout);
    
-  err=umssmtools();      
+  err=umssmtools(PDG_LSP);
+  if(err) { printf("An error occurred running umssmtools.\n"); return 1;}
   slhaWarnings(stdout);
-   
+
+//Get the corrected Higgs branching ratios from UMSSMTools :
+slhaRead("UMSSM_decay.dat",1);
+
 #ifdef MASSES_INFO
 {
   printf("\n=== MASSES OF HIGGS AND SUSY PARTICLES: ===\n");
@@ -128,15 +141,6 @@ int main(int argc,char** argv)
   printMasses(stdout,1);
 }
 #endif
-
-  
-  if(err) { printf("Can't calculate %s\n",cdmName); return 1;}
-  
-   qNumbers(cdmName, &spin2, &charge3, &cdim);
-   printf("\nDark matter candidate is '%s' with spin=%d/2\n",
-    cdmName,       spin2); 
-   if(charge3) { printf("Dark Matter has electric charge %d/3\n",charge3); exit(1);}
-   if(cdim!=1) { printf("Dark Matter is a color particle\n"); exit(1);}
  
 #ifdef STABLE_NLSP
 {
@@ -153,12 +157,6 @@ int main(int argc,char** argv)
     }
 }
 #endif
-
-   if(strcmp(cdmName,"~o1")) printf("~o1 is not CDM\n"); 
-   else o1Contents(stdout);
-  
-//Get the corrected Higgs branching ratios from UMSSMTools :
-slhaRead("UMSSM_decay.dat",1);  
 
 
 #ifdef OMEGA
@@ -177,7 +175,7 @@ slhaRead("UMSSM_decay.dat",1);
   sortOddParticles(cdmName);
   Omega=darkOmega(&Xf,fast,Beps);
   printf("Xf=%.2e Omega=%.2e\n",Xf,Omega);
-  printChannels(Xf,cut,Beps,1,stdout);
+  if(Omega>0)printChannels(Xf,cut,Beps,1,stdout);
 
 // direct access for annihilation channels 
 /*
@@ -195,43 +193,77 @@ if(omegaCh){
 
 
 #ifdef CONSTRAINTS
-{ double constr0,constrM, constrP,cs;
+{ double constr0,constrM, constrP,csLim;
   slhaRead("UMSSM_spectr.dat",0);
   printf("\n\n================================\n");
   printf("==== Physical Constraints: =====\n");
   printf("================================\n");
   printf("deltartho = %.2E\n",deltarho());
 
-  constr0=bsgnlo(&constrM,&constrP);
-  printf("B->s,gamma = %.2E (%.2E , %.2E ) \n",constr0,constrM, constrP );
+  constr0=bsg(&constrM,&constrP);
+  printf("b  -> s gamma     = %.2E (%.2E , %.2E) \n",constr0,constrM, constrP );
 
-  constr0= bsmumu(&constrM,&constrP);
-  printf("Bs->mu,mu  = %.2E (%.2E , %.2E ) \n",constr0,constrM, constrP );
+  constr0=bsmumu(&constrM,&constrP);
+  printf("Bs -> mu+ mu-     = %.2E (%.2E , %.2E) \n",constr0,constrM, constrP );
   
   constr0=btaunu(&constrM,&constrP);
-  printf("B+->tau+,nu= %.2E (%.2E , %.2E ) \n",constr0, constrM, constrP );
+  printf("B+ -> tau+ nu_tau = %.2E (%.2E , %.2E) \n",constr0, constrM, constrP );
   
   constr0=deltamd(&constrM,&constrP);
-  printf("deltaMd    = %.2E (%.2E , %.2E ) ps^-1\n",constr0,constrM, constrP );
+  printf("delta M_d         = %.2E (%.2E , %.2E) ps^-1\n",constr0,constrM, constrP );
 
   constr0=deltams(&constrM,&constrP);
-  printf("deltaMs    = %.2E (%.2E , %.2E ) ps^-1\n",constr0,constrM, constrP );
+  printf("delta M_s         = %.2E (%.2E , %.2E) ps^-1\n",constr0,constrM, constrP );
 
   constr0=gmuon(&constrM,&constrP);
-  printf("(g-2)/BSM = %.2E (%.2E , %.2E ) \n",constr0,constrM, constrP );
+  printf("(g-2)/BSM         = %.2E (%.2E , %.2E) \n",constr0,constrM, constrP );
 
-  constr0=bxismulow(&constrM,&constrP);
-  printf("B-->X_s mu+ mu for low M_{l+l-}^2 = %.2E (%.2E , %.2E ) \n",constr0,constrM, constrP );
+  constr0=bxislllow(&constrM,&constrP);
+  printf("B  -> X_s l+ l- for low M_{l+l-}^2  = %.2E (%.2E , %.2E) \n",constr0,constrM, constrP );
   
-  constr0=bxismuhigh(&constrM,&constrP);
-  printf("B-->X_s mu+ mu for high M_{l+l-}^2 = %.2E (%.2E , %.2E ) \n",constr0,constrM, constrP );   
+  constr0=bxisllhigh(&constrM,&constrP);
+  printf("B  -> X_s l+ l- for high M_{l+l-}^2 = %.2E (%.2E , %.2E) \n",constr0,constrM, constrP );
+
+  constr0=bdg(&constrM,&constrP);
+  printf("b  -> d gamma     = %.2E (%.2E , %.2E) \n",constr0,constrM, constrP );
+
+  constr0=bdmumu(&constrM,&constrP);
+  printf("Bd -> mu+ mu-     = %.2E (%.2E , %.2E) \n",constr0,constrM, constrP );
+  
+  constr0=bxisnunu(&constrM,&constrP);
+  printf("B  -> Xs nu_L nubar_L = %.2E (%.2E , %.2E) \n",constr0,constrM, constrP );
+  
+  constr0=bpkpnunu(&constrM,&constrP);
+  printf("B+ -> K+ nu_L nubar_L = %.2E (%.2E , %.2E) \n",constr0,constrM, constrP );
+  
+  constr0=bksnunu(&constrM,&constrP);
+  printf("B  -> Ks nu_L nubar_L = %.2E (%.2E , %.2E) \n",constr0,constrM, constrP );
+  
+  constr0=rdtaul(&constrM,&constrP);
+  printf("RD  = BR[B+ -> D  tau+ nu_tau]/BR[B+ -> D  l+ nu_l] = %.2E (%.2E , %.2E) \n",constr0,constrM, constrP );
+  
+  constr0=rdstaul(&constrM,&constrP);
+  printf("RD* = BR[B+ -> D* tau+ nu_tau]/BR[B+ -> D* l+ nu_l] = %.2E (%.2E , %.2E) \n",constr0,constrM, constrP );
+  
+  constr0=kppipnunu(&constrM,&constrP);
+  printf("K+ -> Pi+ nu_L nubar_L = %.2E (%.2E , %.2E) \n",constr0,constrM, constrP );
+  
+  constr0=klpi0nunu(&constrM,&constrP);
+  printf("KL -> Pi0 nu_L nubar_L = %.2E (%.2E , %.2E) \n",constr0,constrM, constrP );
+  
+  constr0=deltamk(&constrM,&constrP);
+  printf("delta M_K              = %.2E (%.2E , %.2E) ps^-1\n",constr0,constrM, constrP );
+  
+  constr0=epsk(&constrM,&constrP);
+  printf("eps_K                  = %.2E (%.2E , %.2E) \n",constr0,constrM, constrP );
 
   if(masslimits()==0) printf("LEP limits OK\n");
   if(Zprimelimits()==0) {printf("LHC limits on new Zprime OK\n");}
   if(Zinvisible()) printf("Excluded by Z->invisible\n");
-  if(LspNlsp_LEP(&cs)) printf("Excluded by LEP  by e+,e- -> DM q qbar. Cross section =%.2E [pb] \n",cs);  
+  if(LspNlsp_LEP(&csLim)) printf("Excluded by LEP  by e+,e- -> DM q qbar. Cross section =%.2E [pb] \n",csLim);  
 }
 #endif
+
 
 #ifdef HIGGSBOUNDS
 {
@@ -258,8 +290,10 @@ if(omegaCh){
    if(LiLithF("Lilith_in.xml"))
    {        
 #include "../include/Lilith.inc"
-      printf("LILITH(DB%s):  -2*log(L): %.2f; -2*log(L_reference): %.2f; ndf: %d; p-value: %.2E \n", 
-      Lilith_version,m2logL,m2logL_reference,ndf,pvalue);
+     if(ndf)
+     { printf("LILITH(DB%s):  -2*log(L): %.2f; -2*log(L_reference): %.2f; ndf: %d; p-value: %.2E \n", 
+       Lilith_version,m2logL,m2logL_reference,ndf,pvalue);
+     }  
    } else printf("LILITH: there is no Higgs candidate\n");
 }     
 #endif
@@ -518,18 +552,25 @@ Emin=0.1;
 
 #ifdef CROSS_SECTIONS
 {
-  double cs, Pcm=4000, Qren,Qfact,pTmin=200;
-  int nf=3;
-  
-  Qfact=pMass(CDM1);
-  Qren=pTmin;
-
-  printf("pp -> DM,DM +jet(pt>%.2E GeV)  at sqrt(s)=%.2E GeV\n",pTmin,2*Pcm);  
-  
-  cs=hCollider(Pcm,1,nf,Qren, Qfact, CDM1,aCDM1,pTmin,1);
-  printf("cs(pp->~o1,~o2)=%.2E[pb]\n",cs);
+  char* next,next_;
+  double nextM;
+    
+  next=nextOdd(1,&nextM); 
+  if(next && nextM<1000)  
+  { 
+     double cs, Pcm=6500, Qren, Qfact, pTmin=0;
+     int nf=3;
+     char*next_=antiParticle(next);
+     Qren=Qfact=nextM; 
  
+     printf("\npp > nextOdd  at sqrt(s)=%.2E GeV\n",2*Pcm);  
+  
+     Qren=Qfact;
+     cs=hCollider(Pcm,1,nf,Qren, Qfact, next,next_,pTmin,1);
+     printf("Production of 'next' odd particle: cs(pp-> %s,%s)=%.2E[pb]\n",next,next_, cs);
+  }  
 }
+
 #endif 
 
 #ifdef CLEAN

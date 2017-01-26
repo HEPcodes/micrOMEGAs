@@ -237,6 +237,9 @@ int  checkPhysValN(char * name, char * key, physValRec **pLists)
   char *chB,*chE;
   char pnum[10][10];
   int kk[10];
+
+  char*toAdd=NULL;
+  
   errorText[0]=0;
   *pLists=NULL;
   for(chB=name;*chB==' ';chB++) continue;
@@ -245,8 +248,7 @@ int  checkPhysValN(char * name, char * key, physValRec **pLists)
   if(*key==0) return 0;
 
   
-
-  if(!strchr("ACDEJKMPTUYNWZ",*key)) {sprintf(errorText,"wrong key '%c'",*key);  return 0;}
+  if(!strchr("ACDEJKMPSTUYNWZ",*key)) {sprintf(errorText,"wrong key '%c'",*key);  return 0;}
   chB++;  
 
   if(*key=='E' && nin_int==2 && (strcmp(chB,"1")==0 ||strcmp(chB,"2")==0)) 
@@ -272,21 +274,32 @@ int  checkPhysValN(char * name, char * key, physValRec **pLists)
     strcpy((*pLists)->pstr,chB);
     return 1;
   }
-
-  if(*chB=='^'||*chB=='_') { key[1]=*chB; chB++; } 
+  
+  if(*key=='S')
+  {  if(*chB=='1'){ toAdd="\1"; *chB++;}
+     if(*chB=='2'){ toAdd="\2"; *chB++;}
+  }    
+  
+  
+  if(*chB=='^'||*chB=='`'||*chB=='_' ) { key[1]=*chB; chB++; }
    
   if(*chB!='(') { sprintf(errorText," bracket '(' expected");  return 0;}
+
   chE=strchr(chB,')');
   if(!chE) {sprintf(errorText," bracket ')' expected");  return 0;}
+
   chE++;
   for(;chE[0];chE++) if(chE[0]!=' ') { sprintf(errorText," only one term expected");  return 0;}
 
+
   for(ln=0; chB ;chB=strchr(chB,','),ln++){
     char pname[100];
+    char *ch;
     int isComp=-1,j;
     if(ln==9) return 0;
     chB++;
     sscanf(chB,"%[^,)]",pname);
+    ch= strchr(pname,'"');  if(ch){ch[0]=' ';  ch= strchr(pname,'"'); if(ch) ch[0]=' ';}
     trim(pname);
     pnum[ln][0]=0;
     k=0;
@@ -306,6 +319,7 @@ int  checkPhysValN(char * name, char * key, physValRec **pLists)
       if(found==0){ sprintf(errorText,"'%s' - not a particle or partice set",pname);  return 0;}
     }
   }
+  
   if(ln<1) return 0;
   
   if(strchr("DJK",*key) && ln!=2)
@@ -315,7 +329,6 @@ int  checkPhysValN(char * name, char * key, physValRec **pLists)
   if(*key=='P' && ln<2 ) { sprintf(errorText,"P() value needs 2 arguments ");  return 0;}
   if(strchr("CA",*key) &&(( ln==1 && nin_int==1)||ln>2)) 
     { printf(errorText,"wrong number of arguments for C() or A() ");  return 0;}   
-  
   if(nin_int==1)
   { if( strchr("DTYNKZW",*key)) { printf(errorText,"'D/K/T/Y/N/Z/W'  can not be used for decay processes");return 0;}  
   }    
@@ -354,8 +367,15 @@ int  checkPhysValN(char * name, char * key, physValRec **pLists)
     } 
     if(i<0) break;
   }
+
+  if(toAdd) 
+  { physValRec *p=*pLists;
+    for(;p;p=p->next)
+    {  char buff[30];
+       strcpy(buff,p->pstr);
+       sprintf(p->pstr,"%s%s",toAdd,buff); 
+    }
+  }
+
   return 1;
 }
-
-
-

@@ -171,7 +171,7 @@ int m_pdt(int i,int*pString)
    free(strmen);
    if(k==0) return 0;  
    k--;   
-   for(list_=allPDT; k ; list_=list_->next) if(checkPartons(pString,list_))k--;  ;
+   for(list_=allPDT;  ; list_=list_->next) if(checkPartons(pString,list_)){ if(k==0) break; else k--;}
    updateData(i,list_);
    return 1;
 }

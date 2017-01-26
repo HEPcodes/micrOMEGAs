@@ -42,7 +42,8 @@ int loopGamma(double * csAZ, double *csAA)
   for(i=0;i<nModelVars;i++) fprintf(f,"%-6.6s   %f\n", varNames[i], varValues[i]);
   fprintf(f,"%-6.6s   %f\n", "GG", sqrt(4*M_PI*parton_alpha(2*Mcdm1/3.)));
   fprintf(f,"%-6.6s   %f\n", "wZ", pWidth("Z",NULL));
-  fprintf(f,"%-6.6s   %f\n", "wW", pWidth("W+",NULL)); 
+  fprintf(f,"%-6.6s   %f\n", "wW", pWidth("W+",NULL));
+  fprintf(f,"%-6.6s   %f\n", "wh", pWidth("h",NULL)); 
   fclose(f); 
    
   if(Qaddress){ *Qaddress=Qstat; calcMainFunc();}  

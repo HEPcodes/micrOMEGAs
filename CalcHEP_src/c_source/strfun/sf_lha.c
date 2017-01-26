@@ -40,6 +40,7 @@ static char *param=NULL;
 static double sc2=0.22*0.22;
 
 static char* dataPath=NULL;
+static void (*getpdfsetlist)(char* s, size_t len)=NULL;
 static char  fname[2][30]={"",""};
 static int   setNum[2]={0,0};
 
@@ -72,19 +73,31 @@ static double alpha_lha2(double q )
 static int initLHA(void)
 { 
   int i;  
-  char buff[500];
+  if(VERS<0) return 0;
+  if(VERS>0) return 1;  
 
-  if(dataPath) return 1;
+  char versionTxt[40];
+  getlhapdfversion(versionTxt,39);
+  if(1!=sscanf(versionTxt,"%d",&VERS)) { VERS=-1; return 0;}
+  if(VERS<5) { VERS=-1; return 0;}
   
-  getdatapath(buff,500);  
-  for(i=499; i>=0 && buff[i]==' '; i--) ;
-  if(i<0) {  return 0;}
-  buff[i+1]=0;
+  if(VERS==5)
+  {  char buff[500]; 
+     getdatapath(buff,500);  
+     for(i=499; i>=0 && buff[i]==' '; i--) ;
+     if(i<0) { VERS=-1;  return 0;}
+     buff[i+1]=0;
+     dataPath=malloc(strlen(buff)+1);
+     strcpy(dataPath,buff);
+  } else
+  { 
   
-  dataPath=malloc(strlen(buff)+1);
-  strcpy(dataPath,buff);
-  
-  return 1;  
+     void*h=dlopen(NULL,RTLD_NOW); 
+     getpdfsetlist=dlsym(h,"lhapdf_getpdfsetlist_");
+     if(!getpdfsetlist) getpdfsetlist=dlsym(h,"_lhapdf_getpdfsetlist_");
+     if(!getpdfsetlist) {VERS=-1; return 0;}
+  }
+  return 1;
 }
 
 int p_lha(int * pNum) 
@@ -92,7 +105,11 @@ int p_lha(int * pNum)
   int i;
   if(!initLHA())return 0;
   for(;*pNum;pNum++) 
-  { for(i=0;i<12;i++) if(*pNum==parton[i]) break;
+  { if(*pNum==22) 
+    { if(VERS==5) return 0;
+//      if(!has_photon()) return 0; 
+    }
+    for(i=0;i<12;i++) if(*pNum==parton[i]) break;
     if(i==12) return 0;
   }
   return 1;
@@ -144,15 +161,7 @@ static char * lhaMenu(void)
   struct  dirent **namelist;
   int N,i,width;
   char * menutxt=NULL;
-  void*h;
- 
-  void (*getpdfsetlist)(char* s, size_t len)=NULL;
 
-  if(!dataPath) return NULL;
-  h=dlopen(NULL,RTLD_NOW); 
-  getpdfsetlist=dlsym(h,"lhapdf_getpdfsetlist_");
-  if(!getpdfsetlist) getpdfsetlist=dlsym(h,"_lhapdf_getpdfsetlist_");
- 
   if(getpdfsetlist)
   {  char buff[10000];
      char *ch1,*ch2;
@@ -160,7 +169,6 @@ static char * lhaMenu(void)
      for(i=9999; i>=0 && buff[i]==' '; i--) ;
      buff[i+1]=0;
      i=strlen(buff);
-     
      width=0; N=0;
      ch1=ch2=buff;
      if(ch1[0]==0) return NULL;
@@ -225,11 +233,6 @@ int r_lha(int i, char *name)
   if(!c) return 0;
   initpdfsetbynamem(&i,txt,strlen(txt));
   if(i==0) return 0;
-  if(!VERS)
-  { char versionTxt[40];
-    getlhapdfversion(versionTxt,39);
-    sscanf(versionTxt,"%d",&VERS);
-  }
   lastLHA=i;
   numberpdfm(&i,&max);
   if(max<setNum[i1] || setNum[i1]<0) return 0;
@@ -331,11 +334,10 @@ double c_lha(int i, double x, double q)
 //  if(q<qMin[i1]) q=qMin[i1]; else 
                         if(q>qMax[i1]) q=qMax[i1];
   if(nPROCSS>1 && VERS<6) pthread_mutex_lock(&strfun_key);
-   evolvepdfphotonm(&i,&x,&q,f,&fph);
+   evolvePDFm(i,x,q,f);
   if(nPROCSS>1 && VERS<6) pthread_mutex_unlock(&strfun_key);  
 
   if(sgn[i1]<0) p=-p;
-
 
   switch(p)
   {
@@ -347,7 +349,7 @@ double c_lha(int i, double x, double q)
     case 21: case -21: z=f[6]/x;  break;
     case -1:           z=f[5]/x;  break;
     case -2:           z=f[4]/x;  break;
-    case 22: case -22: z=fph/x;   break;
+    case 22: case -22: z=f[13]/x; break;
   } 
   if(z<0) return 0;
 //  if(z<=0) printf("x=%E q=%E z=%E sc2=%E   \n",x,q,z,sc2); 

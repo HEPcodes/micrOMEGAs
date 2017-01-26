@@ -19,8 +19,12 @@ void   initpdfsetbynamem_(int *P,char *name, int len)
 void  numberpdfm_(int* P,int * nMax) { *nMax=0;}
 void  evolvepdfphotonm_(int* P,double *x,double *Q,double *f,double*fph)
 {  *fph=0;  int i; for(i=0;i<13;i++) f[i]=0;}
+
 void  evolvepdfm_(int* P,double *x,double *Q,double *f)
-{  int i; for(i=0;i<13;i++) f[i]=0; }  
+{   int i; for(i=0;i<13;i++) f[i]=0;}
+
+int has_photon_(void){ return 0;}
+
 void  initpdfm_(int* P,int * nSet ){ return; }
 
 void getxmaxm_(int*P,int*N,double *xMax){ *xMax=1;}

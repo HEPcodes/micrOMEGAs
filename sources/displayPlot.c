@@ -30,7 +30,8 @@ void displayPlotN(char * title, double xMin, double xMax,  char*xName,  int dim,
 { int pid;
   
   if(First) { First=0;   signal(SIGUSR1, disconnect);}  
-  
+
+  fflush(NULL);
   pid=fork();
   if(pid==0) 
   {  int err,i;

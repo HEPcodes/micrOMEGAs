@@ -30,7 +30,7 @@
       Mqd = 0.01D0
       Ms = 0.2D0
       Mh = 200D0
-
+      wh =0 
       end
 
 
@@ -215,6 +215,8 @@ c      GG = sqrt(4*pi*Alfas)
             Ms=val
         else if(name.eq."Mh") then
             Mh=val
+        else if(name.eq."wh") then
+            wh=val
         endif        
        goto 123
 321    continue

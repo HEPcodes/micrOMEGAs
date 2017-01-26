@@ -174,7 +174,7 @@
      &                       Ms*AAABR(36)*pave22(cc12))) + 
      &                  AAABR(18)*
      &                   (1/4.D0*(AAABR(11)*pave18(cc12)) + 
-     &                     AAABR(15)*pave11(cc12)))))))/(-Mh2 + S)
+     &                     AAABR(15)*pave11(cc12)))))))/(-Mh2 + S + (0D0,1D0)*Mh*wh )
 
 #ifdef DEBUG
 	DEB("vert: Cloop(1) =", Cloop(1))

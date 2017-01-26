@@ -9,7 +9,7 @@
 typedef struct pdtList
 { struct pdtList * next; 
   char *  name;      /* title name of distribution             */     
-  long  beamP;     /* MC-number of beam particles            */
+  long  beamP;      /* MC-number of beam particles            */
   char * file;       /* name of file where it is stored        */
   int  * partons;    /* ordering number of parton in the list of functions*/
   int  * items;
@@ -17,7 +17,9 @@ typedef struct pdtList
 
 typedef struct pdtStr
 { double mass;       /* mass of composite particle             */
-  int index;         /* LHAPDF index */
+  int index;         /* LHAPDF index                           */
+  int set;          /* LHAPDF numMember                       */
+  char * source;
   long beamP;
   long parton;
   int  nq;           /* number of points in Q-scale grid       */ 

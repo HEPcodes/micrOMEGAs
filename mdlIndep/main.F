@@ -54,7 +54,7 @@ C  for CDM_NUCLEUS
 C  for NEUTRINO 
       integer forSun
       real*8 rhoDet
-      real*8 nu(NZ),nu_bar(NZ),FluxN(NZ),FluxNb(NZ),FluxMu(NZ) 
+      real*8 nu(NZ),nu_bar(NZ),FluxN(NZ),FluxNb(NZ),FluxMu(NZ),bn(NZ),bn_(NZ) 
       real*8 Prop,cRate,R       
 
       Mcdm=189.0

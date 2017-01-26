@@ -21,13 +21,15 @@ int main(int argc, char** argv)
    sprintf(finfo,"%s/%s.info",dirname,ch);
    char* fdat=malloc(strlen(dirname)+1+strlen(ch)+10);
    sprintf(fdat,"%s/%s_",dirname,ch);
+   int memb=0;
    
    if(argc==2) strcat(fdat,"0000.dat");
    else  
    {  int i;
       for(i=0;i< 4-strlen(argv[2]);i++) strcat(fdat,"0");
        strcat(fdat,argv[2]);
-       strcat(fdat,".dat"); 
+       strcat(fdat,".dat");
+       sscanf(argv[2],"%d", &memb); 
    }                
    FILE*Finf=fopen(finfo,"r");
    FILE*Fdat=fopen(fdat,"r");
@@ -85,6 +87,7 @@ int main(int argc, char** argv)
    fclose(Finf);
    
    printf(" Index=%d\n", Index);
+   printf(" Set=%d\n",memb);
    printf(" Particle=%d\n", Particle);
    printf(" Format=%s\n", Format);
    printf(" Reference=%s\n", Ref);
@@ -177,9 +180,11 @@ int main(int argc, char** argv)
    fprintf(Fout,"\n#distribution \"%s(proton)\"       2212 => ", ch);
    posB=ftell(Fout); for(i=0;i<Pdim;i++)  fprintf(Fout,"    ");    
    fprintf(Fout,"\n#distribution \"%s(anti-proton)\" -2212 => ", ch);
-   posE=ftell(Fout); for(i=0;i<Pdim;i++)  fprintf(Fout,"    ");    
+   posE=ftell(Fout); for(i=0;i<Pdim;i++)  fprintf(Fout,"    ");
 
    fprintf(Fout,"\n#Index %d",Index);
+   fprintf(Fout,"\n#Memb %d",memb);
+   fprintf(Fout,"\n#Source  LHAPDF6");
    fprintf(Fout,"\n#Reference %s",Ref); 
    fprintf(Fout,"\n#Interpolation biCubicLogXQ");
    

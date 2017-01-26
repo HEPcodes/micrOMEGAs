@@ -31,4 +31,3 @@ $(bin)/make_VandP: make_VandP.c $(lib)/symb.a $(lib)/serv.a $(lib)/dynamic_me.a 
 
 $(sbin)/make-j:make-j.c
 	$(CC) $(CFLAGS) -o $@ $^ -lm -lpthread
-        

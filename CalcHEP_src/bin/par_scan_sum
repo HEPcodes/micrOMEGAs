@@ -39,7 +39,7 @@ do
        nSub=`echo $info|cut -f2 -d" "`
 
        if(test $nSub -ne $nOld) then
-          CSi=`$bin/run_vegas`
+          CSi=`$bin/run_vegas|cut -f1 -d" "`
           err=$?; if(test $err -ne 0) then break; fi   
           CSt=`$bin/calc "($CSt) + ($CSi)"` 
           strCom="[$strCom"

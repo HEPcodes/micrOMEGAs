@@ -733,6 +733,7 @@ int   slhaSTRFormat(char * Block, char * format, char *txt)
   char BLOCK[BlckLn];
   blockStr* blck=blockList;
   blockRec * dr;
+
   if(strlen(Block)>=BlckLn) {FError=1; return 0;}
       
   for(i=0; Block[i];i++)  BLOCK[i]=toupper(Block[i]);
@@ -753,6 +754,7 @@ int   slhaSTRFormat(char * Block, char * format, char *txt)
        char buff[StrLn];
        sprintf(body_,"%s #",dr->body);
        err=sscanf(body_,format_,txt,buff);
+//printf("body=|%s| format=|%s|,err=%d\n",body_,format_,err);
        if(err==2 && strcmp(buff,"#")==0) {return 0; }
      }  
   }
@@ -1079,7 +1081,7 @@ int slhaWrite(char *fname)
     fprintf(f,"DECAY %d %E # %s\n" ,pdg,width,slhaComment); 
     for(l=1;;l++)
     {  if(0==allDecays(k,l, &pdg, &len, out, &width, &br))break;
-       fprintf(f," %16E  %2d ", br,len);
+       fprintf(f,"   %16E  %2d ", br,len);
        for(i=0;i<len; i++) fprintf(f," %10d",out[i]);
               fprintf(f," # %s\n",slhaComment);
     }            

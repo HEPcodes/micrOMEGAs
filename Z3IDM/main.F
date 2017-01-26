@@ -68,7 +68,7 @@ C for SMODELS
       real*8 Rvalue
       character*30 analysis,topology,smodels_version
 C for LILITH
-      real*8 m2logL, m2logL_reference,pvalue
+      real*8 m2logL, m2logL_reference,pvalue,vPython1, vPython2
       integer exp_ndf,n_par,ndf
       character*100 call_lilith
       character*10 lilith_version
@@ -93,6 +93,12 @@ C  For DECAYS
       integer*8 txtL
       real*8 width
       character*20 pname
+C   for CROSS_SECTION
+       character*10 next
+       character*10 next_
+       real*8 nextM 
+
+
 
       if(iargc().eq.0) then
          write(*,*)'Correct usage: ./main  <file with parameters>'
@@ -148,6 +154,7 @@ C      CALL printVar(6)
       if(LspNlsp_LEP(csLim).ne.0) write(*,fmt='("Excluded by LEP  by e+,e- -> DM q qbar, Cross section=",E10.2,"pb")') csLim
 #endif
 
+
 #ifdef HIGGSBOUNDS
       err=slhaWrite("HB.in")
       err=HBblocks("HB.in")
@@ -161,7 +168,7 @@ C      CALL printVar(6)
          m2logL_reference=0
          n_par=0
 #include "../include/Lilith.inc_f"
-         write(*,fmt='("LILITH(DB",A,"):  -2*log(L): ",F5.2,"; -2*log(L_reference): ",F5.2,"; ndf: ",I3"; p-value: ",F5.2)') lilith_version, m2logL,m2logL_reference,ndf,pvalue
+         if(ndf.ne.0)write(*,fmt='("LILITH(DB",A,"):  -2*log(L): ",F5.2,"; -2*log(L_reference): ",F5.2,"; ndf: ",I3"; p-value: ",F5.2)') lilith_version, m2logL,m2logL_reference,ndf,pvalue
       else
          write(*,*) "LILITH: there is no Higgs candidate"
       endif
@@ -190,7 +197,7 @@ C     call setVVdecay(2,2)
       Omega=darkOmega(Xf,fast,Beps)
       write(*,'(a,3x,1PE10.2)') 'Omega=',Omega
 
-      OmegaAppr=printChannels(Xf,cut,Beps,1,6)
+      if(Omega.gt.0)OmegaAppr=printChannels(Xf,cut,Beps,1,6)
 C to restore default VZdecay and VWdecay
        call  setVVdecay(1,1)
 #endif
@@ -429,6 +436,24 @@ C ======  Contained events
       call printTxtList(txtL,6)
 
 #endif
+
+#ifdef CROSS_SECTIONS
+      write(*,*)
+      call nextOdd(next,1, nextM)
+      if((next(1:1).ne.' ') .and. (nextM.lt.1000)) then 
+         call antiparticle(next_,next)
+         write(*,*)'======Calculations of cross sections======='
+         write(*,*) ' Process p,p -> ', next,next_
+         Pcm=6500 
+         Qren=nextM
+         Qfact=Qren
+         pTmin=0
+         cs=hCollider(Pcm,1,3,Qren, Qfact, next,next_,pTmin,1)
+         write(*,fmt="('total cross section  ', 1PE8.2,'[pb]')") cs 
+      endif    
+#endif
+
+
 #ifdef CLEAN
       call system("rm -f HB.in HB.out HS.in HS.out hb.stdout hs.stdout debug_channels.txt debug_predratio.txt Key.dat")
 #endif

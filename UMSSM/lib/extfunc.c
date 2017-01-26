@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 //#include"../SLHAplus/SLHAplus.h"
-#include"../../CalcHEP_src/c_source/SLHAplus/include/SLHAplus.h"
+//#include"../../CalcHEP_src/c_source/SLHAplus/include/SLHAplus.h"
+#include"../../include/micromegas.h"
+#include"../../include/micromegas_aux.h"
 #include<complex.h>
 #define Complex double complex
 
@@ -16,7 +18,7 @@ double max (double a, double b);
 // Functions needed for cubic interpolation :
 
 int  leftXN(int n,int dim,  double * xa, double x);
-double  polintN(double x, int n,  double *xa, double *ya);
+
 double polint(double x, int n,  double *xa, double *ya);
 
 // Cubic interpolation for alfSQS :
@@ -75,14 +77,6 @@ int  leftXN(int n,int dim,  double * xa, double x)
    return k1+1-n/2;
 }
 
-double  polintN(double x, int n,  double *xa, double *ya)
-{  double z[20];
-   int i,m;
-   for(i=0;i<n;i++) z[i]=ya[i];
-   for(m=1;m<n;m++) for(i=0;i<n-m;i++)
-   z[i]=(z[i]*(xa[i+m]-x) - z[i+1]*(xa[i]-x))/(xa[i+m]-xa[i]);
-   return z[0];
-}
 
 double polint(double x, int n,  double *xa, double *ya)
 { int shift=leftXN(4,n, xa, x);

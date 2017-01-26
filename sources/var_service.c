@@ -1,5 +1,6 @@
 #include "micromegas.h"
 #include "micromegas_aux.h"
+#include "micromegas_f.h"
 
 
 void printVar(FILE *f)

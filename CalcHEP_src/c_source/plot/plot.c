@@ -632,7 +632,7 @@ static void  writeROOT(char *fname,  double xMin,double xMax, double yMin, doubl
    strcpy(basename,fname);
 
    for(i=strlen(basename)-1; i>=0;i--) if(basename[i]=='.') { basename[i]=0; break; }
-   sprintf(filename,"%s.root",basename);
+   sprintf(filename,"%s_root.C",basename);
    
    outfile=fopen(filename,"w");
 fprintf(outfile,          
@@ -1111,14 +1111,16 @@ contin:
              { messanykey(10,10," Wrong Y-range");
                break;
              } 
-             if(logScale && (grafminmax.ymin <=0 ||
-                   grafminmax.ymax/grafminmax.ymin <=10 ) )
-             { messanykey(10,10," To use the logarithmic scale,\n"
-                                " please, set Ymin and Ymax limits\n"
-                                " such that Ymax > 10*Ymin > 0"); 
-               logScale = 0; 
-             } 
-               
+             if(logScale && (grafminmax.ymax <=0)) 
+             {  messanykey(10,10," Can not implement log_Y scale because Ymax<0");
+                logScale = 0;
+             }
+                 
+             if(logScale && (grafminmax.ymin <=0)) grafminmax.ymin=grafminmax.ymax*1E-4;
+             
+              
+             if(logScale &&  grafminmax.ymax/grafminmax.ymin <=10 ) grafminmax.ymin=grafminmax.ymax/10.;
+                            
              goto REDRAW;
       }   
       if( nCol0 != maxCol() && nRow0 != maxRow() ) goto REDRAW;

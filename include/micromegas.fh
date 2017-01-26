@@ -24,6 +24,7 @@
      > K_dif,L_dif,Delta_dif,Tau_dif,Vc_dif,Rdisk,
      > deltaY,dmAsymm,Vesc,Vrot,FracCDM2,Mcdm1,Mcdm2,Tstart,Tend
 
+
        character CDM1*20, CDM2*20
        COMMON/MOCOMMONCH/CDM1,CDM2 
 
@@ -59,7 +60,7 @@ c!      integer iargc
      >         darkOmega2, width1CC,vSigmaCC,spectrInfo,
      >         vs1120F,vs2200F,vs1100F,vs1210F,vs1122F,vs2211F,vs1110F,
      >         vs2220F,vs1112F,vs1222F,vs1220F,vs2210F,vs2221F,vs1211F,
-     >         hCollider
+     >         hCollider, monoJet
       real*8   cs22,pWidth2,decay2Info,findValW,calcSpectrum,
      >         HaloFactor,RhoQisotermic,RhoMO,RhoMOSq,
      >         zInterp,spectdnde, darkOmega,printChannels,
@@ -69,7 +70,7 @@ c!      integer iargc
      >         darkOmega2, width1CC,vSigmaCC,spectrInfo,
      >         vs1120F,vs2200F,vs1100F,vs1210F,vs1122F,vs2211F,vs1110F,
      >         vs2220F,vs1112F,vs1222F,vs1220F,vs2210F,vs2221F,vs1211F,
-     >          hCollider
+     >          hCollider, monoJet
       external  newProcess
       integer*8 newProcess 
 C subroutines: assignValW,printVar,printMasses,spectrInfo,

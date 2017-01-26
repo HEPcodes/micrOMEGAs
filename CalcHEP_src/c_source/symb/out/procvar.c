@@ -107,30 +107,25 @@ int initvararray(int nsub, char key, int width)
      switch(key)
      { case 'R':
        case 'F':
-       case 'M': sprintf( vararr[k].alias, "Helicity%d", i);  break;
+       case 'M': sprintf( vararr[k].alias, "Helicity%d"  , i ); break;
        case 'c': sprintf( vararr[k].alias, "Helicity[%d]",i-1); break;
-       case 'f': sprintf( vararr[k].alias, "Helicity(%d)",i); break;
+       case 'f': sprintf( vararr[k].alias, "Helicity(%d)",i  ); break;
      } 
      vararr[k].used = 1;
    }
-   for(i=1;i<=2;i++)
-   { k=i+nmodelvar+3; 
-     switch(key)
-     { case 'R':
-       case 'F':
-       case 'M': sprintf( vararr[k].alias, "HelicityN%d", i);  break;
-       case 'c': sprintf( vararr[k].alias, "HelicityN[%d]",i-1); break;
-       case 'f': sprintf( vararr[k].alias, "HelicityN(%d)",i); break;
-     } 
-     vararr[k].used = 1;
-   }
-
+   k=nmodelvar+4;
+    switch(key)
+    { case 'R':
+      case 'F': sprintf( vararr[k].alias, "(1/p1.p2)"    );  break; 
+      case 'M': sprintf( vararr[k].alias, "(1/SC[p1,p2])");  break;
+      case 'c': sprintf( vararr[k].alias, "N_p1p2_"      );  break;
+    }                                      
+    vararr[k].used = 1;                                      
       
    nvar=0; nfunc=0;
    
    if(key=='R' ||key=='R'||key== 'M') for(k=0;k<=nmodelvar;k++) strcpy(vararr[k].alias, modelvars[k].varname);
-   else    
-   
+   else     
    if(key=='c')
    {   
        for(k=0;k<4;k++)
@@ -154,6 +149,7 @@ int initvararray(int nsub, char key, int width)
        vararr[k].used=0; 
        vararr[k].num=0;
        modelvars[k].pub=0;
-   }
+   } else if(key=='m')
+   
    return 1;
 } 

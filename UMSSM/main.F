@@ -7,7 +7,7 @@ C================================
 #define MASSES_INFO
 C    Display information about SUSY and Higgs masses
 #define CONSTRAINTS
-C    Display  deltarho, B_>sgamma, Bs->mumu, gmuon, Z1->inv,
+C    Display  deltarho, B and K observables, gmuon, Z1->inv,
 C    check LEP mass limits and Zprime limits
 C#define SLHAINPUT
 C    Switch to use slha files as input instead of umssm.par or similar files
@@ -80,6 +80,8 @@ C Variables
       real*8 FluxA(250),FluxE(250),FluxP(250)
 C  for CONSTRAINTS    
       real*8 constr0,constrM, constrP,csLim
+C  for monoJet
+      real*8 monojetCL
 C for HIGGSBOUNDS/HIGGSSIGNALS
       integer  NH0/4/, NHch/1/
       real*8 HB_result,HB_obsratio,HS_observ,HS_chi2, HS_pval
@@ -88,10 +90,9 @@ C for HIGGSBOUNDS/HIGGSSIGNALS
 C for SMODELS 
       integer result 
       real*8 Rvalue
-      character*30 analysis,topology
-      character*10 smodels_version
+      character*30 analysis,topology,smodels_version
 C for LILITH 
-      real*8 m2logL, m2logL_reference,pvalue
+      real*8 m2logL, m2logL_reference,pvalue,vPython1, vPython2
       integer exp_ndf,n_par,ndf
       character*100 call_lilith
       character*10 lilith_version
@@ -108,6 +109,12 @@ C  for NEUTRINO
       integer forSun
       real*8 IntFlux, rhoDet
       real*8 FluxN(NZ),FluxNb(NZ),FluxMu(NZ) 
+
+C   for CROSS_SECTION
+       character*10 next
+       character*10 next_
+       real*8 nextM 
+
 
 C   to Force calculation of matrix elements in Unitary Gauge call with (1)
       call ForceUG(0)
@@ -157,12 +164,11 @@ C  To print list of variables uncomment
 C      CALL printVar(6)
 
       err=sortOddParticles(cdmName)
-      err=umssmtools()
 
       if(err.ne.0) then
         write(*,*) 'Can t calculate ', cdmName
         STOP
-      endif 
+      endif
 
       PDGcdm=qNumbers(cdmName,spin2, charge3,  cdim)
       write(*,fmt="('Dark matter candidate is ', A5,'with spin=',
@@ -178,9 +184,26 @@ C      CALL printVar(6)
          STOP
       endif
 
+      if(cdmName.ne.'~o1') then
+          write(*,*) '~o1 is not LSP'
+      else
+          call o1Contents(6)
+      endif
+
+      err=umssmtools(PDGcdm)
+
+      if(err.ne.0) then
+        write(*,*) 'An error occurred running umssmtools.'
+        STOP
+      endif
+      
+C Get the corrected Higgs branching ratios from UMSSMTools :
+      err=slhaRead('UMSSM_decay.dat',1)
+      if(err.ne.0) stop
+
 #ifdef MASSES_INFO
-      CALL printHiggs(6)
       write(*,*) '=== MASSES OF HIGGS AND SUSY PARTICLES: ===' 
+      CALL printHiggs(6)
       CALL printMasses(6,1)
 #endif
 
@@ -191,45 +214,90 @@ C      CALL printVar(6)
       write(*,*)
       write(*,*) '==== Physical Constraints: ====='
       write(*,fmt='(A,1x, 1PE8.2)') 'deltartho=', deltarho()
-      constr0=bsgnlo(constrM,constrP)
-      write(*,fmt="('B->s,gamma = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
-     >constr0,constrM, constrP 
+      constr0=bsg(constrM,constrP)
+      write(*,fmt="('b  -> s gamma     = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP
 
-      constr0= bsmumu(constrM,constrP)
-      write(*,fmt="('Bs->mu,mu = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
-     >constr0,constrM, constrP  
+      constr0=bsmumu(constrM,constrP)
+      write(*,fmt="('Bs -> mu+ mu-     = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP 
   
       constr0=btaunu(constrM,constrP)
-      write(*,fmt="('B+->tau+,nu = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
-     >constr0,constrM, constrP 
-
+      write(*,fmt="('B+ -> tau+ nu_tau = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP
   
       constr0=deltamd(constrM,constrP)
-      write(*,fmt="('deltaMd = ',1PE9.2,'(',E9.2,',',E9.2,') ps^-1')") 
-     >constr0,constrM, constrP 
+      write(*,fmt="('delta M_d         = ',1PE9.2,'(',E9.2,',',E9.2,') ps^-1')") 
+     >constr0,constrM, constrP
 
       constr0=deltams(constrM,constrP)
-      write(*,fmt="('deltaMs = ',1PE9.2,'(',E9.2,',',E9.2,') ps^-1')") 
-     >constr0,constrM, constrP 
+      write(*,fmt="('delta M_s         = ',1PE9.2,'(',E9.2,',',E9.2,') ps^-1')") 
+     >constr0,constrM, constrP
 
       constr0=gmuon(constrM,constrP)
-      write(*,fmt="('gmuon/BSM = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
-     >constr0,constrM, constrP 
+      write(*,fmt="('gmuon/BSM         = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP
 
-      constr0=bxismulow(constrM,constrP)
-      write(*,fmt="('B-->X_s mu+ mu for low M_{l+l-}^2 = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
-     >constr0,constrM, constrP 
+      constr0=bxislllow(constrM,constrP)
+      write(*,fmt="('B  -> X_s l+ l- for low M_{l+l-}^2  = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP
 
-      constr0=bxismuhigh(constrM,constrP)
-      write(*,fmt="('B-->X_s mu+ mu for high M_{l+l-}^2 = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
-     >constr0,constrM, constrP 
+      constr0=bxisllhigh(constrM,constrP)
+      write(*,fmt="('B  -> X_s l+ l- for high M_{l+l-}^2 = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP
 
-      if(MassLimits().eq.0)  write(*,*) 'MassLimits OK'
+      constr0=bdg(constrM,constrP)
+      write(*,fmt="('b  -> d gamma     = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP
+
+      constr0=bdmumu(constrM,constrP)
+      write(*,fmt="('Bd -> mu+ mu-     = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP
+
+      constr0=bxisnunu(constrM,constrP)
+      write(*,fmt="('B  -> Xs nu_L nubar_L = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP
+
+      constr0=bpkpnunu(constrM,constrP)
+      write(*,fmt="('B+ -> K+ nu_L nubar_L = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP
+
+      constr0=bksnunu(constrM,constrP)
+      write(*,fmt="('B  -> Ks nu_L nubar_L = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP
+
+      constr0=rdtaul(constrM,constrP)
+      write(*,fmt="('RD  = BR[B+ -> D  tau+ nu_tau]/BR[B+ -> D  l+ nu_l] = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP
+
+      constr0=rdstaul(constrM,constrP)
+      write(*,fmt="('RD* = BR[B+ -> D* tau+ nu_tau]/BR[B+ -> D* l+ nu_l] = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP
+
+      constr0=kppipnunu(constrM,constrP)
+      write(*,fmt="('K+ -> Pi+ nu_L nubar_L = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP
+
+      constr0=klpi0nunu(constrM,constrP)
+      write(*,fmt="('KL -> Pi0 nu_L nubar_L = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP
+
+      constr0=deltamk(constrM,constrP)
+      write(*,fmt="('delta M_K              = ',1PE9.2,'(',E9.2,',',E9.2,') ps^-1')") 
+     >constr0,constrM, constrP
+
+      constr0=epsk(constrM,constrP)
+      write(*,fmt="('eps_K                  = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP
+
+
+      if(MassLimits().eq.0)  write(*,*) 'LEP limits OK'
       if(zprimelimits().eq.0) write(*,*) 'LHC limits on new Zprime OK'
       if(Zinvisible().ne.0) write(*,*) "Excluded by Z->invisible"
       if(LspNlsp_LEP(csLim).ne.0) write(*,fmt='("Excluded by LEP  by e+,e- -> DM q qbar, Cross section=",E10.2,"pb")') csLim 
 #endif
 
+ 
 #ifdef HIGGSBOUNDS
       call system("cat UMSSM_spectr.dat UMSSM_decay.dat > HB.in");
       err=HBblocks("HB.in")
@@ -246,7 +314,7 @@ C      CALL printVar(6)
          m2logL_reference=0
          n_par=0
 #include "../include/Lilith.inc_f"
-         write(*,fmt='("LILITH(DB",A,"):  -2*log(L): ",F5.2,"; -2*log(L_reference): ",F5.2,"; ndf: ",I3"; p-value: ",F5.2)') lilith_version, m2logL,m2logL_reference,ndf,pvalue
+         if(ndf.ne.0)write(*,fmt='("LILITH(DB",A,"):  -2*log(L): ",F5.2,"; -2*log(L_reference): ",F5.2,"; ndf: ",I3"; p-value: ",F5.2)') lilith_version, m2logL,m2logL_reference,ndf,pvalue
       else 
          write(*,*) "LILITH: there is no Higgs candidate"
       endif     
@@ -276,17 +344,11 @@ C     call setVVdecay(2,2)
 
       write(*,*)
       write(*,*) '==== Calculation of relic density ====='
-      write(*,*) 'Dark Matter candidate is ', cdmName
-      if(cdmName.ne.'~o1') then
-          write(*,*) '~o1 is not LSP'
-      else
-          call o1Contents(6)
-      endif
 
       Omega=darkOmega(Xf,fast,Beps)
       write(*,'(a,3x,1PE10.2)') 'Omega=',Omega
 
-      OmegaAppr=printChannels(Xf,cut,Beps,1,6)
+      if(Omega.gt.0) OmegaAppr=printChannels(Xf,cut,Beps,1,6)
 
 C!  See an  example of direct access to annihilation channels    
 c      do 555 i=1,20
@@ -521,14 +583,19 @@ C ======  Contained events
 
 #ifdef CROSS_SECTIONS
       write(*,*)
-      write(*,*)'======Calculations of cross sections======='
-      write(*,*) ' Process p,p -> ~o1,~o2'
-      Pcm=4000 
-      Qren=pMass("~o2")
-      Qfact=Qren
-      pTmin=0
-      cs=hCollider(Pcm,1,3,Qren, Qfact, "~o1","~o2",pTmin,1)
-      write(*,fmt="(1PE8.2,'[pb]')") cs 
+      call nextOdd(next,1, nextM)
+      if((next(1:1).ne.' ') .and. (nextM.lt.1000)) then 
+         call antiparticle(next_,next)
+         write(*,*)'======Calculations of cross sections======='
+         write(*,*) ' Process p,p -> ', next,next_
+         Pcm=6500 
+         Qren=nextM
+         Qfact=Qren
+         pTmin=0
+         cs=hCollider(Pcm,1,3,Qren, Qfact, next,next_,pTmin,1)
+         write(*,fmt="('total cross section  ', 1PE8.2,'[pb]')") cs 
+      endif    
+
 #endif
 
 #ifdef CLEAN

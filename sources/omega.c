@@ -607,9 +607,12 @@ int sortOddParticles(char * lsp)
   err=testSubprocesses();
   if(err)
   { 
-    if(err>0) {strcpy(lsp,varNames[err]); printf("can not calculate parameter %s\n",varNames[err]);}
-    else strcpy(lsp,"Nodd=0");
-    printf("sortOddparticles err=%d\n",err); 
+    if(lsp)
+    {
+      if(err>0) {strcpy(lsp,varNames[err]); printf("can not calculate parameter %s\n",varNames[err]);}
+       else strcpy(lsp,"Nodd=0");
+       printf("sortOddparticles err=%d\n",err);
+    }    
     return err;
   }
 
@@ -651,7 +654,6 @@ char * EvenParticles(void)
 { 
   static char * out=NULL;
   int i,len;
-
   if(out) return out;
   for(i=0,len=0;i<nModelParticles;i++) if(ModelPrtcls[i].name[0]!='~')
   {
@@ -662,7 +664,7 @@ char * EvenParticles(void)
   out=malloc(len); out[0]=0;
   for(i=0;i<nModelParticles;i++)if(ModelPrtcls[i].name[0]!='~') 
   { 
-    if(i) strcat(out,",");
+    if(out[0]) strcat(out,",");
     strcat(out,ModelPrtcls[i].name);
     if(strcmp(ModelPrtcls[i].name,ModelPrtcls[i].aname))
     { strcat(out,",");
@@ -824,7 +826,7 @@ static double aRate(double X, int average,int Fast, double * alpha, aChannel ** 
   int nPrc=0;
   char* pname[5];
   gridStr grid,grid1;  
-  double MassCutOut=MassCut+Mcdm*log(100.)/X;
+  double MassCutOut=MassCut+Mcdm*log(1000.)/X;
   double Msmall,Mlarge;
 
   int nPrcTot=0;
@@ -976,7 +978,7 @@ static double aRate(double X, int average,int Fast, double * alpha, aChannel ** 
                        
                  }
               }    
-              if(cc23){ smin=pmass[l_]; smin=pmass[0]+pmass[1]+0.1;}
+              if(cc23){ smin=pmass[l_]+0.1;}
             } 
          }
       }
@@ -1185,8 +1187,7 @@ static double vSigmaI(double T, double Beps, int fast,double * alpha_)
     return vSigmaGrid.data[0];
   }
   
-  n=log(X/vSigmaGrid.xtop)/log(XSTEP); 
-  while(n<0)
+  while(X<vSigmaGrid.xtop*XSTEP)
   { XX=vSigmaGrid.xtop/XSTEP;
     checkSgridUpdate();
     for(i=vSigmaGrid.pow;i;i--)
@@ -1198,8 +1199,10 @@ static double vSigmaI(double T, double Beps, int fast,double * alpha_)
     vSigmaGrid.data[0]=aRate(XX,0,fast,&alpha,NULL,NULL);
     vSigmaGrid.alpha[0]=alpha; 
     vSigmaGrid.pow++;
-    n++; 
   }
+  
+  n=log(X/vSigmaGrid.xtop)/log(XSTEP); 
+
   while(n+2>vSigmaGrid.pow-1)
   { 
     XX=vSigmaGrid.xtop* pow(XSTEP,vSigmaGrid.pow)  ;
@@ -1216,26 +1219,12 @@ static double vSigmaI(double T, double Beps, int fast,double * alpha_)
     if(i>vSigmaGrid.pow-2) i=vSigmaGrid.pow-2;
     X0=vSigmaGrid.xtop*pow(XSTEP,n-1); X1=X0*XSTEP;  X2=X1*XSTEP; X3=X2*XSTEP; 
 
+    sigmav0=log(vSigmaGrid.data[n-1]); alpha0=vSigmaGrid.alpha[n-1]; 
     sigmav1=log(vSigmaGrid.data[n]);   alpha1=vSigmaGrid.alpha[n];
     sigmav2=log(vSigmaGrid.data[n+1]); alpha2=vSigmaGrid.alpha[n+1];
     sigmav3=log(vSigmaGrid.data[n+2]); alpha3=vSigmaGrid.alpha[n+2];
     X=log(X);X0=log(X0); X1=log(X1); X2=log(X2); X3=log(X3);
     
-    if(n==0)
-    {
-   
-    if(alpha_)
-    { if(alpha1==0) *alpha_=0; else
-      *alpha_=    alpha1*       (X-X2)*(X-X3)/        (X1-X2)/(X1-X3)
-                 +alpha2*(X-X1)*       (X-X3)/(X2-X1)/        (X2-X3)
-                 +alpha3*(X-X1)*(X-X2)       /(X3-X1)/(X3-X2)        ;
-    }
-    return exp( 
-   +sigmav1*       (X-X2)*(X-X3)/        (X1-X2)/(X1-X3) 
-   +sigmav2*(X-X1)*       (X-X3)/(X2-X1)/        (X2-X3) 
-   +sigmav3*(X-X1)*(X-X2)       /(X3-X1)/(X3-X2)        );                           
-    }
-    sigmav0=log(vSigmaGrid.data[n-1]); alpha0=vSigmaGrid.alpha[n-1]; 
     
     if(alpha_)
     { if(alpha1==0) *alpha_=0; 
@@ -1382,7 +1371,7 @@ double darkOmegaFO(double * Xf_, int Fast, double Beps)
   
   Yf=  darkOmega1(&Xf, Z1, dZ1,Fast, Beps);
   if(FError||Xf<1||Yf<=0) {  return -1;}
- 
+  
   Yi=1/( (Mcdm/Xf)*sqrt(M_PI/45)*MPlank*aRate(Xf, 1,Fast,NULL, NULL,NULL) );
 
   if(!isfinite(Yi)||FError)  {  return -1;}

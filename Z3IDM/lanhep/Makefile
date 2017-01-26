@@ -1,5 +1,9 @@
 .PHONY: all
 
-all: *.lhp
-	lhep -ca  Z3_idoublet.lhp
+all: *.lhp ../../Packages/LanHEP/lhep
+	../../Packages/LanHEP/lhep -ca  Z3_idoublet.lhp
+
+../../Packages/LanHEP/lhep:
+	$(MAKE) -C ../../Packages/LanHEP
+
 	               

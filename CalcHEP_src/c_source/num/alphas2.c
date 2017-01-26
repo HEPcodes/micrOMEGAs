@@ -159,7 +159,7 @@ L10:{  char strmen[]="\030"
 
       if(alphaPDF)
       { int k=0;
-printf("alphaPDF=%d sf_alpha[0]=%p sf_alpha[1]=%p\n", alphaPDF,sf_alpha[0],sf_alpha[1]);      
+//printf("alphaPDF=%d sf_alpha[0]=%p sf_alpha[1]=%p\n", alphaPDF,sf_alpha[0],sf_alpha[1]);      
         switch(alphaPDF)
         { case 1: if(sf_alpha[0]) k=1; else if(sf_alpha[1]) k=2; break;
           case 2: if(sf_alpha[1]) k=2; else if(sf_alpha[0]) k=1; break;

@@ -101,6 +101,7 @@ int main(int argc,char** argv)
 }
 #endif
 
+
 #ifdef HIGGSBOUNDS
 {  int NH0=3, NHch=1; // number of neutral and charged Higgs particles.
    double HB_result,HB_obsratio,HS_observ,HS_chi2, HS_pval;
@@ -122,8 +123,10 @@ int main(int argc,char** argv)
    if(LiLithF("Lilith_in.xml"))
    {        
 #include "../include/Lilith.inc"
-      printf("LILITH(DB%s):  -2*log(L): %.2f; -2*log(L_reference): %.2f; ndf: %d; p-value: %.2E \n", 
-      Lilith_version,m2logL,m2logL_reference,ndf,pvalue);
+      if(ndf)
+      {  printf("LILITH(DB%s):  -2*log(L): %.2f; -2*log(L_reference): %.2f; ndf: %d; p-value: %.2E \n", 
+         Lilith_version,m2logL,m2logL_reference,ndf,pvalue);
+      }   
    } else printf("LILITH: there is no Higgs candidate\n");
 }     
 #endif
@@ -154,7 +157,7 @@ int main(int argc,char** argv)
   
   Omega=darkOmega(&Xf,fast,Beps);
   printf("Xf=%.2e Omega=%.2e\n",Xf,Omega);
-  printChannels(Xf,cut,Beps,1,stdout);   
+  if(Omega>0)printChannels(Xf,cut,Beps,1,stdout);   
 
   VZdecay=1; VWdecay=1; cleanDecayTable();  // restore default
 }
@@ -381,17 +384,23 @@ printf("\n======== Direct Detection ========\n");
 
 #ifdef CROSS_SECTIONS
 {
-  double cs, Pcm=4000, Qren,Qfact,pTmin=200;
-  int nf=3;
-  
-  Qfact=pMass(CDM1);
-  Qren=pTmin;
-
-  printf("pp -> DM,DM +jet(pt>%.2E GeV)  at sqrt(s)=%.2E GeV\n",pTmin,2*Pcm);  
-  
-  cs=hCollider(Pcm,1,nf,Qren, Qfact, CDM1,aCDM1,pTmin,1);
-  printf("cs(pp->~o1,~o2)=%.2E[pb]\n",cs);
+  char* next,next_;
+  double nextM;
+    
+  next=nextOdd(1,&nextM); 
+  if(next && nextM<1000)  
+  { 
+     double cs, Pcm=6500, Qren, Qfact, pTmin=0;
+     int nf=3;
+     char*next_=antiParticle(next);
+     Qren=Qfact=nextM; 
  
+     printf("\npp > nextOdd  at sqrt(s)=%.2E GeV\n",2*Pcm);  
+  
+     Qren=Qfact;
+     cs=hCollider(Pcm,1,nf,Qren, Qfact, next,next_,pTmin,1);
+     printf("Production of 'next' odd particle: cs(pp-> %s,%s)=%.2E[pb]\n",next,next_, cs);
+  }  
 }
 #endif 
 

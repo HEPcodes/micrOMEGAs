@@ -9,6 +9,10 @@
 \usepackage[toc,page]{appendix}
 \DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}
 
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linktocpage,bookmarksopen,bookmarksnumbered,pdfstartview=FitH,breaklinks=true}
+
+
 \textheight=24cm
 \textwidth=16cm
 \oddsidemargin 0cm
@@ -35,7 +39,7 @@
 \def\bsmu{B_s\to \mu^+\mu^-}
 \def\gmuon{(g-2)_\mu}
 \def\noi{\noindent}
-\def\VERSION{4.2}
+\def\VERSION{4.3}
 \def\neuto{\tilde\chi^0_1}
 \def\neuti{\tilde\chi^0_i}
 \def\neutt{\tilde\chi^0_2}
@@ -44,8 +48,8 @@
 \def\eg{{\it e.g.}}
 
 
-\def\wimpsim{{\tt WimpSim\;}}
-\def\pppc{{\tt }PPPC4DM$\nu$\;}
+\def\wimpsim{{\tt WimpSim}}
+\def\pppc{{\tt }PPPC4DM$\nu$}
 \newcommand{\gb}{\color{blue}}
 
 \begin{flushright}
@@ -60,7 +64,7 @@
 \begin{center}
 
 
-{\Large\bf The  micrOMEGAs user's manual, version 4.1} \\[8mm]
+{\Large\bf The   user's manual, version \VERSION} \\[8mm]
 
 {\large   G.~B\'elanger$^1$, F.~Boudjema$^1$, A.~Pukhov$^2$,  A. Semenov$^3$.}\\[4mm]
 
@@ -70,7 +74,7 @@
 \end{center}
 
 \begin{abstract}
-We give an up-to-date description of the micrOMEGAs functions. Only the routines which are available for
+We give an up-to-date description of the \micro\ functions. Only the routines which are available for
 the users are described.  Examples on how to use these functions
 can be found in the sample main programs distributed with the code. 
 \end{abstract}
@@ -84,18 +88,18 @@ can be found in the sample main programs distributed with the code.
 
 
 \section{Introduction}
-\micro~ is a code 
+\micro\ is a code 
  to calculate the properties of cold dark matter (CDM)  in a generic model of particle physics.  
  First developed to compute the relic density of dark matter, 
  the code also computes the rates for dark matter direct and  indirect detection. 
- \micro~ calculates CDM properties in the framework of a model of particle
- interactions presented in CalcHEP format \cite{Pukhov:2004ca}. 
+ \micro\ calculates CDM properties in the framework of a model of particle
+ interactions presented in \calchep\ format \cite{Pukhov:2004ca}. 
  It is assumed that the model is invariant under  a discrete symmetry like R-parity (even for 
 all standard particles and odd for some new particles including the dark matter candidate) which ensures 
-the stability of the lightest  odd particle (LOP).  The CalcHEP
- package is included in \micro~ and used for matrix elements calculations.
+the stability of the lightest  odd particle (LOP).  Similarly in two-component dark matter models,  a discrete symmetrie that guarantees the stability of the lightest particle in each of the two dark matter sectors  is assumed. The \calchep\
+ package is included in \micro\ and used for matrix elements calculations.
 All annihilation and coannihilation channels are included in the computation of the relic density. 
-This manual gives an up-to-date description of all \micro~ functions.  
+This manual gives an up-to-date description of all \micro\ functions.  
 The methods used to compute the different dark matter properties are described 
 in references 
 ~\cite{Belanger:2001fz,Belanger:2004yn,Belanger:2006is,Belanger:2008sj,Belanger:2010gh,Belanger:2013oya}.
@@ -103,12 +107,13 @@ These references also contain  a more complete description of the code. In the f
 the cold dark matter candidate also called LOP or weakly-interactive massive particle (WIMP)
 will be denoted by $\chi$. 
 
-\micro~ contains both C and Fortran routines. Below we describe only the
+\micro\ contains both C and Fortran routines. Below we describe only the
 C-version of the routines,  in general we use the same  names
  and the same types of argument for both  C and Fortran functions. 
 We always use \verb|double(real*8)| variables for float point numbers and 
 \verb|int(INTEGER)| for integers. In this manual we use {\it FD} for  file descriptor 
 variables, the file descriptors  are  \verb|FILE*| in C and {\tt channel number} in Fortran. 
+For C-functions which return values different from integer and real number,  the first parameter in the corresponding Fortran subroutine presents  the return value.  
 The symbol \verb|&| before the names of variables in C-functions stands for 
 the address of the variable. It is used for  {\it output
 parameters}. In Fortran calls there is no need for \verb|&|
@@ -119,17 +124,16 @@ parameters of  {\it character}, {\it integer}  and {\it real*8}  type respective
 
 A few C-functions use pointer variables that specify an {\it address} in 
 the computer memory. Because pointers do not exist in  Fortran,
-%{\color{green} one uses any other type of variable whose length is sufficient to store a computer address, for example {\it INTEGER*8}}
   we use  an {\tt INTEGER*8} variable  whose length is sufficient to store a computer address.
 
 The complete format  for all functions can be found in
-\verb|include/micromegas.h| (for C) or
-\verb|include/micromegas_f.h| (for Fortran). Examples on how to use these functions are provided   
+\verb|include/.h| (for C) or
+\verb|include/_f.h| (for Fortran). Examples on how to use these functions are provided   
 in the MSSM/main.c[F] file. 
  
 \section{Discrete symmetry in \micro.}
 
- \micro~ exploits the fact that models of dark matter exhibit a discrete symmetry
+ \micro\ exploits the fact that models of dark matter exhibit a discrete symmetry
 and that the fields  of the model transform as 
 $   \phi \to e^{i2\pi X_{\phi}} \phi$
 where the charge $|X_{\phi}|<1$. 
@@ -138,20 +142,20 @@ are assumed to transform trivially under the discrete symmetry, $X_\phi=0$. In t
  charge $X_\phi\neq 0$  will be called 
  {\it odd} and the  lightest odd particle  will be  stable. If neutral, it can be considered as a DM candidate.
 Typical  examples  of discrete symmetries used for constructing single DM models  are $Z_2$ and  $Z_3$. 
-Multi-component DM can arise in models with larger discrete symmetries. A simple 
+Multi-component DM can arise in models with larger discrete groups. A simple 
 example is a model with  $Z_2\times Z_2'$ symmetry, the particles charged under  $Z_2$($Z_2'$) will belong to the first (second) dark sector. The lightest particle of each sector  will be stable and therefore a potential DM candidate. 
 Another example is a model with a $Z_4$  symmetry.  The two dark sectors contain particles with $X_\phi=\pm 1/4$ and $X_\phi=1/2$ respectively. The lightest particle with  charge $1/4$ is always stable while the lightest particle of charge $1/2$ is stable only if its decay into two particles of charge $1/4$ is kinematically forbidden.
- \micro~ assumes that all odd particles have  names
+ \micro\ assumes that all odd particles have  names
 starting with '\verb|~|', for example, \verb|~o1| for the lightest  
 neutralino. In versions 4.X, to distinguish the particles with different transformation properties with 
 respect to the discrete group, that is particles belonging to different 'dark' sectors,
 we use the convention that the names of particles in the second 'dark' sector starts with '\verb|~~|'. 
-Note that \micro~ does not check the symmetry of the Lagrangian, it assumes that the name convention 
+Note that \micro\ does not check the symmetry of the Lagrangian, it assumes that the name convention 
 correctly identifies  all particles with the same discrete symmetry quantum numbers.
 
   
-\section{Downloading and compilation of micrOMEGAs.}
-To   download  micrOMEGAs, go to    \\  
+\section{Downloading and compilation of \micro.}
+To   download  \micro, go to    \\  
 \verb|     http://lapth.cnrs.fr/micromegas|\\
 and unpack the file received, \verb|micromegas_|\VERSION\verb|.tgz|, with the command\\
 \verb|     tar -xvzf micromegas_|\VERSION\verb|.tgz|\\
@@ -161,23 +165,30 @@ In case of problems and questions\\
 \verb|     email: micromegas@lapth.cnrs.fr|\\
 
 
-\subsection{File structure of micrOMEGAs.}
+\subsection{File structure of \micro.}
 \label{file_structure}
+%\verb|cgwRun              | executable for Cygwin\\
+\verb|calc                | calculator\\
+\verb|calchep.ini         | specify the fonts for graphics in CalCHEP\\
 \verb|Makefile            |  to compile the kernel of the package               \\
-\verb|CalcHEP_src/        |        generator of matrix elements for micrOMEGAs    \\
-\verb|Packages/        |        external codes    \\
-\verb|clean           | to remove compiled files \\
-\verb|man/|         |   contains the manual: description of micrOMEGAs routines \\
+\verb|README              | short description on how to run the code\\
+\verb|CalcHEP_src/        |        generator of matrix elements for \micro   \\
+\verb|Packages/           |        external codes    \\
+\verb|clean               | to remove compiled files \\
+\verb|man/                |    contains the manual: description of \micro\ routines \\
 \verb|newProject          |     to create a new model directory   structure                           \\
-\verb|sources/            |        micrOMEGAs code                               \\
+\verb|sources/            |        \micro\ code                               \\
+\verb|include/            |        include files for \micro\ routines or external codes                              \\
+\verb|lib/                |        contains library micromegas.a when \micro\ is compiled                               \\
 {\it MSSM model directory}                                                          \\
 \verb|MSSM/               |                                                      \\
 \verb|   Makefile         |  to compile the code and executable for  this model \\
 \verb|   main.c[pp] main.F|       files with sample {\it main} programs      \\
 \verb|   lib/             |      directory for routines specific to this model   \\
 \verb|       Makefile     |   to compile the auxiliary code library {\it lib/aLib.a}    \\
-\verb|       *.c *.f      |      source codes of auxiliary functions             \\
-\verb|   work/            |              CalcHEP working directory for the generation of   \\
+\verb|       *.c *.f  *.h *.inc   |      source codes of auxiliary functions             \\
+\verb|   lanhep/            |          directory containing lanhep source model files   \\
+\verb|   work/            |              \calchep\ working directory for the generation of   \\
 \verb|                    |             matrix elements                                    \\
 \verb|       Makefile     |  to compile the library {\it work/work\_aux.a}           \\ 
 %\verb|       work_aux.a   | information about  parameters and particles.      \\
@@ -187,36 +198,38 @@ In case of problems and questions\\
 \verb|         func1.mdl  |  constrained variables   \\
 \verb|         prtcls1.mdl|  particles  \\
 \verb|         lgrng1.mdl |   Feynman rules\\
-\verb|       tmp/         | auxiliary directories for CalcHEP sessions    \\
+\verb|       tmp/         | auxiliary directories for \calchep\ sessions    \\
 \verb|       results/  |                                                  \\
-\verb|       so_generated/|   storage  of  matrix elements generated by CalcHEP \\
-\verb|    calchep/        |   directory for interactive CalcHEP sessions    \\
+\verb|       so_generated/|   storage  of  matrix elements generated by \calchep \\
+\verb|    calchep/        |   directory for interactive \calchep\ sessions    \\
 {\it Directories of other models which have the same structure as} {\tt  MSSM/ }\\
 \verb| NMSSM/             |         Next-to-Minimal Supersymmetric Model\cite{Ellwanger:2006rn,Belanger:2005kh} \\
 \verb| CPVMSSM/           |         MSSM with complex parameters\cite{Lee:2003nta,  Belanger:2006qa} \\
 \verb| UMSSM/             |         U(1) extensions of the MSSM\cite{DaSilva:2013jga,Belanger:2015cra} \\
 \verb| IDM/               |         Inert Doublet Model\cite{Barbieri:2006dq}  \\
 \verb| LHM/               |         Little Higgs Model\cite{Belyaev:2006jh} \\
-\verb| RHNM/              |         Right-handed Neutrino Model\cite{Belanger:2007dx}                  \\
-\verb| SM4/               |            Toy model with a 4th generation of lepton and neutrino DM   \\
-\verb| Z3M/               |           A model with scalar DM and $Z_3$ discrete
-symmetry|\cite{Belanger:2012vp,Belanger:2014bga} \\
-\verb| Z4ID/              |           A model with $Z_4$
-symmetry|\cite{Belanger:2012vp,Belanger:2014bga} \\  
+\verb| Z3IDM/             |        Inert doublet model  with $Z_3$ discrete
+symmetry \cite{Belanger:2012vp,Belanger:2014bga} \\
+\verb| Z4IDSM/            |         Inert doublet and singlet model with $Z_4$
+symmetry \cite{Belanger:2012vp,Belanger:2014bga} \\  
 \verb| mdlIndep/          |           For model independent computation of DM signals                                 \\
 
+Other models can be dowloaded on the  web,  \verb|http://lapth.cnrs.fr/micromegas|, for example :
+\verb| RHNM|, a right-handed Neutrino Model\cite{Belanger:2007dx},          
+\verb| SM4|, a toy model with a 4th generation of leptons and neutrino DM, as well as
+\verb| Z5M|, a two scalar singlets with  a $Z_5$ symmetry model.
 
-\subsection{Compilation of CalcHEP and micrOMEGAs routines.}
-   CalcHEP and micrOMEGAs are compiled by {\it gmake}. Go to the micrOMEGAs directory
+\subsection{Compilation of \calchep\ and \micro\ routines.}
+   \calchep\ and \micro\ are compiled by {\it gmake}. Go to the \micro\ directory
 and launch\\
 \verb|     gmake|\\
 If {\tt gmake} is not available, then {\tt make} should work like {\tt gmake}.
-In principle  micrOMEGAs  defines automatically the names of {\it C} and {\it
+In principle \micro\ defines automatically the names of {\it C} and {\it
 Fortran} compilers and the flags for
 compilation. If you meet a  problem, open the file which contains the compiler specifications, 
 \verb|CalcHEP_src/FlagsForSh|,
  improve it, and launch {\tt [g]make} 
-again. The file  is written is {\bf sh} script format and looks like
+again. The file  is written in {\bf sh} script format and looks like
 \begin{verbatim}
          # C compiler
          CC="gcc"
@@ -231,7 +244,7 @@ again. The file  is written is {\bf sh} script format and looks like
          FFLAGS="-fno-automatic"
          ........
 \end{verbatim}
-After a successful definition of compilers and their flags,   micrOMEGAs rewrites the file 
+After a successful definition of compilers and their flags,   \micro\ rewrites the file 
  {\it FlagsForSh} into {\it FlagsForMake} and substitutes its contents in all {\it
 Makefile}s of the package.\\
 \verb|     [g]make clean|    deletes all generated files, but asks permission to
@@ -254,8 +267,8 @@ change  flags before compilation of codes.
 %\end{verbatim}
 
 \subsection{Module structure of main programs.}
-Each model included in micrOMEGAs  is accompanied with sample files for
-C and Fortran programs which call micrOMEGAs routines, the {\it main.c}, {\it main.F} files.  
+Each model included in \micro\  is accompanied with sample files for
+C and Fortran programs which call \micro\ routines, the {\it main.c}, {\it main.F} files.  
 These files   consist of
 several modules enclosed between the instructions
 \begin{verbatim}
@@ -268,43 +281,37 @@ Each of these blocks  contains some code for a specific problem
 \begin{verbatim}
 #define MASSES_INFO        //Displays information about mass spectrum 
 #define CONSTRAINTS        //Displays B_>sgamma, Bs->mumu, etc
+#define HIGGSBOUNDS        //calls HiggsBounds/HiggsSignal to constrain the Higgs sector
+#define LILITH             //calls LiLith to constrain the Higgs sector
+#define SModelS            //calls SModelS to constrain the new physics sector
 #define OMEGA              //Calculates the relic density 
 #define INDIRECT_DETECTION //Signals of DM annihilation in galactic halo
-#define LoopGAMMA   //Gamma-Ray lines - available only in some models
-#define RESET_FORMFACTORS //Redefinition of Form Factors and other
+#define LoopGAMMA          //Gamma-Ray lines - available only in some models
+#define RESET_FORMFACTORS  //Redefinition of Form Factors and other
                            //parameters 
 #define CDM_NUCLEON        //Calculates amplitudes and cross-sections
                            //for DM-nucleon collisions 
-#define CDM_NUCLEUS       //Calculates number of events for 1kg*day
-                         //and recoil energy distribution for various nuclei
-#define NEUTRINO         //Calculates flux of solar neutrinos and
-                         //the corresponding muon flux 
-#define DECAYS           //Calculates decay widths and branching ratios  
-#define CROSS_SECTIONS   //Calculates cross sections 
-#define CLEAN         // Removes intermediate files.
-#define SHOWPLOTS  //Displays  graphical plots on the screen
-\end{verbatim}
+#define CDM_NUCLEUS        //Calculates number of events for 1kg*day
+                           //and recoil energy distribution for various nuclei
+#define NEUTRINO           //Calculates flux of solar neutrinos and
+                           //the corresponding muon flux 
+#define DECAYS             //Calculates decay widths and branching ratios  
+#define CROSS_SECTIONS     //Calculates cross sections 
+#define CLEAN              //Removes intermediate files.
+end{verbatim}
 }
-Other modules which require a link to external programs can also be defined,  in this case the path to the required code must be specified, for example 
 
-%{\small
-%\begin{verbatim}
-%#define HIGGSBOUNDS "../Packages/HiggsBounds-4.0.0"
-%\end{verbatim}
-%}
+There is a flag \\
 
-{\small
-\begin{verbatim}
-#define LILITH "../Packages/Lilith-1.1.2"
-\end{verbatim}
-}
-Note that HiggsBounds and HiggsSinals are no longer included in the \micro's distribution and must  be installed separately by the user.
+#define SHOWPLOTS          //which switches on graphic facilities of \micro.
+
+Note that HiggsBounds and HiggsSinals are no longer included in the \micro's distribution, they are uploaded from our website at first compilation when the option is activated.  
 
 All these modules are completely independent. The user can comment or
 uncomment any set of {\it define} instructions to suit his/her need. 
 
 \subsection{Compilation of codes for specific models.}
- After the compilation of micrOMEGAs one has to compile
+ After the compilation of \micro\ one has to compile
 the executable to compute DM related observables in a specific model. To
 do this, go to the model directory, say MSSM,  and launch\\
 
@@ -368,7 +375,7 @@ global parameters  and their default values  are given  in Tables
 \ref{paramTab}, \ref{FFTab}. 
 The numerical value for any of these parameters can be simply reset anywhere in the code. 
 The numerical values of  the scalar quark form factors can also be reset by the {\tt
-calcScalarQuarkFF} routine presented below. Some physical values  evaluated by \micro~  also are presented as global variables,  see Table \ref{paramTabEval}. 
+calcScalarQuarkFF} routine presented below. Some physical values  evaluated by \micro\  also are presented as global variables,  see Table \ref{paramTabEval}. 
 
 \begin{table}[htbp]
  \caption{Global input parameters of \micro}
@@ -480,8 +487,8 @@ The constrained parameters of the model are stored in \verb|work/models/func1.md
 these parameters are treated as {\it public} parameters. The {\it public} parameters include 
 by default all particle masses 
 and all parameters  whose calculation requires external functions (except simple
-mathematical functions like $\sin,\cos$ .. ). The parameters
-listed above any {\it public} parameters in  \verb|work/models/func1.mdl|
+mathematical functions like $\sin,\cos$, ... ). The parameters needed for the calculation of any 
+{\it public} parameters in  \verb|work/models/func1.mdl|
 are also treated as {\it public}. 
 It is possible to enlarge the list of {\it public} parameters. There are two ways to do this. 
 One can type \verb|*| before a parameter name to make it {\it public} or one 
@@ -490,10 +497,7 @@ can add a  special record in \verb|work/models/func1.mdl|
 %Local! |   
 \end{verbatim}
 Then all parameters listed above this record  become {\it public}. 
-See example in
-\begin{verbatim} 
-         MSSM/work/models/func1.mdl 
-\end{verbatim}
+
 
 The calculation of the particle spectrum and of all  {\it public} model constraints 
 is  done with:\\
@@ -519,7 +523,7 @@ $Mcdm_i=0$ and   $CDM_i$=NULL (in Fortran  the string  if filled by space symbol
 $\bullet$ \verb|qNumbers(pName, &spin2,&charge3,&cdim)|\\
 returns the quantum numbers for the particle \verb|pName|. Here \verb|spin2| is twice the spin of the particle; \verb|charge3| is 
 three times the electric charge; \verb|cdim| is the  dimension of the representation
-of $SU(3)_c$, it can be $1,3,-3$ or $8$. The parameters {\tt spin2, charge3, cdim} are 
+of $SU(3)_c$, it can be $1,3,-3,6,-6$ or $8$. The parameters {\tt spin2, charge3, cdim} are 
 variables of type {\tt int}. The value returned 
 is the {\tt PDG} code. If \verb|pName| does not correspond to any
 particle of the model then \verb|qNumbers| returns zero.
@@ -529,34 +533,42 @@ particle of the model then \verb|qNumbers| returns zero.
 $\bullet$  \verb|pdg2name(nPDG)| \\
 returns  the name of  the particle which PDG code is {\it nPDG}. If this particle does not exist in the model
 the return value is NULL.  In the FORTRAN version this function
-is \verb|Subroutine pdg2name(nPDG, pName)| and the character variable
+is \verb|Subroutine pdg2name(pName,nPDG)| and the character variable
 \verb|pName| consists of white
 spaces if the particle does not exist in the model. 
 
 \noindent
+$\bullet$  \verb|antiParticle(pName)| \\
+returns  the name of the anti-particle for the particle \verb|pName|.
+
+\noindent
 $\bullet$  \verb|pMass(pName)| \\
 returns  the numerical value of the particle mass.
+
 
 \noindent
 $\bullet$  \verb|nextOdd(n, &pMass)| \\
 returns the name and mass of the $n^{th}$ odd particle assuming that particles are 
 sorted according to increasing masses. For $n=0$ the output specifies the 
 name and the mass of the CDM candidate. In the FORTRAN version this function 
-is \verb|Subroutine nextOdd(n,pName,pMass)| 
+is \verb|Subroutine nextOdd(pName,n,pMass)| 
 
 \noindent
 $\bullet$ \verb|findVal(name,&val)|\\
  finds the  value of
  variable  {\it name} and assigns it to parameter {\it val}. It returns a non-zero
-value  if it cannot recognize  a parameter name. \\
+value  if it cannot recognize  a parameter name.\\
+
 
 \noindent
 $\bullet$ \verb|findValW(name)| 
 just returns the value of variable {\it name} and writes an error message
 if it cannot recognize  a parameter name.
-The variables accessible by these commands are all free parameters and   the 
+
+The variables accessible by these two commands are all free parameters and   the 
 constrained parameters of the model (in file \verb|model/func1.mdl|)
-treated as {\it public}. 
+treated as {\it public}. \\
+
 
 The following routines are used to display the value of the independent and the constrained 
 {\it public}
@@ -571,8 +583,8 @@ $\bullet$ \verb|printMasses(FD, sort)|\\
  prints the masses of 'odd' particles
 (those whose names  started with \verb|~|). If $sort\ne 0$
 the masses are sorted so the mass of the CDM is given first.\\
-$\bullet$ \verb|printHiggsMasses(FD, sort)|\\
-prints the masses and widths of 'even' scalars.\\
+$\bullet$ \verb|printHiggs(FD, sort)|\\
+prints the masses and widths of 'even' colorless scalars.\\
 
 
 \section{Relic density calculation.}
@@ -583,12 +595,12 @@ $\bullet$\verb|VWdecay,VZdecay|\\
 Switches to turn on/off  processes with off-shell gauge bosons in the final state for DM annihilation and particle decays.
 If \verb|VW/VZdecay=1|, the  3-body final states will be computed for annihilation processes only while 
 if \verb|VW/VZdecay=2| they will be included in coannihilation processes as well.
-By  default  the switches are set to (\verb|VW/VZdecay=1|). \footnote{Including the 3-body final states can significantly increase the execution time for the relic density computation.}
-Note that \micro~ calculates the width of each particle only once and stores the
+By  default  the switches are set to (\verb|VW/VZdecay=1|).\footnote{Including the 3-body final states can significantly increase the execution time for the relic density computation.}
+Note that \micro\ calculates the width of each particle only once and stores the
 result in {\it Decay Table}.  A second call to the function \verb|pWidth| (whether an explicit call or within the computation of a cross section)   will return the same result  even if the user has changed the {\tt VW/VZdecay} switch.  
 We recommend to call\\
 $\bullet$\verb|cleanDecayTable()| \\
-after changing the switches to force \micro~ to recalculate the widths taking into account  the new value of {\tt VW/VZdecay}.
+after changing the switches to force \micro\ to recalculate the widths taking into account  the new value of {\tt VW/VZdecay}.
 In Fortran, the subroutine\\
 $\bullet$ \verb|setVVdecay(VWdecay,VZdecay)| changes the
 switches and calls {\tt cleanDecayTable()}.
@@ -606,11 +618,12 @@ The temperature dependence of the effective number of degrees of freedom can be 
 allows to modify the temperature dependence of the effective number of degrees of freedom
 by loading the file \verb|fname| which contains a table of $h_{eff}(T), g_{eff}(T)$ . 
 A positive  return value corresponds to the number of lines in the table. A negative return value indicates the line which creates a problem (e.g. wrong format), the routine returns zero when the file \verb|fname| cannot be opened.  The default file is \verb|std_thg.tab| and is downloaded automatically if 
-loadHeffGeff is not called is user's main program. Five other files are provided in the sources/data directory:  \verb|HP_A_thg.tab|,  \verb|HP_B_thg.tab|, \verb|HP_B2_thg.tab|,  \verb|HP_B3_thg.tab|,    and \verb|HP_C_thg.tab|. They   correspond to sets A, B, B2, B3, C in ~\cite{Hindmarsh:2005ix}.
+loadHeffGeff is not called is user's main program~\cite{Gondolo:2004sc}. Five other files are provided in the sources/data directory:  \verb|HP_A_thg.tab|,  \verb|HP_B_thg.tab|, \verb|HP_B2_thg.tab|,  \verb|HP_B3_thg.tab|,    and \verb|HP_C_thg.tab|. They   correspond to sets A, B, B2, B3, C in~\cite{Hindmarsh:2005ix}.
 The user can substitute his/her own table as well, if so, the file must contain three columns containing the numerical values for $T$, $h_{eff}$, $g_{eff}$, the data file can also contain comments for lines starting with \verb|#|.
 
-\noindent$\bullet$\verb|improveCrossSection( p1,p2,p3,p4, Pcm, &address)|\\
-allows to substitute a new cross-section for a given process. Here \verb|p1,p2| are the names of particles in the initial state and \verb|p3,p4| those in the final state. \verb|Pcm| is the center of mass momentum and \verb|address| ... This function is useful if for example the user wants to include her/his one-loop improved cross-section calculation in the relic density computation.
+\noindent$\bullet$\verb|improveCrossSection( p1,p2,p3,p4, Pcm, &cs)|\\
+allows to substitute a new cross-section for a given process. Here \verb|p1,p2| are the names of particles in the initial state and \verb|p3,p4| those in the final state. \verb|Pcm| is the center of mass momentum and \verb|cs| is the cross-section in [pb]. This function is useful if for example the user wants to include her/his one-loop improved cross-section calculation in the relic density computation.This function has to be written by the user. The corresponding code can be placed in the directory \verb|lib|. \micro~ will call this routine substituting \verb|&cs| by the new calculated cross-section. The dummy version of this routine contained in \micro~ does not change the default cross section. 
+
 
 
 \subsection{Calculation of relic density for one-component Dark Matter models.}
@@ -640,7 +653,7 @@ Here  $\tilde\alpha$, $\tilde\beta$, $\tilde\gamma$  is used for  {\tt Odd} part
 for {\tt Even}  particles.    ${\sigma}_{\tilde\alpha\tilde\beta\to x[\tilde\gamma/y]} $ is the cross section for the 
 corresponding  process  averaged over the spins of incoming particles and summed
 over the spins of outgoing particles. $\sigma_v$  should represent the rate of disappearance  of  {\tt Odd} particles, therefore
-when a final state particle has a non-zero decay branching ratio to odd particles, the  annihilation cross section for this process is multiplied by the corresponding branching ratio into all SM particles. For the same reason cross sections for  semi - annihilation processes  contribute to {\tt vSigma} with a factor $\frac{1}{2}$. $K_1,K_2$ are modified Bessel functions of the second kind, and 
+when a final state particle has a non-zero decay branching ratio to odd particles, the  annihilation cross section for this process is multiplied by the corresponding branching ratio of the decays into SM particles. For the same reason cross sections for  semi - annihilation processes  contribute to {\tt vSigma} with a factor $\frac{1}{2}$. $K_1,K_2$ are modified Bessel functions of the second kind, and 
 $m_{\tilde\alpha}$ and $g_{\tilde\alpha}$ stand for the  mass and the number of degrees of freedom of particle $\tilde\alpha$.
 Note, that if $\tilde\alpha \ne \tilde\beta$ that each
 ${\sigma}_{\tilde\alpha\tilde\beta}$ term will be presented  twice.
@@ -670,23 +683,23 @@ contains a textual description of annihilation processes.\\
 \times velocity$ for $2\to2$, $2\to3$, and $2\to4$ processes. \verb|T| is the temperature in
 [GeV],  $cc$ is the address of the code for each process. This address
 can be obtained by the function {\tt newProcess} presented in  Section
-\ref{cross_section}. The returned value  is given in {\tt [pb]}. 
+\ref{cross_section}. The returned value  is given in [c$\cdot$pb]. 
 
  If $mode\ne 0$, \verb|vSigmaCC|  calculates  the contribution of a given
 process to the total annihilation cross section,  see Eq.\ref{sigmaV}. The
- incoming particles should belong to the odd sector.  For $2\to2$ processes the result should
+ incoming particles should belong to the odd sector.  For $2\to2$ processes the result after summation over all subprocesses  should
 be identical to the one obtained via {\tt vSigma}  above. For this mode,
-verb|vSigmaCC|  includes combinatoric factors: $2$ if $\tilde\alpha \ne
+\verb|vSigmaCC|  includes combinatoric factors: $2$ if $\tilde\alpha \ne
 \tilde\beta$, an additional factor $2$ if the incoming state is not self-conjugated, and a factor
 $\frac{1}{2}$  for semi-annihilation.   
 
-If $mode=0$, {\tt vSigmaCC} is instead defined by the integral
+If $mode=0$, {\tt vSigmaCC} is  defined by the integral
 $$ <v \sigma^{\tilde\alpha\tilde\beta\to X}>_T=  \frac{1}{2 T
 m_{\tilde\alpha}^2 m_{\tilde\beta}^2
 K_2(\frac{m_{\tilde\alpha}}{T})K_2(\frac{m_{\tilde\beta}}{T})} \int ds \sqrt{s}
 K_1(\frac{\sqrt{s}}{T})p_{cm}^2(s)\sigma^{\tilde\alpha\tilde\beta\to X}(p_{cm}(s))$$  
 where $p_{cm}$ is the center of mass momentum of incoming particles.  Note that
-$$\lim_{T\to 0} {\rm vSigmaCC(T,cc)}=\lim_{p_{cm}\to 0} \sigma(p_{cm}) v_{rel}(p_{cm}) $$ 
+$$\lim_{T\to 0} {\rm vSigmaCC(T,cc,0)}=\lim_{p_{cm}\to 0} \sigma(p_{cm}) v_{rel}(p_{cm}) $$ 
 where   $v_{rel}(p_{cm})$ is the relative velocity of incoming particles.   The
 result of {\tt vSigmaCC} can be different from that of {\tt
 vSigma} described  above when there is an important contribution from NLSP's to the total
@@ -762,7 +775,7 @@ constant during the thermal evolution of the Universe,   see Ref.~\cite{Belanger
 $\bullet$\verb|dmAsymm|\\
 is defined by the equation 
 $$ \Omega_{\pm} = \Omega \frac{1 \pm {\rm dmAsymm}}{2}$$
-and evaluated  by \micro~ while calculating the relic density  with an
+and evaluated  by \micro\ while calculating the relic density  with an
 initial asymmetry \verb|deltaY|, see \cite{Belanger:2013oya}. 
 This parameter can also be reset  after the relic density 
 computation and will then be taken into account for direct and 
@@ -771,8 +784,8 @@ indirect detection rates.
 \noindent
 $\bullet$\verb|darkOmegaExt(&Xf, vs_a, vs_sa)|\\
 calculates the dark matter relic density $\Omega h^2$  
-for  annihilation cross sections  provided by an external 
-function. Here  \verb|vs_a| is the  annihilation cross section in [pb] as 
+for  annihilation cross sections  provided by  external 
+functions. Here  \verb|vs_a| is the  annihilation cross section in [c$\cdot$pb] as 
 a function of the temperature in [GeV] units while  \verb|vs_sa| 
 is the semi-annihilation cross section.  \verb|vs_a| is required for all models, 
 while \verb|vs_sa| is relevant only for models where semi-annihilation occurs.  The user 
@@ -816,7 +829,7 @@ $\bullet$\verb|vs|{\it abcd} \verb|F(T)|\\
 computes the sum of  the cross sections  
 for each class of reactions ($a,b,c,d=0,1,2$) tabulated during the calculation of the relic density. 
 Here  \verb|T| is the temperature in [GeV] and the 
-return value is $v\sigma$ in [pb].  These functions are defined in the interval [{\tt Tstart} , {\tt Tend}] where
+return value is $v\sigma$ in [c$\cdot$pb].  These functions are defined in the interval [{\tt Tstart} , {\tt Tend}] where
 {\tt Tstart} is a global parameter defined by \verb|darkOmega2|, {\tt Tend}=$10^{-3}{\rm GeV}$. Specifically the functions available are
 
 \begin{center}
@@ -863,14 +876,16 @@ Type{\rm FFP}q \;\;\; Type{\rm FFN}q \nonumber
 where $Type$ is either "Scalar", "pVector", or "Sigma",  FFP and FFN denote proton and neutron  and
 $q$ specifies the quark, $d,u$  or $s$. Heavy quark coefficients are calculated automatically.
 
-
+micrOMEGAs automaticaly takes into account loop contributions  from box
+diagrams as calculated in \cite{Drees:1993bu} (DM spin 1/2 case) and \cite{Hisano:2015bma}
+(DM spin 0 and 1 cases).
 
 \noindent$\bullet$
 {\tt calcScalarQuarkFF}($m_u/m_d$,$m_s/m_d$,$\sigma_{\pi N}$,$\sigma_s$)\\
 computes the scalar coefficients for the quark content in the nucleon from the quark mass ratios
 $m_u/m_d, m_s/m_d$ as well as from $\sigma_{\pi N}$ and $\sigma_s$.
 The default values given in Table  \ref{FFTab} are obtained for 
-$\sigma_s=42{\rm MeV},\sigma_{\pi N}=34{\rm MeV}$, $m_u/m_d=0.56, m_s/m_d=20.2$ ~\cite{Beringer:1900zz}.
+$\sigma_s=42{\rm MeV},\sigma_{\pi N}=34{\rm MeV}$, $m_u/m_d=0.56, m_s/m_d=20.2$~\cite{Beringer:1900zz}.
 The function calcScalarQuarkFF(0.553,18.9,55.,243.5)  will reproduce   the default values of the  scalar quark
 form factors used in micrOMEGAs2.4 and earlier  versions.
 
@@ -908,7 +923,7 @@ SxxXe131 SxxXe131A SxxXe131B
 \end{verbatim}
 The last character 
 is used to distinguish different implementations of
-the form factor for the same isotope, see details in ~\cite{Belanger:2008sj}.
+the form factor for the same isotope, see details in~\cite{Belanger:2008sj}.
 \end{itemize}
 The form factors for the spin independent (SI) cross section are defined by a Fermi distribution
 and depend on the global parameters \verb|Fermi_a|, \verb|Fermi_b|,
@@ -1088,7 +1103,7 @@ The DM density is given as the product of the local density at the Sun with the 
 \begin{equation}
 \rho(r)=\rho_\odot F_{halo}(r)
 \end{equation}
-In \micro~ $\rho_\odot$ is a global parameter {\tt rhoDM} and  the Zhao profile~\cite{Zhao:1995cp}
+In \micro\ $\rho_\odot$ is a global parameter {\tt rhoDM} and  the Zhao profile~\cite{Zhao:1995cp}
 
 \begin{equation}
 \label{rho}
@@ -1119,7 +1134,7 @@ that both {\tt setProfileZhao} and {\tt setProfileEinasto} call
 
 Dark matter annihilation in the Galaxy depends on the average of the square of the DM density, $<\rho^2>$. This quantity 
 can be significantly larger than $<\rho>^2$ when clumps of DM are present~\cite{Lavalle:2006vb}.  
-In \micro~,   we use  a simple model where $f_{cl}$ is a constant 
+In \micro,   we use  a simple model where $f_{cl}$ is a constant 
 that characterizes the fraction of the total density due to clumps
  and  where all clumps occupy  the
 same volume $V_{cl}$ and have a constant density $\rho_{cl}$. Assuming  clumps do not  overlap, we get 
@@ -1261,12 +1276,12 @@ recently  computed both in
 \wimpsim~\cite{Blennow:2007tw} and in 
 \pppc~\cite{Baratella:2013fya}. We use the set of tables
 provided by these two groups as well as  those from  {\tt DM$\nu$}
-\cite{Cirelli:2005gh}  which were included in previous versions of micrOMEGAs.
+\cite{Cirelli:2005gh}  which were included in previous versions of \micro.
 The new global parameter {\tt WIMPSIM}  allows to
-choose  the   neutrino spectra. The default value  {\tt WIMPSIM=0} \footnote{Since \pppc~ does not provide neutrino specrtra produced at the center of the
-Earth, in this case  and for {\tt WIMPSIM=0} micrOMEGAs uses the {\tt DM$\nu$} spectra.}
-corresponds to the \pppc spectra while  {\tt WIMPSIM=1} corresponds to the
-\wimpsim  spectra and  {\tt WIMPSIM=-1}  to the 
+choose  the   neutrino spectra. The default value  {\tt WIMPSIM=0} \footnote{Since \pppc\ does not provide neutrino specrtra produced at the center of the
+Earth, in this case  and for {\tt WIMPSIM=0} \micro\ uses the {\tt DM$\nu$} spectra.}
+corresponds to the \pppc\ spectra while  {\tt WIMPSIM=1} corresponds to the
+\wimpsim\  spectra and  {\tt WIMPSIM=-1}  to the 
  {\tt DM$\nu$} spectra. 
   
  %The parameter {\tt forSun=1} is used to compute the signature of DM annihilation in the Sun and {\tt Mdm} designates the  mass of the DM particle. \\
@@ -1295,10 +1310,10 @@ propagation is described by  the equation  \cite{Erkoca:2009by}
 \frac{dE}{dx}=-(\alpha +\beta E)\rho 
 \end{equation}
 For propagation in ice (the switch {\tt forRocks=0}),
- micrOMEGAs substitutes 
-$\rho= 1.0{\rm g/cm}^3$, $\alpha=0.00262 GeV {\rm cm}^2/{\rm g}$,  $\beta=3.5\times 10^{-6} {\rm cm}^2/{\rm g}$ ~\cite{Chirkin:2004hz}, while
+ \micro\ substitutes 
+$\rho= 1.0{\rm \, g/cm}^3$, $\alpha=0.00262 {\rm \, GeV} {\rm cm}^2/{\rm g}$,  $\beta=3.5\times 10^{-6} {\rm \, cm}^2/{\rm g}$~\cite{Chirkin:2004hz}, while
 for propagation in rocks, 
-$\rho= 2.6{\rm g/cm}^3$, $\alpha=0.002 GeV {\rm cm}^2/{\rm g}$,  $\beta=3.0\times 10^{-6} {\rm cm}^2/{\rm g}$ \cite{Erkoca:2009by}. 
+$\rho= 2.6{\rm \, g/cm}^3$, $\alpha=0.002 {\rm \, GeV} {\rm cm}^2/{\rm g}$,  $\beta=3.0\times 10^{-6} {\rm \, cm}^2/{\rm g}$ \cite{Erkoca:2009by}. 
 The result depends on the ratio $\alpha/\beta$ .
 
 \noindent $\bullet$ \verb|muonContained(nu,Nu,rho, muon)|
@@ -1331,7 +1346,7 @@ same as above.
 \subsection{Comparison with IceCube results}
 
 
-These functions are described in ~\cite{Belanger:2015hra} and allow to compare the predictions for the neutrino flux from DM captured in the Sun with results of IceCube22.
+These functions are described in~\cite{Belanger:2015hra} and allow to compare the predictions for the neutrino flux from DM captured in the Sun with results of IceCube22.
 
 \noindent
 $\bullet$ \verb|IC22nuAr(E)|\\
@@ -1360,7 +1375,7 @@ neutrino angular resolution in radians  as a function of energy.
 $\bullet$ \verb|exLevIC22( nu_flux, nuB_flux,&B)|\\
  calculates the  exclusion confidence  level  for number of signal events 
 generated by  given $\nu_{\mu}$ and  
-$\bar{\nu}_{\mu}$  fluxes, ~\cite{Belanger:2015hra}. The fluxes are assumed to be in
+$\bar{\nu}_{\mu}$  fluxes,~\cite{Belanger:2015hra}. The fluxes are assumed to be in
 $[\rm{GeV\;km}^2\;\rm{Year}]^{-1}$.  This function uses
 the \verb|IC22BGdCos(cs)| and \verb|IC22sigma(E)| angular distribution for background and 
 signal as well as the event files distributed  by IceCube22 
@@ -1368,7 +1383,7 @@ signal as well as the event files distributed  by IceCube22
 %presented by IceCube22 and channel distribution for background and signal.
 with  $\phi<\phi_{cut}=8^{\circ} $.  The returned parameter \verb|B| is a
 Basyan  factor which presents the ratio of likelihood functions for  model
-with  given fluxes and model  with null signal.  See details in ~\cite{Belanger:2015hra}.\\
+with  given fluxes and model  with null signal.  See details in~\cite{Belanger:2015hra}.\\
 \noindent  
 $\bullet$ \verb|fluxFactorIC22(exLev, nu,nuBar)|\\
 For given neutrino, \verb|nu|, and anti-neutrino fluxes, \verb|nuBar|, 
@@ -1389,8 +1404,8 @@ returns directly the particle width. If the  \verb|1->2|
 decay channels are kinematically accessible then only these channels are
 included in the width when \verb|VWdecay,VZdecay|$ = 0$.  If not, {\tt
 pWidth} compiles all open \verb|1->3| channels and use these for  computing the width.
-If all \verb|1->3| channels are kinematically forbidden, micrOMEGAs compiles \verb|1->4| channels.
-If \verb|VWdecay(VZdecay)|$\ne 0$, then micrOMEGAs  also computes the processes with virtual $W(Z)$ which 
+If all \verb|1->3| channels are kinematically forbidden, \micro\ compiles \verb|1->4| channels.
+If \verb|VWdecay(VZdecay)|$\ne 0$, then \micro\  also computes the processes with virtual $W(Z)$ which 
 are closed kinematically and adds these to the \verb|1->2| decay channels.
  Note that \verb|1->3| decay channels with a virtual W  will be computed even
 if the mass of the decaying particle exceeds the threshold for \verb|1->2| decays by several GeV's. This is done to ensure a 
@@ -1413,7 +1428,7 @@ lists the decays and their branching fractions and writes them in a file.
 $\bullet$ \verb|findBr(address,pattern)|\\ 
 finds the branching fraction for a specific decay channel specified in
 {\tt pattern},  a string containing the particle names 
-in the CalcHEP notation. The names are separated by commas or spaces and can be specified in any
+in the \calchep\ notation. The names are separated by commas or spaces and can be specified in any
 order. 
 
 \noindent
@@ -1459,7 +1474,7 @@ $\bullet$ \verb|procInfo2(address,nsub,N,M)|\\
 fills an array of
 particle names \verb|N| and an array of particle  masses \verb|M| for the subprocess \verb|nsub| ($1\leq nsub \leq ntot$) . These
 arrays have size $nin+nout$ and the elements are listed in the same order
-as in CalcHEP starting with the initial state, see the example in 
+as in \calchep\ starting with the initial state, see the example in 
 \verb|MSSM/main.c|.\\
 
 $\bullet$ \verb|widh1CC(address, &err)|\\
@@ -1527,15 +1542,15 @@ process will be calculated. In Fortran,  one should pass
 a blank string instead of NULL. 
 
 By default hCollider uses the {\tt cteq6l} structure function built-in
-the micrOMEGAs code. One can set any other parton distribution included in
-either micrOMEGAs or LHAPDF.  The list  of structure functions in micrOMEGAs can be
+the \micro\ code. One can set any other parton distribution included in
+either \micro\ or LHAPDF.  The list  of structure functions in \micro\ can be
 obtained with the command \\
 $\bullet$ \verb|PDFList| \\
 and one of these can be activated by\\ 
 $\bullet$ \verb|setPDF(name)|\\
 To work with other PDF's available in {\tt LHAPDF}  one should first define the environment
 variable {\tt LHAPDFPATH}  which specifies the path to the LHAPDF library. Then
-micrOMEGAs Makefile  links it automatically. The list of available LHAPDF
+\micro\ Makefile  links it automatically. The list of available LHAPDF
 distributions can be obtained with the command\\
 $\bullet$ \verb|LHAPDFList|\\
 and one of these can be activated by \\
@@ -1698,7 +1713,7 @@ and which ones are odd (``R-odd'') under the ${Z}_2$ symmetry;
 \end{itemize}
 %
 The first two are located in the same directory as {\tt main.c} and 
-are automatically written by \micro. A file containing the instructions to call  \smodels\ can be found in \verb|micromegas_4.3/include/SMODELS.inc| (or \verb|SMODELS.inc_f|).
+are automatically written by \micro. A file containing the instructions to call  \smodels\ can be found in \verb|\micro\_4.3/include/SMODELS.inc| (or \verb|SMODELS.inc_f|).
 
 
 
@@ -1744,28 +1759,31 @@ Limits from searches for a new massive Abelian gauge boson at the LHC, from LEP 
 
 \noi$\bullet$ \verb|Zinvisible()|\\
 returns 1 and prints a WARNING if the invisible width of the $Z$ boson of the Standard Model 
-is larger than 0.5 MeV (~\cite{Freitas:2014hra}) and returns 0 if this constraint is fulfilled.
+is larger than 0.5 MeV (\cite{Freitas:2014hra}) and returns 0 if this constraint is fulfilled.
 This routine can be used in any model with one DM where the $Z$ boson is  uniquely defined by its PDG=23 and whether the neutral LSP is its own antiparticle or not.\\
 
 \noi$\bullet$ \verb|Zprimelimits()|\\
-returns 1 if the mass of the $Z'$ boson is excluded or 0 otherwise. 
-Currently the latest $Z'$ search in the dilepton final state at $\sqrt{s} = 13$~TeV from ATLAS~\cite{ATLASZprime} is implemented.  
- The routine can be used for any $Z'$ uniquely defined by the PDG code 32. \\
-
+returns 0 if the scenario considered is not excluded by $Z'$ constraints, 1 if the point is excluded and 2 if both subroutines dealing with $Z'$ constraints cannot test the given scenario. The routine can be used for any $Z'$ uniquely defined by the PDG code 32.
+Currently two types of searches defined in different subroutines of \verb|Zprimelimits()| are implemented.
+The latest $Z'$ search in the dilepton final state at $\sqrt{s} = 13$~TeV from ATLAS~\cite{Aaboud:2016cth} is considered in the first subroutine \verb|Zprime_dilepton|. If the scenario considered is allowed or not tested by \verb|Zprime_dilepton|, a second subroutine called \verb|Zprime_dijet| analyses the point using constraints from LHC dijet searches at $\sqrt{s} = 8$~TeV~\cite{Aad:2014aqa,Khachatryan:2015sja,Khachatryan:2016ecr} and at $\sqrt{s} = 13$~TeV~\cite{ATLAS:2015nsi,Khachatryan:2015dcf}. This subroutine uses the recasting  performed  in \cite{Fairbairn:2016iuf} for a combination of ATLAS and CMS searches.\\
 
 \noi$\bullet$   \verb|LspNlsp_LEP()|\\
 checks  the ocmpatibility with the upper limit \cite{Abbiendi:2003sc} on the cross section for the production of neutralinos 
 $\sigma(e^+e^-\rightarrow \neuto\neuti)$, $i\neq 1$, when the heavier neutralino decays into quark pairs 
 and the LSP, $\neuti \rightarrow \neuto q\bar{q}$. The function  
  returns $\sigma \times BR = \sum_i \sigma(e^+e^-\rightarrow \neuto\neuti)\times {\rm BR}(\neuti \rightarrow \neuto q\bar{q})$ in pb as well as a flag greater than one if $\sigma \times BR>0.1(0.5)$~pb if $m_{\rm NLSP}> (<)100$~GeV \cite{Abbiendi:2003sc}. 
-This function can also be applied for non-SUSY models which feature the same signature, in this case the function will compute the cross section for production of the LSP and any other neutral particle from the odd sector which can decay into the LSP and a $Z$ boson.
+This function can also be applied for non-SUSY models which feature the same signature, in this case the function will compute the cross section for production of the LSP and any other neutral particle from the odd sector which can decay into the LSP and a $Z$ boson.\\
 
 
+\noi$\bullet$   \verb|monoJet(pName1,pName2)|\\
+computes the cross section for $p,p\rightarrow$ \verb|pName1,pName2|$ +jet$ at $\sqrt{s}=8$~TeV 
+where \verb|pName1|, \verb|pName2| are the names of neutral outgoing particles and $jet$ includes light quarks (u,d,s)  and gluons.
+The function returns  the resulting  CL  obtained with the CLs technique~\cite{Read:2002hq,Read:2000ru} for each  signal region (SR) of the 8~TeV mono-jet CMS analysis~\cite{Khachatryan:2014rra} and chooses the most constraining one.
 
 
 
 \section{Additional routines for specific models}
-The models included in \micro~ contain some specific routines
+The models included in \micro\ contain some specific routines
 which we describe here for the sake of completeness. The current 
 distribution includes the following models: {\tt MSSM, NMSSM, CPVMSSM, UMSSM, IDM}  (inert doublet model), {\tt LHM}(little Higgs model),
 {\tt RHNM} (a Right-handed Neutrino model), SM4 (toy model with 4th generation lepton), and {\tt Z3M} (doublet and singlet model with $Z_3$ symmetry). 
@@ -1886,7 +1904,7 @@ returns the value of the supersymmetric contribution to the
 anomalous magnetic moment of the muon.
 
 \noi$\bullet$ \verb|Rl23()|\\
-computes the ratio of the MSSM to SM value for $R_{l23}$ in $K^+\rightarrow \mu\nu$  due to a  charged higgs contribution, see Eq.70 in ~\cite{Belanger:2013oya}. 
+computes the ratio of the MSSM to SM value for $R_{l23}$ in $K^+\rightarrow \mu\nu$  due to a  charged higgs contribution, see Eq.70 in~\cite{Belanger:2013oya}. 
 
 \noi$\bullet$ \verb|dtaunu(&dmunu)|\\
 computes the branching ratio  for ${D}_s^+\rightarrow\tau^+\nu_\tau$. \verb|dmunu| 
@@ -1901,7 +1919,7 @@ The constraint on the light Higgs mass from the LHC is included.
 
 We have added a routine for an interface with {\tt superIso}
 \cite{Arbey:2011zz}. This code is not 
-included in micrOMEGAs so one has first to define 
+included in \micro\ so one has first to define 
 the global environment  variable {\it superIso} 
 to specify the path to the package.\\ 
 \noi$\bullet$ \verb|callSuperIsoSLHA()|\\
@@ -1920,12 +1938,12 @@ $\frac{cm^3}{s}$. In case of a problem the function returns a non-zero value.
 
 As in the {\tt MSSM} there are specific routines to compute the  
 parameters of the model as  specified in SLHA. The spectrum calculator is \verb|NMSPEC|~\cite{Ellwanger:2006rn}
- in the \verb|NMSSMTools_4.4.1| package~\cite{nmssmtools}.
+ in the \verb|NMSSMTools_5.0.1| package~\cite{nmssmtools}.
 
-\noindent$\bullet$ \verb|nmssmEWSB(void)|\\
+\noindent$\bullet$ \verb|nmssmEWSB()|}\\
 calculates the masses of Higgs and supersymmetric particles in the NMSSM
-starting from the weak scale input parameters. These  can be downloaded by the 
-{\tt readVarNMSSM} routine.~\cite{Ellwanger:2005dv}\\   
+starting from the weak scale input parameters~\cite{Ellwanger:2005dv}. These  can be downloaded by the 
+{\tt readVarNMSSM} routine.\\   
 \noindent$\bullet$ \verb|nmssmSUGRA(m0,mhf,a0,tb,sgn,Lambda,aLambda,aKappa)|\\
 calculates the parameters of the NMSSM starting from the input parameters of 
 the \verb|CNMSSM|.
@@ -1935,11 +1953,11 @@ The routines for computing constraints are taken from NMSSMTools (see details  i
 \noindent
 $\bullet$ {\tt bsgnlo(\&M,\&P), bsmumu(\&M,\&P), btaunu(\&M,\&P),  gmuon(\&M,\&P)}\\ 
 are the same as in the MSSM case.  Here the output parameters {\tt M} and {\tt P} 
-give information on the lower/upper experimental limits ~\cite{Domingo:2007dx}
+give information on the lower/upper experimental limits~\cite{Domingo:2007dx}
 
 
 
-\noindent$\bullet$ \verb|deltaMd(),deltaMs()|\\
+\noindent$\bullet$ {\tt deltaMd(\&M,\&P),deltaMs(\&M,\&P)}\\
 compute the supersymmetric contribution to the $B^0_{d,s}-\overline{B^0}_{d,s}$ mass differences, $\Delta M_d$ and $\Delta M_s$.
 
 \noindent$\bullet$ \verb|NMHwarn(FD)|\\
@@ -1963,7 +1981,7 @@ mixing matrices and parameters of the effective Higgs potential are read
 directly from CPsuperH~\cite{Lee:2003nta,Lee:2007gn}, together with the masses and
 the mixing matrices of the neutralinos, charginos and third generation
 sfermions.  Masses of the first two generations
-of sfermions are evaluated (at tree-level) within \micro~ in
+of sfermions are evaluated (at tree-level) within \micro\ in
 terms of the independent parameters of the model.
 
 The routines for computing constraints are taken from CPsuperH,~\cite{CPSUPERH}
@@ -1997,6 +2015,7 @@ All  masses, mixing matrices and parameters of the different sectors of the mode
 are computed by \micro~\cite{DaSilva:2013jga,Belanger:2015cra}.
 
 Some routines for computing constraints were taken from the {\tt MSSM} and were adapted to the UMSSM. For example
+
  \noi$\bullet$ \verb|masslimits()|
 which is essentially the same as in the {\tt MSSM} except that
 the constraint on the light Higgs mass from the LHC was removed
@@ -2008,11 +2027,35 @@ a pure UMSSM tree-level contribution from the extended Abelian gauge boson secto
 Two other routines in C are included, \verb|Zinvisible()| and \verb|Zprimelimits()| that were defined above. 
 
 
-The remaining routines for computing $B$-physics and Higgs observables as well as the anomalous magnetic moment of the muon
-were taken from \verb|NMSSMTools_4.7.1| and adapted to the UMSSM~\cite{DaSilva:2013jga}.
-To call these routines \verb|UMSSMTools()| has to be given. The result is contained in four files (\verb|UMSSM_inp.dat|,
+The remaining routines for computing $B$-physics, $K$-physics and Higgs observables as well as the anomalous magnetic moment of the muon
+were taken from \verb|NMSSMTools_5.0.1| and adapted to the UMSSM~\cite{DaSilva:2013jga,Domingo:2015wyn}.
+To call these routines use \verb|umssmtools(PDG_LSP)| where \verb|PDG_LSP| is the PDG code of the LSP. The result is contained in four files (\verb|UMSSM_inp.dat|,
 \verb|UMSSM_spectr.dat|, \verb|UMSSM_decay.dat| and \verb|SM_decay.dat|) and the WARNING messages from these routines
-can be displayed with \verb|slhaWarnings(stdout)|. See the \verb|README| of the UMSSM for further details.
+can be displayed with \verb|slhaWarnings(stdout)|.
+
+As in the NMSSM the following routines are available :
+
+\noindent
+$\bullet$ {\tt bsg(\&M,\&P), bsmumu(\&M,\&P), btaunu(\&M,\&P),  gmuon(\&M,\&P),deltamd(\&M,\&P),}\\
+{\tt deltams(\&M,\&P).}\\ 
+
+\noindent as well as the routines
+
+\noindent
+$\bullet$ {\tt bdg(\&M,\&P), bdmumu(\&M,\&P), bxislllow(\&M,\&P), bxisllhigh(\&M,\&P),}\\ 
+{\tt bxisnunu(\&M,\&P), bpkpnunu(\&M,\&P), bksnunu(\&M,\&P),}\\ 
+{\tt rdtaul(\&M,\&P), rdstaul(\&M,\&P)}
+
+\noindent to compute respectively $b\ra d\gamma$,  $B_d\to \mu^+\mu^-$, the $b \to s l^+l^-$ transition in the low ($[1,6]$~GeV$^2$) and high ($\geq14.4$~GeV$^2$) $m^2_{l^+l^-}$ ranges, $B \to X_s\nu\bar{\nu}$, $B^+ \to K^+\nu\bar{\nu}$, $B \to K^*\nu\bar{\nu}$, $R_D \equiv \frac{\textrm{BR}(B^+ \to D\tau^+\nu_{\tau})}{\textrm{BR}(B^+ \to Dl^+\nu_{l})}$ and 
+$R_{D^*} \equiv \frac{\textrm{BR}(B^+ \to D^*\tau^+\nu_{\tau})}{\textrm{BR}(B^+ \to D^*l^+\nu_{l})}$.
+
+The $K$-physics observables $K^+ \to \pi^+\nu\bar{\nu}$, $K_L \to \pi^0 \nu\bar{\nu}$, $\Delta M_K$ and $\epsilon_K$ can be computed respectively with
+
+\noindent
+$\bullet$ {\tt kppipnunu(\&M,\&P), klpi0nunu(\&M,\&P), deltamk(\&M,\&P), epsk(\&M,\&P).}\\ 
+
+\noindent
+See the \verb|README| of the UMSSM for further details.
 
 
 \section{Tools for new model implementation.}
@@ -2020,7 +2063,7 @@ can be displayed with \verb|slhaWarnings(stdout)|. See the \verb|README| of the 
 
 It is possible to  implement a new particle physics  model  in \micro.
 For this the model must be specified in the
-CalcHEP format. \micro~ then relies on CalcHEP 
+\calchep\ format. \micro\ then relies on \calchep\ 
 to generate the libraries for all matrix elements entering DM calculations. 
 Below we describe the main steps and tools for implementing a new model.
 
@@ -2029,20 +2072,19 @@ Below we describe the main steps and tools for implementing a new model.
 \item
 The command
 \verb|  ./newProject |{\it MODEL}\\
-launched from the root \micro~ directory  creates the directory 
-\verb|MODEL|. This directory and the subdirectories contain all files needed to run \micro~ with the
+launched from the root \micro\ directory  creates the directory 
+\verb|MODEL|. This directory and the subdirectories contain all files needed to run \micro\ with the
 exception of the new model files. 
 
 \item
-The new model files in the CalcHEP format should then be included in the
+The new model files in the \calchep\ format should then be included in the
  subdirectory {\it MODEL}\verb|/work/models|.  The files needed are
 \verb|vars1.mdl|,  \verb|func1.mdl|,  \verb|prtcls1.mdl|, \verb|lgrng1.mdl|,
-\verb|extlib1.mdl|. For more details on the format and content of model files see
-~\cite{Pukhov:2004ca}.
+\verb|extlib1.mdl|. For more details on the format and content of model files see~\cite{Pukhov:2004ca}.
 
 \item
 For odd particles and for the Higgs sector it is recommended to use the widths that are (automatically) calculated internally by 
-CalcHEP/micrOMEGAs. 
+\calchep/\micro. 
 For this  one has to add the '!' symbol before  
 the definition of the particle's width  in  the file \verb|prtcls1.mdl|, for example
 \begin{verbatim}
@@ -2080,7 +2122,7 @@ numerical values for the masses of light quarks.
 \subsection{Automatic width calculation}
 Automatic width calculation can be 
 implemented by  inserting the '!' symbol before the name of the particle width  in 
-the CalcHEP particle table (file prtcls1.mdl). In this case the width parameter 
+the \calchep\ particle table (file prtcls1.mdl). In this case the width parameter 
 should not be defined as a free or constrained parameter. 
 Actually the \verb|pWidth| function  described in section~\ref{cross_section} is  used for width calculation in this case.
 We recommend to use the
@@ -2100,7 +2142,7 @@ ignore this data in the SLHA file, see section~\ref{SLHA}.
 For models with a large number of parameters and various types of fields/particles such as  the MSSM, it is more convenient to use an automatic tool to implement 
 the model.  LanHEP is a  tool for Feynman  rules  generation. A few minor
 modifications to the default format of LanHEP have to be taken into account to get the model files into
-the \micro~ format. 
+the \micro\ format. 
 \begin{itemize}
 \item  The {\bf lhep}  command has to be launched with the {-ca} flag  
 \begin{verbatim}
@@ -2125,7 +2167,7 @@ instance:\\
 
 
 \item LanHEP does not generate the  file \verb|extlib1.mdl|.
-\micro~ works without  this file but it is required for a \calchep~ interactive session. 
+\micro\ works without  this file but it is required for a \calchep\ interactive session. 
 The role of this file is to provide the linker with the paths to all user's libraries
 needed at compilation. For example for the \verb|lib/aLib.a| library define
 \begin{verbatim}
@@ -2181,7 +2223,7 @@ Very often the calculation of the particle spectra for specific
 models is done by some external program which writes down 
 the particle masses, mixing angles and other 
 model parameters in a file with the so-called  {\bf SLHA} format~\cite{Skands:2003cj,Allanach:2008qq}. 
-The \micro~ program contains routines for  reading files in the SLHA format. 
+The \micro\ program contains routines for  reading files in the SLHA format. 
 Such routines can be very useful for the implementation of new models.
 %We present here this  routines  because they are can be very useful 
 %for model building.
@@ -2316,7 +2358,7 @@ $\bullet$ \verb| slhaWrite(fileName)|\\
 \verb|readSLHA| into the file. This function can be used for testing purposes. 
 
 SLHA  also describes the format of the information about particle decay widths.  
-Even though \micro~ also performs the width calculation, one might choose to read the information from the SLHA file. 
+Even though \micro\ also performs the width calculation, one might choose to read the information from the SLHA file. 
  
 
 
@@ -2340,14 +2382,14 @@ is terminated by zero.
 
 The functions \verb|slhaValExists|, \verb|slhaVal|, 
 \verb|slhaDecayExists|, \verb|slhaWidth| can be used directly 
-in CalcHEP model files, see an example in \\
+in \calchep\ model files, see an example in \\
 \verb|MSSM/calchep/models/func2.mdl|. Note that in this example the 
 call to \verb|slhaRead| is done within the function \verb|suspectSUGRAc|.
 
 
 \subsubsection{Writing an SLHA input file}
-We have included in the \micro~ package some routines which allow to write
-an SLHA input file and launch the spectrum generator via the CalcHEP 
+We have included in the \micro\ package some routines which allow to write
+an SLHA input file and launch the spectrum generator via the \calchep\ 
 {\it constraints} menu.  This way a new model can be implemented without the use of
 external libraries. The routines are called from \verb|func1.mdl|, see example below.
 
@@ -2443,7 +2485,7 @@ The function prototypes can be found in \\
 
 \section{Mathematical tools.}
 
-Some mathematical tools used by \micro~ are available only 
+Some mathematical tools used by \micro\ are available only 
 in C format. Prototypes of these functions can be found in
 \begin{verbatim}
        include/micromegas_aux.h 
@@ -2523,7 +2565,7 @@ $K_2$.\\
 \noindent$\bullet$ \verb|K1pole(x)=|$K_1(\frac{1}{x}) e^\frac{1}{x}
 \sqrt{\frac{2}{\pi x}}$ \verb|;    K2pole(x)=|$K_2(\frac{1}{x}) e^\frac{1}{x}
 \sqrt{\frac{2}{\pi x}}$   \\
-\micro~ uses these functions for calculating the  relic density. For
+\micro\ uses these functions for calculating the  relic density. For
 small $x=T/M_{cdm}$ they are represented by polynomials in x such that  large exponents
 in ratios of  Bessel functions  are cancelled symbolically.  
 
@@ -2585,7 +2627,7 @@ contributions. However in the last few years
  have changed the default value for the parameter $z_1=(m_c/m_b)^2$
  where $m_c$ is the $\overline{MS}$ running charm mass $m_c(m_b)$. Taking $z_1=0.29$ allows 
  to reproduce the NNLO result. 
- It is therefore no longer necessary to apply a shift to  the micromegas output of $b\rightarrow s\gamma$
+ It is therefore no longer necessary to apply a shift to  the \micro\ output of $b\rightarrow s\gamma$
  to reproduce the SM value. 
 
 
@@ -2602,8 +2644,8 @@ accounts for the $m_c$ dependence in $\bar{B}\rightarrow X_c e\bar\nu$.
 \begin{tabular}{|c|c|}
 \hline
 $B(\bar{B}\rightarrow X_c e\bar\nu)$ & 0.1064~\cite{Nakamura:2010zzi}\\
-$C_{sl}$ & 0.546 ~\cite{Gambino:2008fj}\\
-$|V_{ts}^*V_{tb}/V_{cb}|^2$ & 0.9613 ~\cite{Nakamura:2010zzi}\\
+$C_{sl}$ & 0.546~\cite{Gambino:2008fj}\\
+$|V_{ts}^*V_{tb}/V_{cb}|^2$ & 0.9613~\cite{Nakamura:2010zzi}\\
 $A$& 0.808\\
 $\lambda$ & 0.2253\\
 $\bar{\rho}$ & 0.132\\
@@ -2612,9 +2654,9 @@ $m_b/m_s$  & 50\\
 $\lambda_2\approx \frac{1}{4} (m^2_{B^*}-m^2_B)$ &  $0.12 {\rm GeV}^2$~\cite{Yao:2006px}\\
 $\alpha_s(M_Z)$ &0.1189 \\\hline
 \end{tabular}
-\caption{Default values in micrOMEGAs }
-\end{center}
+\caption{Default values in \micro }
 \label{tab:def}
+\end{center}
 \end{table}
 
 The CKM matrix elements in the Wolfenstein parametrisation given in Table~\ref{tab:def}
@@ -2641,21 +2683,10 @@ The two codes agree within 5\% most of the time.
 \includegraphics[width=8cm]{bsgiso.eps}
 \vspace{-.3cm}
 \caption{ Relative difference for $B(\bar{B}\rightarrow s\gamma)$ between micromegas$2.4$ and superIso$3.1$.
-the vertical lines show the $3\sigma$ experimentally measured value.Numeri
+the vertical lines show the $3\sigma$ experimentally measured value.
 }
 \end{figure}
 
 
 \bibliography{manual}
 \end{document}
-
-  
-  
-
-
-\bibitem{Numerical}
-W.~H.~Press, S.~A.~Teukolsky,
-W.~T.~Vetterling and  B.~P.~ Flannery,  
-"Numerical Recipes: The Art of Scientific Computing'', Cambridge University
-Press (2007).
-

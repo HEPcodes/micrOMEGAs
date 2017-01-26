@@ -67,7 +67,7 @@ C for SMODELS
       real*8 Rvalue
       character*30 analysis,topology,smodels_version
 C for LILITH
-      real*8 m2logL, m2logL_reference,pvalue
+      real*8 m2logL, m2logL_reference,pvalue,vPython1, vPython2
       integer exp_ndf,n_par,ndf
       character*100 call_lilith
       character*10  lilith_version
@@ -144,6 +144,7 @@ C      CALL printVar(6)
       if(LspNlsp_LEP(csLim).ne.0) write(*,fmt='("Excluded by LEP  by e+,e- -> DM q qbar, Cross section=",E10.2,"pb")') csLim
 #endif
 
+
 #ifdef HIGGSBOUNDS
       err=HBblocks("HB.in")
 
@@ -157,7 +158,7 @@ C      CALL printVar(6)
          m2logL_reference=0
          n_par=0
 #include "../include/Lilith.inc_f"
-         write(*,fmt='("LILITH(DB",A,"):  -2*log(L): ",F5.2,"; -2*log(L_reference): ",F5.2,"; ndf: ",I3"; p-value: ",F5.2)')  lilith_version,m2logL,m2logL_reference,ndf,pvalue
+         if(ndf.ne.0) write(*,fmt='("LILITH(DB",A,"):  -2*log(L): ",F5.2,"; -2*log(L_reference): ",F5.2,"; ndf: ",I3"; p-value: ",F5.2)')  lilith_version,m2logL,m2logL_reference,ndf,pvalue
       else
          write(*,*) "LILITH: there is no Higgs candidate"
       endif

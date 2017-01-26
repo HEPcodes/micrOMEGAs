@@ -11,6 +11,8 @@ static double Q_ren,Q_fact;
 static double GG=1.23;
 static double PcmOut, totcoef;
 static REAL pvect[20]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+static  int PC[5];  
+static  int chan=0; 
 
 
 static double eps=0.001;
@@ -62,6 +64,27 @@ double  dSigma_dCos(double  cos_f)
    r = (*sqme22)(nsub22,sqrt(4*M_PI*parton_alpha(GGscale)),pvect,NULL,&err_code);
    err_code=0;
    return r * totcoef;
+}
+
+static double kinematic_22(double PcmIn, double cs, REAL*pmass, REAL*pvect)
+{  int i;
+   for(i=0;i<16;i++) pvect[i]=0;
+   double sqrtS=sqrt(pmass[0]*pmass[0]+PcmIn*PcmIn)+sqrt(pmass[1]*pmass[1]+PcmIn*PcmIn);
+   double PcmOut = decayPcm(sqrtS,pmass[2],pmass[3]);
+//printf(" PcmOut =%E (%E %E %E) \n", PcmOut,sqrtS,pmass[2],pmass[3] );   
+   totcoef =  PcmOut /(32*M_PI*PcmIn*sqrtS*sqrtS);
+   pvect[3] = PcmIn;
+   pvect[7] =-PcmIn;
+   pvect[0] = sqrt(PcmIn*PcmIn   + pmass[0]*pmass[0]);
+   pvect[4] = sqrt(PcmIn*PcmIn   + pmass[1]*pmass[1]);
+   pvect[8] = sqrt(PcmOut*PcmOut + pmass[2]*pmass[2]);
+   pvect[12]= sqrt(PcmOut*PcmOut + pmass[3]*pmass[3]);
+
+   pvect[11]=PcmOut*cs;
+   pvect[15]=-pvect[11];  
+   pvect[10]=sqrt((PcmOut+pvect[11])*(PcmOut-pvect[11]));
+   pvect[14]=-pvect[10];
+   return totcoef*3.8937966E8;                  
 }
 
 
@@ -151,7 +174,7 @@ static double  cos_integrand(double xcos)
   pvect[10]=pcmOut*xsin;
   pvect[13]=-pvect[9];
   pvect[14]=-pvect[10];
-  q=Q_ren>0? Q_ren: pvect[0]+pvect[4];  
+  q=Q_ren>0? Q_ren: pvect[10];  
   return  sqme22(nsub22,sqrt(4*M_PI*parton_alpha(q)),pvect,NULL,&err);  
 }
 
@@ -176,21 +199,147 @@ static double  s_integrand(double y)
    pvect[12]=sqrt(pmass[3]*pmass[3]+pcmOut*pcmOut);
    pvect[15]=0;
 
-   q=Q_fact>0? Q_fact: sqrt(s);
-   r=  3.8937966E8*pcmOut/(32*M_PI*pcmIn*s)*simpson(cos_integrand,-1.,1.,1.E-3);
-   r*=convStrFun2(x0,q,pc1_,pc2_,ppFlag);
+   if(pcmOut<=pTmin_) return 0;
+   double sn=pTmin_/pcmOut;
+   double cs=sqrt((1-sn)*(1+sn)); 
+   r=  3.8937966E8*pcmOut/(32*M_PI*pcmIn*s)*simpson(cos_integrand,-cs,cs,1.E-3);
+   q=Q_fact>0? Q_fact:sqrt(s);
+     r*=convStrFun2(x0,q,pc1_,pc2_,ppFlag);
    r*=pow(s/sMax,pp)*(1- pow(sMin/sMax,1-pp))/(1-pp);
    return r; 
 }
 
-#define pt2etRange 1
+#define pt2etRange 1.0
 
 static double M45_min,M45_max,S34_min,S34_max,S35_min,S35_max;
 static int npole34=0,npole35=0,npole45,npole12;
 static double * pole34=NULL,*pole35=NULL,*pole45=NULL,*pole12=NULL;
 static int MET=0;
 
-static double veg_intergrand(double *x, double w)
+#define METDIM 7
+static int fillArr;
+static double metGrig[METDIM]={250,300,350,400,450,500,550}; 
+static double metArr[METDIM],dmetArr[METDIM],metArr_[METDIM],dmetArr_[METDIM];
+
+//static double PTarr[3]={log(200),log(400),log(600)};
+static double PTarr[3]={5.298317367,5.991464547,6.396929655};
+
+//static double MDarr[5]={50,100,500,1000,3000};
+static double MDarr[5]={3.912023005,4.605170186,6.214608098,6.907755279,8.006367568};
+static double  map_pt2et[8][3][5][4]=
+
+#include "data/et_tab.inc"
+
+
+static double ParamInterpolation(int iPar, int ch,double PT, double MD)
+{   double X[3],Y[3][5],res; 
+    int i,j;
+
+if(MD<40) MD=40;
+if(MD> 3500) MD=3500;
+if(PT<170) PT=170;
+if(PT>800) PT=800;
+   
+    for(i=0;i<3;i++){ 
+                      for(j=0;j<5;j++) Y[i][j]= map_pt2et[ch-1][i][j][iPar];
+                      X[i]=polintN(log(MD), 5,MDarr,Y[i]);   
+                    }
+    res=  polintN(log(PT),3,PTarr,X);
+    
+    if(res< 0 && iPar==2)
+    {  printf("ch+1=%d  iPar=%d res=%e  PT=%E MD=%E \n", ch+1,iPar, res,PT,MD);
+       for(i=0;i<3;i++)
+       {  printf( "%E ",X[i]);
+          for(j=0;j<5; j++) printf(" %E",Y[i][j]);
+           printf( "\n");
+       }      
+    }
+    return res;            
+}
+
+
+static void getMET(double *r, double PT,double M12,double M45, int ch, double x, double w)
+{ 
+     static  pthread_mutex_t lockFillKey=PTHREAD_MUTEX_INITIALIZER;
+     double C,delta,w0,p;
+     int i;
+
+       
+     C=    ParamInterpolation(0, ch, PT, M45);
+     delta=ParamInterpolation(1, ch, PT, M45); 
+     w0=   ParamInterpolation(2, ch, PT, M45);  
+     p=    ParamInterpolation(3, ch, PT, M45);
+
+/*
+C=0.5;
+delta=0;
+w0=40;
+p=2;
+*/     
+//printf("C=%E delta=%e w0=%e p=%e\n", C,delta,w0,p);     
+     
+     double det=2*PT*pt2etRange*(x-0.3);
+     double et= PT+delta +det;
+     if(et<METmin_) {*r=0;return;}
+     double ww=2*PT*pt2etRange*C*pow(w0,2*p-1)/(2.6*pow(w0*w0 +det*det,p));
+if(!isfinite(ww)) {printf("ww=%E x=%E pt2etRange=%E  C=%e  pow(w0,2*p-1)=%E p=%e w0=%E pow(w0*w0 +det*det,p)=%e   \n",
+                           ww,x,      pt2etRange,    C,    pow(w0,2*p-1 ), p, w0,pow(w0*w0 +det*det,p));}
+if(!isfinite(*r)) {printf("*r=%E\n",*r); }                
+     (*r)*= ww; 
+     if(w && *r)
+     {  if(nPROCSS>1)pthread_mutex_lock(&lockFillKey); 
+        for(i=0;i< METDIM ;i++) if(et>metGrig[i]) metArr_[i]+=(*r)*w;
+        if(nPROCSS>1)pthread_mutex_unlock(&lockFillKey);
+     }   
+}
+
+static double veg2_intergrand(double *x, double w)
+{
+   double r;
+   double M12,pcmIn;
+   int err;
+   double Pout,sn_,cs_;
+
+   REAL pvect[20]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};        
+   
+   M12=sqrt(sMin)+x[0]*(sqrt(sMax)-sqrt(sMin)); 
+   pcmIn=decayPcm(M12,pmass[0], pmass[1]);
+   if(pcmIn==0) return 0;
+   
+   if(M12<=pmass[2]+pmass[3]) return 0;
+   Pout=decayPcm(M12,pmass[2], pmass[3]); 
+   if(Pout<=pTmin_) return 0; 
+   
+   sn_=pTmin_/Pout;
+
+   cs_=sqrt(1-sn_*sn_);
+   double cs=cs_*(2*x[1]-1),sn=sqrt(1-cs*cs),PT=Pout*sn;
+   
+   r=  kinematic_22(pcmIn,cs,pmass, pvect);
+
+   {   double q= Q_ren>0? Q_ren : PT;
+       double x0=M12*M12/sMax;
+      
+       r*= sqme22(nsub22,sqrt(4*M_PI*parton_alpha(q)),pvect,NULL,&err);
+
+       q= Q_fact>0? Q_fact: PT; 
+       r*= fabs(convStrFun2(x0,q,pc1_,pc2_,ppFlag));       
+
+   }
+   r*= 2*cs_*(sqrt(sMax) - sqrt(sMin))*2*M12/sMax;
+
+   if(MET) 
+   { 
+   
+      getMET(&r, PT,M12,pmass[i4],chan,x[2],w*fillArr);
+   
+   } 
+   return r; 
+}
+
+
+
+static double veg3_intergrand(double *x, double w)
 {
    double r;
 //   double pp=1.5;
@@ -268,43 +417,21 @@ static double veg_intergrand(double *x, double w)
    } 
    if(fabs(cs45)>1) return 0;
    r=  kinematic_23(pcmIn,i3,M45, cs_*(2*x[2]-1) ,cs45,M_PI*x[4],pmass, pvect)*4*M_PI*(M45_max-M45_min)*J45*cs_/pcmIn;
-   
-   {   double q= Q_ren>0? Q_ren : PT;
-       double x0=M12*M12/sMax;
-      
-       r*= sqme22(nsub22,sqrt(4*M_PI*parton_alpha(q)),pvect,NULL,&err);
-       q= Q_fact>0? Q_fact: M45;
-       r*= convStrFun2(x0,q,pc1_,pc2_,ppFlag);       
+   double qr,qf,q0;
+   q0=0.5*(PT+sqrt(PT*PT+M45*M45));
+   if(MET)
+   { qr=q0;
+     qf=q0;
+   } else 
+   { qr=Q_ren>0?  Q_ren: q0;   
+     qf=Q_fact>0? Q_fact:q0;
    }
+      
+   r*= sqme22(nsub22,sqrt(4*M_PI*parton_alpha(qr)),pvect,NULL,&err);
+   r*= convStrFun2(M12*M12/sMax  ,qf,pc1_,pc2_,ppFlag);       
    r*= 2*M12/sMax*(sqrt(sMax) - sqrt(sMin));
 
-   if(MET)
-   { 
-     double parr[3]={200,400,600};
-     double carr[3]={0.74,0.71,0.68};
-     double warr[3]={1.269701e-01,8.907702e-02,7.772618e-02};
-     double darr[3]={5.279701e-02,3.057419e-02,1.684293e-02};
-     double delta=0.01684;
-     double w0=0.0777;
-     double C=0.68;
-     int i;
-     if(PT<600)
-     { delta=polint1(PT,3,parr,darr);
-       C    =polint1(PT,3,parr,carr);
-       w0   =polint1(PT,3,parr,warr);
-     }
-    
-//     printf("PT=%E delta=%E C=%E w0=%E\n", PT,delta,C,w0);
-       
-     double p=2.5;
-          
-     double det=2*pt2etRange*(x[5]-0.5);
-     double et=PT*(1+delta +det);
-     if(et<METmin_) return 0;
-     double ww=2*pt2etRange*C/(2.6*w0*(1 +pow(fabs(det)/w0,p)));
-          
-     r*= ww;  
-   }
+   if(MET) getMET(&r, PT,M12,M45,chan,x[5],w*fillArr);
    
    return r; 
 }
@@ -353,12 +480,12 @@ static void setGrid(int N, double*x, double x0, double x1,double M0,double M1,in
      for(i=0;i<N;i++)
      {  double m1=M0+(x[i]  -x0)*(M1-M0)/(x1-x0);
         double m2=M0+(x[i+1]-x0)*(M1-M0)/(x1-x0); 
-        y[i]= M0*M1/(M1-M0)*(1/m1-1/m2);    
+        y[i]= y[i]= (m2-m1)/(M1-M0); // M0*M1/(M1-M0)*(1/m1-1/m2); ?????     
         for(l=0;l<Npole;l++) 
         {
            double m=poles[2*l],w=poles[2*l+1]; 
            double x1=(m1*m1/m -m)/w, x2=(m2*m2/m -m)/w;
-           y[i]+=atan(x2)-atan(x1);              
+           y[i]+=atan(x2)-atan(x1);
         }       
      }
      impGrid(N, x, y);           
@@ -401,7 +528,7 @@ static void getPoles(numout*cc, int nsub, char * s0,double mMin, double mMax, in
 }
 
 
-static double vegas_cycle(vegasGrid *vegPtr, double eps, double aeps,int maxStep, int NN, double fact,double *dI)
+static double vegas_cycle(vegasGrid *vegPtr, double eps, double aeps,int maxStep, int*NN, double fact,double *dI)
 { int k,l;
   double *ti=malloc(maxStep*sizeof(double));
   double *dti=malloc(maxStep*sizeof(double));
@@ -410,7 +537,9 @@ static double vegas_cycle(vegasGrid *vegPtr, double eps, double aeps,int maxStep
   for(k=0;k<maxStep;k++)
   { 
     double s0=0,s1=0,s2=0;    
-    vegas_int(vegPtr, NN , 1.5, nPROCSS  , ti+k, dti+k);
+
+    vegas_int(vegPtr, *NN , 1.5, nPROCSS  , ti+k, dti+k);
+    
 //    printf("ti=%E dti=%E  NN=%d \n",ti[k], dti[k],NN);
     if(dti[k]==0){ dii=0; ii=ti[k];  break;}
     for(l=k;l>=k/2;l--)
@@ -429,17 +558,12 @@ static double vegas_cycle(vegasGrid *vegPtr, double eps, double aeps,int maxStep
       }  
     }
     if(k && (dii<eps*fabs(ii) || dii<aeps )) break;
-    NN*=fact;    
+    (*NN)*=fact;    
   }  
   free(ti); free(dti);
   *dI=dii;
   return ii;
 }
-
-
-#define METDIM 7
-static double metGrig[METDIM]={250,300,350,400,450,500,550}; 
-static double metArr[METDIM];
 
 
 static double hColliderStat(double Pcm, int pp, int nf, double Qren,double Qfact, char * name1,char *name2,double pTmin,int met, int wrt)
@@ -452,7 +576,7 @@ static double hColliderStat(double Pcm, int pp, int nf, double Qren,double Qfact
   double dI,m1=0,m2=0;
   
   if(met) MET=1; else MET=0;
-
+  if(met) for(i=0;i<METDIM;i++) {metArr[i]=0; dmetArr[i]=0;}
   ppFlag=pp;   
   Q_fact=Qfact;
   Q_ren=Qren;
@@ -469,7 +593,7 @@ static double hColliderStat(double Pcm, int pp, int nf, double Qren,double Qfact
   if(name2) 
   {  n2=pTabPos(name2);  
      if(n2==0) { printf("%s - no such particle\n",name2); return 0;}
-     m2=+pMass(name2);   
+     m2=pMass(name2);   
   }
 
   if(!(n1 || n2)) return 0;
@@ -490,18 +614,40 @@ static double hColliderStat(double Pcm, int pp, int nf, double Qren,double Qfact
   sqme22=cc->interface->sqme; 
   
   for(nsub22=1;nsub22<=cc->interface->nprc; nsub22++) 
-  { int pc[5];
+  { 
     char*n[5];
+    char buff[40];
     double tmp=0,dI;
-    for(i=0;i<2+nout;i++) n[i]=cc->interface->pinf(nsub22,i+1,pmass+i,pc+i); 
+    for(i=0;i<2+nout;i++) n[i]=cc->interface->pinf(nsub22,i+1,pmass+i,PC+i); 
     
     
-    if(pc[0]<=pc[1])
-    { pc1_=pc[0];
-      pc2_=pc[1];
-      
-      if(wrt)for(i=0;i<2+nout;i++) {printf("%s ",n[i]); if(i==1) printf(" -> "); }
- 
+    if(PC[0]<=PC[1])
+    { pc1_=PC[0];
+      pc2_=PC[1];
+
+      chan=0;
+      if(MET)
+      {      
+         switch(pc1_)
+         { case -3: if(pc2_== 3) chan=8; else if(pc2_==21) chan=5; break;
+           case -2: if(pc2_== 2) chan=7; else if(pc2_==21) chan=4; break;
+           case -1: if(pc2_== 1) chan=6; else if(pc2_==21) chan=2; break;
+           case  1: if(pc2_==-1) chan=6; else if(pc2_==21) chan=2; break;
+           case  2: if(pc2_== 2) chan=7; else if(pc2_==21) chan=3; break;
+           case  3: if(pc2_==-3) chan=8; else if(pc2_==21) chan=5; break;
+         }      
+         if(chan==0) continue;
+      } 
+
+      if(wrt) { buff[0]=0; for(i=0;i<2+nout;i++) {sprintf(buff+strlen(buff),"%s ",n[i]); if(i==1) sprintf(buff+strlen(buff)," -> ");}  printf("%-30.30s",buff); }
+      if(nout>1)
+      {
+         for(i3=2;i3<5;i3++) if( (PC[i3]<6 && PC[i3]>-6) || PC[i3]==21) break;
+         for(i4=2;i4<5;i4++) if(i4!=i3) break;
+         for(i5=2;i5<5;i5++) if(i5!=i3 && i5!=i4) break; 
+      }
+
+       
       switch(nout)
       { case 1: 
         { 
@@ -523,21 +669,36 @@ static double hColliderStat(double Pcm, int pp, int nf, double Qren,double Qfact
            if(wrt)printf("cs=%E \n",tmp); 
           break;
         }
-        case 2: tmp=simpson(s_integrand,0.,1.,1.E-2);
-                if(wrt)printf("cs=%E \n", tmp);  
+        case 2: if(met)
+                { vegasGrid *vegPtr=vegas_init(3,veg2_intergrand,50);
+                  convStrFun2(0.1,100,pc1_,pc2_,ppFlag); //testing call
+                  double eps=0.001,aEps=1E-6;
+                  int NN=10000;
+                  if(fabs(sigma_tot)*eps>aEps) aEps=sigma_tot*eps;
+                  tmp=vegas_cycle(vegPtr,eps, aEps, 100,&NN,1.1,&dI);
+                  for(i=0;i<METDIM;i++) {metArr_[i]=0; dmetArr_[i]=0;}
+                  fillArr=1;  
+//                  printf("tmp=%E dI=%e\n", tmp,dI);
+                  vegas_int(vegPtr, 2*NN , 1.5, nPROCSS  , &tmp, &dI);
+//                  printf("      tmp=%E dI=%e\n", tmp,dI); 
+                  fillArr=0;
+                  for(i=0;i<METDIM;i++) {metArr_[i]/=2*vegPtr->intCubes; metArr[i]+=metArr_[i]; }
+                  for(i=0;i<METDIM;i++)  printf(" %.2E ",metArr_[i]);
+                  printf("( %.2f%%)\n",100*dI/metArr_[0]);
+                  vegas_finish(vegPtr);
+                }
+                else{tmp=simpson(s_integrand,0.,1.,1.E-2);}
+                 
+                if(!MET && wrt)printf("cs=%E \n", tmp);  
                 break;
         case 3:
         {  double m3q;
            double vdim=5;
            if(met)vdim++;
-           vegasGrid *vegPtr=vegas_init(vdim,veg_intergrand,50);
+           vegasGrid *vegPtr=vegas_init(vdim,veg3_intergrand,50);
            char s0[3]={0,0,0};
            double eps,aEps;
          
-           for(i3=2;i3<5;i++)  if( (pc[i]<6 && pc[i]>-6) || pc[i]==21) break;
-           for(i4=2;i4<5;i4++) if(i4!=i3) break;
-           for(i5=2;i5<5;i5++) if(i5!=i3 && i5!=i4) break; 
-
            M45_min=pmass[i4]+pmass[i5];
            S35_min=pmass[i3]+pmass[i5]; S35_min*=S35_min;
            S34_min=pmass[i3]+pmass[i4]; S34_min*=S34_min;
@@ -568,10 +729,24 @@ static double hColliderStat(double Pcm, int pp, int nf, double Qren,double Qfact
            convStrFun2(0.1,100,pc1_,pc2_,ppFlag); //testing call
            eps=0.001;
            aEps=1E-6;
+           int NN=10000;
            if(fabs(sigma_tot)*eps>aEps) aEps=sigma_tot*eps;
-           tmp=vegas_cycle(vegPtr,eps, aEps, 200,10000, 1.1,&dI); 
+           tmp=vegas_cycle(vegPtr,eps, aEps, 200,&NN, 1.1,&dI); 
+           if(met)
+           {       for(i=0;i<METDIM;i++) {metArr_[i]=0; dmetArr_[i]=0;}
+                  fillArr=1;  
+//                  printf("tmp=%E dI=%e\n", tmp,dI);
+                  vegas_int(vegPtr, 2*NN , 1.5, nPROCSS  , &tmp, &dI);
+//                  printf("      tmp=%E dI=%e\n", tmp,dI); 
+                  fillArr=0;
+                  for(i=0;i<METDIM;i++) {metArr_[i]/=2*vegPtr->intCubes; metArr[i]+=metArr_[i]; }
+                  if(wrt) 
+                  {  for(i=0;i<METDIM;i++)  printf(" %.2E ",metArr_[i]);
+                     printf("( %.2f%%)\n",100*dI/metArr_[0]);
+                  }   
+           }
+           else if(wrt)printf("cs=%E +/-%E \n", tmp,dI);
            vegas_finish(vegPtr);
-           if(wrt)printf("cs=%E +/-%E \n", tmp,dI);
            free(pole12); free(pole34); free(pole35); free(pole45);
            pole12=pole34=pole35=pole45=NULL;
            break;
@@ -588,6 +763,80 @@ double hCollider(double Pcm,int pp,int nf,double Qren,double Qfact,char*name1,ch
 { 
   return hColliderStat(Pcm, pp, nf, Qren, Qfact, name1, name2, pTmin, 0, wrt);
 } 
+
+#define DELPHES_FACTOR (1.15)  
+#define NF 3  
+
+
+double monoJet(void)
+{ 
+  int i,i0;
+  double ret;
+  double METmin=250;
+  double bg[METDIM]= {51800,19600,8190,3930,2050,1040,509};
+  double dBg[METDIM]={ 2000,  830, 400, 230, 150, 100, 66};
+  double exp[METDIM]={52200,19800,8320,3830,1830, 934,519};
+  double sum[METDIM];
+  double CL=0,CL0=0;
+  for(i=0;i<METDIM;i++) {metArr[i]=0; dmetArr[i]=0;}
+  char oldPDF[100]={""};
+  if(strcmp(pdfName,"NNPDF23_lo_as_0130_qed"))
+  {  strcpy(oldPDF,pdfName);
+     setPDT("NNPDF23_lo_as_0130_qed");
+  } else strcpy(oldPDF,"NNPDF23_lo_as_0130_qed");
+  
+
+  METmin_=METmin;
+  for(i=0;i<METDIM;i++) sum[i]=0;
+  
+  if(CDM1)
+  {   
+     ret=hColliderStat(4000, 1, NF, 0, 0, CDM1,aCDM1,METmin/(1+pt2etRange), 1, 0);
+     for(i=0;i<METDIM;i++) sum[i]+=metArr[i];
+     if(strcmp(CDM1,aCDM1))
+     { ret=hColliderStat(4000, 1, NF, 0, 0, CDM1,CDM1,METmin/(1+pt2etRange), 1, 0); 
+       for(i=0;i<METDIM;i++) sum[i]+=2*metArr[i];
+     }
+  }
+  if(CDM2)
+  {   
+     ret=hColliderStat(4000, 1, NF, 0, 0, CDM2,aCDM2,METmin/(1+pt2etRange), 1, 0);
+     for(i=0;i<METDIM;i++) sum[i]+=metArr[i];
+     if(strcmp(CDM2,aCDM2))
+     { ret=hColliderStat(4000, 1, NF, 0, 0, CDM2,CDM2,METmin/(1+pt2etRange), 1, 0); 
+       for(i=0;i<METDIM;i++) sum[i]+=2*metArr[i];
+     }
+  }
+        
+  for(i=0;i<METDIM;i++) sum[i]*=DELPHES_FACTOR;
+  printf("\n Analysis: CMS monojet 8 TeV arXiv:1408.3583\n");
+  printf("MET [GeV]       >250      >300      >350      >400      >450      >500      >550\n"); 
+//  printf("%30.30s","csSum[pb]");  for(i=0;i<METDIM;i++) printf(" %.2E ",metArr[i]);
+  printf("%s","Signal events ");   for(i=0;i<METDIM;i++) printf(" %.2E ",sum[i]*19.7*1000);
+//  if( abs(pNum(name1)==12)) { printf("\n%30.30s","signal*3");   for(i=0;i<METDIM;i++) printf(" %.2E ",3*metArr[i]*19.7*1000);} 
+  printf("\n1-CLs expected");
+  for(i=0;i<METDIM;i++)
+  { double s=sum[i]*19.7E3, b=bg[i],db=dBg[i];
+    double  CLs0=(1-erf((s)/sqrt(2*(s+db*db))));;
+    printf(" %.2E ",1-CLs0);
+    if(1-CLs0>CL0) { CL0=1-CLs0; i0=i;}
+  }
+  printf("\n The region most  sensitive to signal is MET>%.0f",250.+i0*50.);
+  printf("\n1-CLs         ");
+  CL0=0;
+  for(i=0;i<METDIM;i++)
+  { double s=sum[i]*19.7E3, b=bg[i],db=dBg[i], n=exp[i];
+    double CLsb=0.5*(1-erf((s+b-n)/sqrt(2*(s+db*db))));
+    double CLb=0.5*(1-erf((b-n)/sqrt(2*(db*db))));
+    double CLs=CLsb/CLb;  
+    printf(" %.2E ",1-CLs);
+       if(1-CLs>CL0) { CL0=1-CLs; i0=i;}
+     if(i==i0) CL=1-CLs;
+  }
+  printf("\n");                              
+  if(strcmp(pdfName,oldPDF)) restorePDF(oldPDF);
+  return CL0;
+}
 
 
 #ifdef plazmaWidth
@@ -637,3 +886,5 @@ double hcollider_(double*Pcm, int*pp, int* nf, double*Qren,double*Qfact, char * 
   if(strlen(cname2)==0) cname2_=NULL; else  cname2_=cname2;
   return  hCollider(*Pcm, *pp, *nf, *Qren,*Qfact, cname1_,cname2_,*pTmin,*wrt);  
 }
+
+double monojet_(void) { return monoJet();}

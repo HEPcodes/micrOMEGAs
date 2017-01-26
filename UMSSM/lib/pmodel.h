@@ -19,30 +19,54 @@ extern int    LiLithF(char*fname);
   UMSSMTools
   ==========*/
 extern int    assignValFunc(char * name, double val);
-extern int    umssmtools_(void);
+extern int    umssmtools(int PDG_LSP);
 extern int    read_prmU(int n);
 extern double UparC(int r);
 extern double uparctof_(int *r);
 
-extern double bsgnlo_(double *M, double*P);
+extern double bsg_(double *M, double*P);
 extern double deltamd_(double *M, double*P);
 extern double deltams_(double *M, double*P);
 extern double bsmumu_(double *M, double*P);
 extern double btaunu_(double *M, double*P);
 extern double gmuon_(double *M, double*P);
-extern double bxismulow_(double *M, double*P);
-extern double bxismuhigh_(double *M, double*P);
+extern double bxislllow_(double *M, double*P);
+extern double bxisllhigh_(double *M, double*P);
 
+extern double bdg_(double *M, double *P);
+extern double bdmumu_(double *M, double *P);
+extern double bxisnunu_(double *M, double *P);
+extern double bpkpnunu_(double *M, double *P);
+extern double bksnunu_(double *M, double *P);
+extern double rdtaul_(double *M, double *P);
+extern double rdstaul_(double *M, double *P);
 
-#define umssmtools umssmtools_
-#define bsgnlo     bsgnlo_
+extern double kppipnunu_(double *M, double *P);
+extern double klpi0nunu_(double *M, double *P);
+extern double deltamk_(double *M, double *P);
+extern double epsk_(double *M, double *P);
+
+#define bsg        bsg_
 #define deltamd    deltamd_
 #define deltams    deltams_
 #define bsmumu     bsmumu_
 #define btaunu     btaunu_
 #define gmuon      gmuon_
-#define bxismulow  bxismulow_
-#define bxismuhigh bxismuhigh_
+#define bxislllow  bxislllow_
+#define bxisllhigh bxisllhigh_
+
+#define bdg        bdg_
+#define bdmumu     bdmumu_
+#define bxisnunu   bxisnunu_
+#define bpkpnunu   bpkpnunu_
+#define bksnunu    bksnunu_
+#define rdtaul     rdtaul_
+#define rdstaul    rdstaul_
+
+#define kppipnunu  kppipnunu_
+#define klpi0nunu  klpi0nunu_
+#define deltamk    deltamk_
+#define epsk       epsk_
 
 /*=====================
   Les Houches interface

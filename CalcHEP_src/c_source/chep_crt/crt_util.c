@@ -145,7 +145,7 @@ int infoLine(double rate)
    static int Y;
    static int X;
 //   static void*dump=NULL;
-   
+   if(blind>0) return 0;
    int xm=where_x(), ym=where_y(), fc=fColor,bc=bColor;
   
    if (rate == 0)
@@ -163,7 +163,7 @@ int infoLine(double rate)
 /*      print("%s",b); */
       goto_xy(15,Y);
       scrcolor(fc,bc);
-      escpressed();
+      res=escpressed();
       goto exi;;
    }
 
@@ -174,7 +174,7 @@ int infoLine(double rate)
    scrcolor(Black,Red);
    goto_xy(X,Y);
    while (where_x() < xx) print("%c",'X');
-   if(xx !=X) { X=xx; res=escpressed();}
+   if(xx !=X) { X=xx;  res=escpressed(); } else { res=escpressed();}
    if (rate  >= 1)
    {
 //     put_text(&dump);

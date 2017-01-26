@@ -29,7 +29,7 @@ static int  leftXN(int n,int dim,  double * xa, double x)
    return k1+1-n/2;
 }
 
-static double  polintN(double x, int n,  double *xa, double *ya)
+double  polintN(double x, int n,  double *xa, double *ya)
 {  double z[20];
    int i,m;
    for(i=0;i<n;i++) z[i]=ya[i];
@@ -41,6 +41,7 @@ static double  polintN(double x, int n,  double *xa, double *ya)
 
 double polint3(double x, int dim,  double *xa, double *ya)
 { 
+  if(dim<4) return  polintN(x,dim,xa, ya);
   if((xa[0]<xa[dim-1] && x<=xa[1]) || 
      (xa[0]>xa[dim-1] && x>=xa[1])       ) return  polintN(x,3,xa, ya);
 

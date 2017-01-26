@@ -400,7 +400,7 @@ static void  onediagram(deninforec* dendescript)
    pos_c= ftell(outFile); writeF("%80s\n","");
   
    writeF("if(!DP){C%d(C); return 0;} \n",diagrcount);
-   
+   if(nin==2) writeF("  REAL N_p1p2_=1/DP[0];\n");
    fortwriter("N",totnum);
    fortwriter("D",totdenum);
    fortwriter("R",rnum);
@@ -440,7 +440,7 @@ static int  alldiagrams(FILE * fd,  int nsub)
    writeF("REAL N,D,R; COMPLEX Prop;\n");
    pos_c1= ftell(outFile); writeF("%70s\n","");   
    writeF("if(!momenta){ C%d(C); return 0;}\n",nsub);
-
+   if(nin==2) writeF("  REAL N_p1p2_=1/DP[0];\n");
    while(FREAD1(dendescript,fd) == 1)
    {
       fseek(catalog,dendescript.cr_pos,SEEK_SET);
@@ -1047,7 +1047,7 @@ static int c_prog_int(void)
    long dfirst;
       
    if(nin+nout<=4) sumDiag=1; else sumDiag=0;   
-
+//   if(nin+nout<=3) sumDiag=1; else sumDiag=0;
    memerror=zeroHeep;
    mark_(&heapbeg);
 

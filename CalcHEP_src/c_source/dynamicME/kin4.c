@@ -1092,7 +1092,7 @@ int slhaDecayPrint(char * name, int dVirt, FILE*f)
                   sscanf(chD,"%[^,],%s", name1,name2);
                   trim(name1);
                   sscanf(LV->txt,"%lf",&brV);
-                  fprintf(f," %e  3  %d  %d  %d # %s,%s->%s\n",br*brV , id[1-k] , pNum(name1),pNum(name2),N[1-k],N[k],chD);
+                  fprintf(f,"   %e  3  %d  %d  %d # %s,%s->%s\n",br*brV , id[1-k] , pNum(name1),pNum(name2),N[1-k],N[k],chD);
                } 
                if(id[0]==id[1]) break;
             }
@@ -1100,7 +1100,7 @@ int slhaDecayPrint(char * name, int dVirt, FILE*f)
          }   
       }     
       
-      fprintf(f," %s   %d  ",pn,dim);
+      fprintf(f,"   %s   %d  ",pn,dim);
       for(i=0;i<dim;i++) fprintf(f," %d", id[i] ); 
       chB=strstr(all->txt,"->");
       fprintf(f,"  # %s \n",chB+2);

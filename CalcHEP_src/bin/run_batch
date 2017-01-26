@@ -1,9 +1,17 @@
 #!/usr/bin/perl
 # (c) 2008 Neil Christensen
-$version="1.30";
+$version="1.31";
 #############################################################################################################
 #Version Notes:
 #############################################################################################################
+#1.32 : July 14, 2016
+#       Format of the files with distributions was changed to .jpg as well the color code
+#       for gnuplot command was changed to be consistent with recent gnuplot version to 
+#       avoid related problems
+#1.31 : July 6, 2016
+#       Fixed typo in showering statement.
+#       Updated cteq6l1 from cteq6l.
+#       Added support for user to specify pdf scales separately and showering scale.
 #1.30 : Added QCD scale support fot Z and S symbols in case of particles change the place
 #1.29 : Added QCD scale support fot T symbol in case of particles change the place
 #1.28 : More $LHAPDFPATH.
@@ -535,10 +543,14 @@ $alphaMbMb = 4.2;
 $alphaMtp  = 175;
 @alphaScale= ();
 @alphaNumber=();
-@alphaFactScale=();
-@alphaFactNumber=();
+@alphaFact1Scale=();
+@alphaFact1Number=();
+@alphaFact2Scale=();
+@alphaFact2Number=();
 @alphaRenScale=();
 @alphaRenNumber=();
+@alphaShowScale=();
+@alphaShowNumber=();
 @cut_param = ();
 @cut_Number= ();
 @cut_invert= ();
@@ -698,10 +710,16 @@ LINE: while($line = <BATCH_FILE>){
 	elsif ($line =~ /Mtop\s*\(pole\)[^:]*:([^:]*)/){$tmp=$1;$tmp =~ s/\s//g;$alphaMtp  = $tmp;}
 	elsif ($line =~ /alpha\s*Q[^:]*:\s*([0-9]*)\s*:([^:]*)/){push(@alphaNumber,$1-1);$tmp=$2;$tmp =~ s/\s//g;push(@alphaScale,$tmp);}
 	elsif ($line =~ /alpha\s*Q[^:]*:([^:]*)/){push(@alphaNumber,-1);$tmp=$1;$tmp =~ s/\s//g;push(@alphaScale,$tmp);}
-	elsif ($line =~ /alpha\s*[Ff]act[^:]*Q[^:]*:\s*([0-9]*)\s*:([^:]*)/){push(@alphaFactNumber,$1-1);$tmp=$2;$tmp =~ s/\s//g;push(@alphaFactScale,$tmp);}
-	elsif ($line =~ /alpha\s*[Ff]act[^:]*Q[^:]*:([^:]*)/){push(@alphaFactNumber,-1);$tmp=$1;$tmp =~ s/\s//g;push(@alphaFactScale,$tmp);}
+	elsif ($line =~ /alpha\s*[Ff]act[^:]*1[^:]*Q[^:]*:\s*([0-9]*)\s*:([^:]*)/){push(@alphaFact1Number,$1-1);$tmp=$2;$tmp =~ s/\s//g;push(@alphaFact1Scale,$tmp);}
+	elsif ($line =~ /alpha\s*[Ff]act[^:]*1[^:]*Q[^:]*:([^:]*)/){push(@alphaFact1Number,-1);$tmp=$1;$tmp =~ s/\s//g;push(@alphaFact1Scale,$tmp);}
+	elsif ($line =~ /alpha\s*[Ff]act[^:]*2[^:]*Q[^:]*:\s*([0-9]*)\s*:([^:]*)/){push(@alphaFact2Number,$1-1);$tmp=$2;$tmp =~ s/\s//g;push(@alphaFact2Scale,$tmp);}
+	elsif ($line =~ /alpha\s*[Ff]act[^:]*2[^:]*Q[^:]*:([^:]*)/){push(@alphaFact2Number,-1);$tmp=$1;$tmp =~ s/\s//g;push(@alphaFact2Scale,$tmp);}
+	elsif ($line =~ /alpha\s*[Ff]act[^:]*Q[^:]*:\s*([0-9]*)\s*:([^:]*)/){push(@alphaFact1Number,$1-1);$tmp=$2;$tmp =~ s/\s//g;push(@alphaFact1Scale,$tmp);}
+	elsif ($line =~ /alpha\s*[Ff]act[^:]*Q[^:]*:([^:]*)/){push(@alphaFact1Number,-1);$tmp=$1;$tmp =~ s/\s//g;push(@alphaFact1Scale,$tmp);}
 	elsif ($line =~ /alpha\s*[Rf]en[^:]*Q[^:]*:\s*([0-9]*)\s*:([^:]*)/){push(@alphaRenNumber,$1-1);$tmp=$2;$tmp =~ s/\s//g;push(@alphaRenScale,$tmp);}
 	elsif ($line =~ /alpha\s*[Rf]en[^:]*Q[^:]*:([^:]*)/){push(@alphaRenNumber,-1);$tmp=$1;$tmp =~ s/\s//g;push(@alphaRenScale,$tmp);}
+	elsif ($line =~ /alpha\s*[Ss]how[^:]*Q[^:]*:\s*([0-9]*)\s*:([^:]*)/){push(@alphaShowNumber,$1-1);$tmp=$2;$tmp =~ s/\s//g;push(@alphaShowScale,$tmp);}
+	elsif ($line =~ /alpha\s*[Ss]how[^:]*Q[^:]*:([^:]*)/){push(@alphaShowNumber,-1);$tmp=$1;$tmp =~ s/\s//g;push(@alphaShowScale,$tmp);}
 	elsif ($line =~ /Cut parameter\s*:\s*([0-9]*)\s*:\s*([^\s]+)/){push(@cut_Number,$1-1);$tmp=$2;$tmp =~ s/\s//g;push(@cut_param,$tmp);}
 	elsif ($line =~ /Cut parameter\s*:\s*([^:]+)/){push(@cut_Number,-1);$tmp=$1;$tmp =~ s/\s//g;push(@cut_param,$tmp);}
 	elsif ($line =~ /Cut inver[^:]*:\s*([0-9]*)\s*:\s*([^:]*)/){$tmp=$2;$tmp =~ s/\s//g;push(@cut_invert,$tmp);}
@@ -805,8 +823,8 @@ print("Progress information can be found in the html directory.\nSimply open the
 ####################################################
 #           Determine pdf name                     #
 ####################################################
-if    ($pdf1 =~ m/cteq6l[\s\(]*anti-proton/i)     {$pdf1_name="\"PDT:cteq6l(anti-proton)\" -2212";}
-elsif ($pdf1 =~ m/cteq6l[\s\(]*proton/i)          {$pdf1_name="\"PDT:cteq6l(proton)\" 2212";}
+if    ($pdf1 =~ m/cteq6l1[\s\(]*anti-proton/i)     {$pdf1_name="\"PDT:cteq6l1(anti-proton)\" -2212";}
+elsif ($pdf1 =~ m/cteq6l1[\s\(]*proton/i)          {$pdf1_name="\"PDT:cteq6l1(proton)\" 2212";}
 elsif ($pdf1 =~ m/mrst2002lo[\s\(]*anti-proton/i) {$pdf1_name="\"PDT:mrst2002lo(anti-proton)\" -2212";}
 elsif ($pdf1 =~ m/mrst2002lo[\s\(]*proton/i)      {$pdf1_name="\"PDT:mrst2002lo(proton)\" 2212";}
 elsif ($pdf1 =~ m/cteq6m[\s\(]*anti-proton/i)     {$pdf1_name="\"PDT:cteq6m(anti-proton)\" -2212";}
@@ -823,8 +841,8 @@ elsif ($pdf1 =~ /[Pp]roton[^:]*[Pp]hoton/)      {$pdf1_name=sprintf("\"Proton.Ph
 elsif (!($pdf1 eq ""))                          {$pdf1_name="\"$pdf1\"";}
 else                                            {$pdf1_name="\"OFF\"";}
 
-if    ($pdf2 =~ m/cteq6l[\s\(]*anti-proton/i)     {$pdf2_name="\"PDT:cteq6l(anti-proton)\" -2212";}
-elsif ($pdf2 =~ m/cteq6l[\s\(]*proton/i)          {$pdf2_name="\"PDT:cteq6l(proton)\" 2212";}
+if    ($pdf2 =~ m/cteq6l1[\s\(]*anti-proton/i)     {$pdf2_name="\"PDT:cteq6l1(anti-proton)\" -2212";}
+elsif ($pdf2 =~ m/cteq6l1[\s\(]*proton/i)          {$pdf2_name="\"PDT:cteq6l1(proton)\" 2212";}
 elsif ($pdf2 =~ m/mrst2002lo[\s\(]*anti-proton/i) {$pdf2_name="\"PDT:mrst2002lo(anti-proton)\" -2212";}
 elsif ($pdf2 =~ m/mrst2002lo[\s\(]*proton/i)      {$pdf2_name="\"PDT:mrst2002lo(proton)\" 2212";}
 elsif ($pdf2 =~ m/cteq6m[\s\(]*anti-proton/i)     {$pdf2_name="\"PDT:cteq6m(anti-proton)\" -2212";}
@@ -862,10 +880,14 @@ elsif ($alphaOrder =~ /[Nn][Ll][Oo]/){$alphaOrder=2;}
 elsif ($alphaOrder =~ /[Ll][Oo]/){$alphaOrder=1;}
 else {$alphaOrder=2;}
 if($#alphaScale>=0){
-  @alphaFactScale=@alphaScale;
-  @alphaFactNumber=@alphaNumber;
+  @alphaFact1Scale=@alphaScale;
+  @alphaFact1Number=@alphaNumber;
+  @alphaFact2Scale=@alphaScale;
+  @alphaFact2Number=@alphaNumber;
   @alphaRenScale=@alphaScale;
   @alphaRenNumber=@alphaNumber;
+  @alphaShowScale=@alphaScale;
+  @alphaShowNumber=@alphaNumber;
 }
 
 ####################################################
@@ -2008,7 +2030,7 @@ print_index(0);print_symbolic(0);
 ####################################################
 $cs_begin_time = time();
 #Remove $fileName-cs.png if present.
-if(-e "Events/$fileName-cs.png"){system("rm Events/$fileName-cs.png");}
+if(-e "Events/$fileName-cs.jpg"){system("rm Events/$fileName-cs.jpg");}
 if(-e "Events/$fileName-cs.dat"){system("rm Events/$fileName-cs.dat");}
 ####################################################
 #Create an array with all the steps in it.         #
@@ -3641,11 +3663,11 @@ sub generate_cs_plot {
   }
   close(GP_DAT);
   open(GP_INST,">gnuplot_instructions");
-  print GP_INST "set term png transparent medium xffffff x000000\n";
+  print GP_INST "set term jpeg transparent medium #ffffff #000000\n";
   print GP_INST "set key off\n";
   print GP_INST "set mxtics\n";
   print GP_INST "set mytics\n";
-  print GP_INST "set output 'gnuplot.png'\n";
+  print GP_INST "set output 'gnuplot.jpg'\n";
   
   if($#run_param==0){
     if($max_param[0]/$min_param[0]>100){print GP_INST "set logscale x\n";}
@@ -3667,7 +3689,7 @@ sub generate_cs_plot {
   if($#run_param<2){
     system("gnuplot gnuplot_instructions");
     system("cp gnuplot_dat $working_dir/Events/$fileName-cs.dat");
-    system("cp gnuplot.png $working_dir/Events/$fileName-cs.png");
+    system("cp gnuplot.jpg $working_dir/Events/$fileName-cs.jpg");
   }
 }
 
@@ -4200,7 +4222,7 @@ sub update_session {
 		}
 		if ($qcdscales_section==1){
 			print NEW_SESSION_FILE "#QCDscales\n";
-			$aScale = "M12";
+			my $aScale = "M12";
 			for (my $l=0;$l<=$#alphaRenScale;$l++){
 			  if ($alphaRenNumber[$l]==$subproc_which_proc[$_[1]]||$alphaRenNumber[$l]==-1){
 			    $aScale=renumber_Mparts($alphaRenScale[$l],$_[1]);
@@ -4208,15 +4230,27 @@ sub update_session {
 			}
 			printf NEW_SESSION_FILE " Renormalization %s\n", $aScale;
 						
-			my $aScale = "M12";
-			for (my $l=0;$l<=$#alphaFactScale;$l++){
-			  if ($alphaFactNumber[$l]==$subproc_which_proc[$_[1]]||$alphaFactNumber[$l]==-1){
-			    $aScale=renumber_Mparts($alphaFactScale[$l],$_[1]);
+			$aScale = "M12";
+			for (my $l=0;$l<=$#alphaFact1Scale;$l++){
+			  if ($alphaFact1Number[$l]==$subproc_which_proc[$_[1]]||$alphaFact1Number[$l]==-1){
+			    $aScale=renumber_Mparts($alphaFact1Scale[$l],$_[1]);
 			  }
 			}
 			printf NEW_SESSION_FILE  " Factorization1 %s\n", $aScale;
-			printf NEW_SESSION_FILE  " Factorization2  Qpdf1\n";
-			printf NEW_SESSION_FILE  " Showering  Qred\n";
+			$aScale = "Qpdf1";
+			for (my $l=0;$l<=$#alphaFact2Scale;$l++){
+			  if ($alphaFact2Number[$l]==$subproc_which_proc[$_[1]]||$alphaFact2Number[$l]==-1){
+			    $aScale=renumber_Mparts($alphaFact2Scale[$l],$_[1]);
+			  }
+			}
+			printf NEW_SESSION_FILE  " Factorization2  %s\n", $aScale;
+			$aScale = "Qren";
+			for (my $l=0;$l<=$#alphaShowScale;$l++){
+			  if ($alphaShowNumber[$l]==$subproc_which_proc[$_[1]]||$alphaShowNumber[$l]==-1){
+			    $aScale=renumber_Mparts($alphaShowScale[$l],$_[1]);
+			  }
+			}
+			printf NEW_SESSION_FILE  " Showering  %s\n", $aScale;
 			    
 
 			$qcdscales_section=2;
@@ -4983,7 +5017,7 @@ sub combine_distributions {
 	
 	#Plot using gnuplot.
 	open(GP_INST,">gnuplot_instructions");
-	print GP_INST "set term png transparent medium xffffff x000000 x000000 xadd8e6 xadd8e6 x000000\n";
+	print GP_INST "set term jpeg transparent medium #ffffff #000000 #000000 #add8e6 #add8e6 #000000\n";
 	print GP_INST "set key off\n";
 	print GP_INST "set mxtics\n";
 	print GP_INST "set mytics\n\n";
@@ -5014,7 +5048,7 @@ sub combine_distributions {
 			print GP_INST "set xlabel '$dist_x_title[$j]'\n";
 			#print GP_INST "set ylabel 'sigma/bin (fb)'\n\n";#Appropriate for cs/bin
 			print GP_INST "set ylabel 'dsigma(fb)/d$dist_x_title[$j]'\n\n";
-			print GP_INST "set output 'distr_$i.png'\n";
+			print GP_INST "set output 'distr_$i.jpg'\n";
 			print GP_INST "min = $min\n";
 			print GP_INST "max = $max\n";
 			print GP_INST "bin_size = (max-min)/$dist_n_bins[$j].0\n";
@@ -5032,15 +5066,15 @@ sub combine_distributions {
 			my $tmp_plot_filename="";
 			my $tmp_plot_filename_math="";
 			if ($fileName eq ""){
-				$tmp_plot_filename = sprintf "%4d-%02d-%02d-%s_$i.png",$year+1900,$mon+1,$mday,$subdir_name;
+				$tmp_plot_filename = sprintf "%4d-%02d-%02d-%s_$i.jpg",$year+1900,$mon+1,$mday,$subdir_name;
 				$tmp_plot_filename_math = sprintf "%4d-%02d-%02d-%s_$i.math",$year+1900,$mon+1,$mday,$subdir_name;
 			}
 			else {
-				$tmp_plot_filename = sprintf "%s-%s_$i.png",$fileName,$subdir_name;
+				$tmp_plot_filename = sprintf "%s-%s_$i.jpg",$fileName,$subdir_name;
 				$tmp_plot_filename_math = sprintf "%s-%s_$i.math",$fileName,$subdir_name;
 			}
 			push(@tmp_plot_filenames,$tmp_plot_filename);
-			$copy_string=$copy_string."cp distr_$i.png $working_dir/Events/$tmp_plot_filename;";
+			$copy_string=$copy_string."cp distr_$i.jpg $working_dir/Events/$tmp_plot_filename;";
 			$copy_string=$copy_string."cp plot_$i.math $working_dir/Events/$tmp_plot_filename_math;";
 		}
 	}
@@ -5453,11 +5487,17 @@ sub print_run_details {
 	print TXT_FILE "alpha order        : $alphaOrder\n";
 	print TXT_FILE "mb(mb)             : $alphaMbMb\n";
 	print TXT_FILE "Mtop(pole)         : $alphaMtp\n";
-	for (my $j=0;$j<=$#alphaFactScale;$j++){
-		print TXT_FILE "alpha Fact Q :".($alphaFactNumber[$j]+1).": $alphaFactScale[$j]\n";
+	for (my $j=0;$j<=$#alphaFact1Scale;$j++){
+		print TXT_FILE "alpha Fact 1 Q :".($alphaFact1Number[$j]+1).": $alphaFact1Scale[$j]\n";
+	}
+	for (my $j=0;$j<=$#alphaFact2Scale;$j++){
+		print TXT_FILE "alpha Fact 2 Q :".($alphaFact2Number[$j]+1).": $alphaFact2Scale[$j]\n";
 	}
 	for (my $j=0;$j<=$#alphaRenScale;$j++){
 		print TXT_FILE "alpha Ren Q :".($alphaRenNumber[$j]+1).": $alphaRenScale[$j]\n";
+	}
+	for (my $j=0;$j<=$#alphaShowScale;$j++){
+		print TXT_FILE "alpha Show Q :".($alphaShowNumber[$j]+1).": $alphaShowScale[$j]\n";
 	}
 	print TXT_FILE "\n";
 	print TXT_FILE "#########################################\n";
@@ -6216,7 +6256,7 @@ sub print_numerical {
 	print HTML_FILE "\t</table>\n";
 
 	#Display plot
-	print HTML_FILE "\t<img src='../Events/$fileName-cs.png'><br/><br/><br/>\n";
+	print HTML_FILE "\t<img src='../Events/$fileName-cs.jpg'><br/><br/><br/>\n";
 	print HTML_FILE "\t<p>Remember to clear your web browser cache if the plots are not updating properly.  Also, remember to refresh your browser if you started a new run.</p><br/>\n";
 
 
@@ -7962,11 +8002,11 @@ sub print_help_event_library {
 			where filename.lhe is the event file in Les Houches format and filename.nt is in PAW ntuple format.  The ntuple file is only created if the keyword "NTuple" is set to true and nt_maker is present in the bin directory.  If distributions are requested, they will be  stored in the files<br>
 			<table>
 				<tr><td>filename.distr</td></tr>
-				<tr><td>filename_1.png</td></tr>
-				<tr><td>filename_2.png</td></tr>
+				<tr><td>filename_1.jpg</td></tr>
+				<tr><td>filename_2.jpg</td></tr>
 				<tr><td>...</td></tr>
 			</table>
-			  where filename.distr is the raw distribution data and can be read by "show_distr" in the bin directory.  The distributions generated on the fly by the batch script are stored in the files ending in ".png".
+			  where filename.distr is the raw distribution data and can be read by "show_distr" in the bin directory.  The distributions generated on the fly by the batch script are stored in the files ending in ".jpg".
 		</p>
 	</div>
 </body>

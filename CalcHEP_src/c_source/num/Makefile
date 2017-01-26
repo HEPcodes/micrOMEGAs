@@ -6,7 +6,7 @@ Idir = .. chep_crt plot  service2 getmem dynamicME SLHAplus ntools strfun
 
 override CFLAGS += -Iinclude $(patsubst %,-I../%/include ,$(Idir))
 
-special = n_calchep.c usrfun_dummy.c pdf_dummy.c usrFF_dummy.c userInt.c ferror.c sqme_aux.c
+special = n_calchep.c usrfun_dummy.c usrFF_dummy.c userInt.c ferror.c sqme_aux.c
 
 OBJ = $(notdir $(subst .c,.o,$(filter-out $(special),$(wildcard *.c strfun/*.c))))
 
@@ -21,7 +21,7 @@ $(lib)/num_c.a:$(lib)/num_c.a($(OBJ))
 	$(RANLIB) $(lib)/num_c.a
 	@rm -f $(OBJ)
 
-$(lib)/dummy.a:$(lib)/dummy.a(usrfun_dummy.o  usrFF_dummy.o pdf_dummy.o)
+$(lib)/dummy.a:$(lib)/dummy.a(usrfun_dummy.o usrFF_dummy.o)
 	$(RANLIB) $@
 	@rm -f usrfun_dummy.o pdf_dummy.o usrFF_dummy.o
 

@@ -356,7 +356,7 @@ printf("process=%s\n",process);
      int delWorkDir=prepareWorkPlace();
      sprintf(command,"cd %s;"
        " %s/bin/s_calchep -blind \"{{%s{{{[[{0\" >/dev/null;"
-       " if(text $? -eq 0) then mv results/list_prc.txt %s/%s ; fi",
+       " if(test $? -eq 0) then mv results/list_prc.txt %s/%s ; fi",
        compDir,calchepDir,process, libDir,lib);
      system(command);
      free(command);

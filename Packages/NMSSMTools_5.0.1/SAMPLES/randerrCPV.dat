@@ -1,0 +1,27 @@
+Number of points:                       
+
+  scanned                                     1000
+  l, tan(beta) or mu=0                           0
+  with mh1^2 or ma1^2 or mhc^2 < 0             460
+  with m_sfermion^2 < 0                          0
+  violating phenomenological constraints         0
+
+Remaining good points                          540
+
+Parameter ranges for good points:       
+
+         TANB:      0.6868E+01     0.8520E+01     0.1074E+00
+       RE(M2):      0.2484E+03     0.2484E+03     0.0000E+00
+      RE(AU3):      0.1500E+04     0.1500E+04     0.0000E+00
+          MQ3:      0.1000E+07     0.1000E+07     0.0000E+00
+   RE(LAMBDA):      0.4998E+00     0.4998E+00     0.0000E+00
+    RE(KAPPA):      0.0000E+00     0.0000E+00     0.0000E+00
+    RE(MUEFF):      0.3735E+03     0.3735E+03     0.0000E+00
+  RE(ALAMBDA):      0.2596E+04     0.2596E+04     0.0000E+00
+           MA:      0.2594E+04     0.2594E+04     0.0000E+00
+      RE(XIF):      0.0000E+00     0.0000E+00
+     (RE(XIF) is not an input parameter)
+   RE(AKAPPA):      0.0000E+00     0.0000E+00     0.0000E+00
+           MP:      0.8633E+02     0.8633E+02     0.0000E+00
+      RE(XIS):      0.0000E+00     0.0000E+00
+     (RE(XIS) is not an input parameter)

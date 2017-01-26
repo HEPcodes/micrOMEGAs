@@ -1,9 +1,0 @@
-*** Error in `./n_calchep': double free or corruption (fasttop):
-*** 0x00007fdb38002080 ***
-======= Backtrace: =========
-/lib64/libc.so.6(+0x7cfe1)[0x7fdb3e0b8fe1]
-/home/pukhov/Packages/LHAPDF-6.1.6/install/lib/libLHAPDF.so(_ZNK6LHAPDF7GridPDF6_xfxQ2Eidd+0x113)[0x7fdb3eeb5e93]
-/home/pukhov/Packages/LHAPDF-6.1.6/install/lib/libLHAPDF.so(_ZNK6LHAPDF3PDF5xfxQ2Eidd+0x1c9)[0x7fdb3ef3f4c9]
-/home/pukhov/Packages/LHAPDF-6.1.6/install/lib/libLHAPDF.so(evolvepdfm_+0xe3)[0x7fdb3ef36d03]
-/home/pukhov/Packages/LHAPDF-6.1.6/install/lib/libLHAPDF.so(evolvepdfphotonm_+0x41)[0x7fdb3ef373e1]
-./n_calchep(evolvepdfphotonm+0x3b)[0x441fdc]

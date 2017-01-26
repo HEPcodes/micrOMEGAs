@@ -86,7 +86,7 @@
      &         1/6.D0*(Mqd*AAABR(29)*pave7(bb0) + 
      &            Ms*AAABR(36)*pave9(bb0))))
 
-	Cloop(1) = tmp1/(-Mh2 + S) + Cloop(1)
+	Cloop(1) = tmp1/(-Mh2 + S+ (0D0,1D0)*Mh*wh ) + Cloop(1)
 
 #ifdef DEBUG
 	DEB("vert: Cloop(1) =", Cloop(1))

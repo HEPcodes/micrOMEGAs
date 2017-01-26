@@ -283,7 +283,6 @@ char * spin3_2_propagator(int v,int l,int forReduce)
   sprintf(txt, "-3*(%sG(%sp%d)+%s)"
                "*(%s^2*m%d.m%d - p%d.m%d*p%d.m%d)"
                "-(G(%sm%d)*%s +(%sp%d.m%d))"
-
                "*(%sG(%sp%d)-%s)"
                "*(G(%sm%d)*%s+(%sp%d.m%d))"
 

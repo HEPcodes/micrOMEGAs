@@ -6,7 +6,7 @@
 #define MASSES_INFO      
   /* Display information about mass spectrum  */
 
-#define CONSTRAINTS 
+#define CONSTRAINTS
 //#define HIGGSBOUNDS
 #define LILITH
 //#define SMODELS
@@ -108,6 +108,7 @@ int main(int argc,char** argv)
 }
 #endif
 
+
 #ifdef HIGGSBOUNDS
 {  int NH0=1, NHch=0; // number of neutral and charged Higgs particles.
    double HB_result,HB_obsratio,HS_observ,HS_chi2, HS_pval;
@@ -126,8 +127,11 @@ int main(int argc,char** argv)
    if(LiLithF("Lilith_in.xml"))
    {        
 #include "../include/Lilith.inc"
-      printf("LILITH(DB%s):  -2*log(L): %.2f; -2*log(L_reference): %.2f; ndf: %d; p-value: %.2E \n", 
-      Lilith_version,m2logL,m2logL_reference,ndf,pvalue);
+      if(ndf)
+      {
+        printf("LILITH(DB%s):  -2*log(L): %.2f; -2*log(L_reference): %.2f; ndf: %d; p-value: %.2E \n", 
+        Lilith_version,m2logL,m2logL_reference,ndf,pvalue);
+      }  
    } else printf("LILITH: there is no Higgs candidate\n");
 }     
 #endif
@@ -154,25 +158,25 @@ int main(int argc,char** argv)
   Omega= darkOmega2(fast,Beps);
 
 /*
-  displayFunc(vs1120F, Tend, Tstart,"vs1120F");
-  displayFunc(vs2200F, Tend, Tstart,"vs2200F");
-  displayFunc(vs1100F, Tend, Tstart,"vs1100F");
-  displayFunc(vs1210F, Tend, Tstart,"vs1210F");
-  displayFunc(vs1122F, Tend, Tstart,"vs1122F");
-  displayFunc(vs2211F, Tend, Tstart,"vs2211F");
+  displayFunc("vs1120F",vs1120F, Tend, Tstart,"T");
+  displayFunc("vs2200F",vs2200F, Tend, Tstart,"T");
+  displayFunc("vs1100F",vs1100F, Tend, Tstart,"T");
+  displayFunc("vs1210F",vs1210F, Tend, Tstart,"T");
+  displayFunc("vs1122F",vs1122F, Tend, Tstart,"T");
+  displayFunc("vs2211F",vs2211F, Tend, Tstart,"T");
 
-  displayFunc(vs1110F, Tend, Tstart,"vs1110F");
-  displayFunc(vs2220F, Tend, Tstart,"vs2220F");
-  displayFunc(vs1112F, Tend, Tstart,"vs1110F");
-  displayFunc(vs1222F, Tend, Tstart,"vs1222F");
-  displayFunc(vs1220F, Tend, Tstart,"vs1220F");
-  displayFunc(vs2210F, Tend, Tstart,"vs2210F");
-  displayFunc(vs2221F, Tend, Tstart,"vs2221F");
-  displayFunc(vs1211F, Tend, Tstart,"vs1211F");
+  displayFunc("vs1110F",vs1110F, Tend, Tstart,"T");
+  displayFunc("vs2220F",vs2220F, Tend, Tstart,"T");
+  displayFunc("vs1110F",vs1112F, Tend, Tstart,"T");
+  displayFunc("vs1222F",vs1222F, Tend, Tstart,"T");
+  displayFunc("vs1220F",vs1220F, Tend, Tstart,"T");
+  displayFunc("vs2210F",vs2210F, Tend, Tstart,"T");
+  displayFunc("vs2221F",vs2221F, Tend, Tstart,"T");
+  displayFunc("vs1211F",vs1211F, Tend, Tstart,"T");
 
 
-  displayFunc(dY1F,Tend, 1,"dY1");
-  displayFunc(dY2F,Tend, 1,"dY2");
+  displayFunc("dY1",dY1F,Tend, 1,"T");
+  displayFunc("dY2",dY2F,Tend, 1,"T");
 */
 
 printf("omega1=%.2E\n", Omega*(1-fracCDM2));
@@ -360,17 +364,23 @@ printf("\n======== Direct Detection ========\n");
 
 #ifdef CROSS_SECTIONS
 {
-  double cs, Pcm=4000, Qren,Qfact,pTmin=200;
-  int nf=3;
-  
-  Qfact=pMass(CDM1);
-  Qren=pTmin;
-
-  printf("pp -> DM,DM +jet(pt>%.2E GeV)  at sqrt(s)=%.2E GeV\n",pTmin,2*Pcm);  
-  
-  cs=hCollider(Pcm,1,nf,Qren, Qfact, CDM1,aCDM1,pTmin,1);
-  printf("cs(pp->~o1,~o2)=%.2E[pb]\n",cs);
+  char* next,next_;
+  double nextM;
+    
+  next=nextOdd(1,&nextM); 
+  if(next && nextM<1000)  
+  { 
+     double cs, Pcm=6500, Qren, Qfact, pTmin=0;
+     int nf=3;
+     char*next_=antiParticle(next);
+     Qren=Qfact=nextM; 
  
+     printf("\npp > nextOdd  at sqrt(s)=%.2E GeV\n",2*Pcm);  
+  
+     Qren=Qfact;
+     cs=hCollider(Pcm,1,nf,Qren, Qfact, next,next_,pTmin,1);
+     printf("Production of 'next' odd particle: cs(pp-> %s,%s)=%.2E[pb]\n",next,next_, cs);
+  }  
 }
 #endif 
 

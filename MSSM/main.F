@@ -33,6 +33,7 @@ C     check LEP mass limits
 C#define HIGGSBOUNDS 
 #define LILITH
 #define SMODELS
+C#define MONOJET
 
 #define OMEGA
 C    Calculate relic density and display contribution of
@@ -62,7 +63,7 @@ C     and recoil energy distibution for various nuclei
 C#define DECAYS 
 C     Calculates particle widths and branchings
 
-#define CROSS_SECTIONS
+C#define CROSS_SECTIONS
 C     Calculate cross sections and widths for
 C      reactions specified by the user
  
@@ -101,19 +102,17 @@ C Variables
       character*10 cdmName
       integer spin2,charge3,cdim,PDGcdm
 
-      real*8 Pcm,cosmin, cosmax
       integer cc(2)
       integer ntot,l, nin,nout
       character*6 name(4)
       real*8 mass(4)
-      real*8  Etest,Emin,sigmaV,fi,dfi,cs,Qren, Qfact,pTmin
+      real*8  Etest,Emin,sigmaV,fi,dfi
       real*8 SMmev 
       real*8 SpA(NZ),Spe(NZ),SpP(NZ)
       real*8 FluxA(NZ),FluxE(NZ),FluxP(NZ)
       character*100 mess
 C for CONSTRAINTS 
       real*8 dmunu, csLim
-
 
 C for HIGGSBOUNDS/HIGGSSIGNALS
       integer  NH0/3/, NHch/1/
@@ -126,10 +125,11 @@ C for SMODELS
       character*30 analysis,topology,smodels_version
 C for LILITH 
       real*8 m2logL, m2logL_reference,pvalue
-      integer exp_ndf,n_par,ndf
+      integer exp_ndf,n_par,ndf, vPython1, vPython2
       character*100 call_lilith
       character*10 lilith_version
- 
+C  for MONOJET
+       real*8 CL      
 
 C for CDM_NUCLEON
       real*8  pA0(2),pA5(2),nA0(2),nA5(2),Nmass,SCcoeff
@@ -146,6 +146,10 @@ C  For DECAYS
 C  for LoopGAMMA
       real*8 vcs_zg, vcs_gg 
       real*8 res
+C   for CROSS_SECTION
+       character*10 next
+       character*10 next_
+       real*8 nextM,Pcm,cosmin, cosmax,cs,Qren, Qfact,pTmin
 
 C   to save the SLHA  input/output file call with (0)  
  
@@ -480,7 +484,7 @@ C      CALL printVar(6)
          m2logL_reference=0
          n_par=0
 #include "../include/Lilith.inc_f"
-         write(*,fmt='("LILITH(DB",A,"):  -2*log(L): ",F5.2,"; -2*log(L_reference): ",F5.2,"; ndf: ",I3"; p-value: ",F5.2)') lilith_version, m2logL,m2logL_reference,ndf,pvalue
+         if(ndf.ne.0) write(*,fmt='("LILITH(DB",A,"):  -2*log(L): ",F5.2,"; -2*log(L_reference): ",F5.2,"; ndf: ",I3"; p-value: ",F5.2)') lilith_version, m2logL,m2logL_reference,ndf,pvalue 
       else 
          write(*,*) "LILITH: there is no Higgs candidate"
       endif     
@@ -494,6 +498,11 @@ C      CALL printVar(6)
       if(result.eq.-1) write(*,*) 'no channels for testing.'
       if(result.eq.0)  write(*,*) 'not excluded.' 
       if(result.eq.1)  write(*,*) 'excluded.'
+#endif
+
+#ifdef MONOJET
+      CL=monoJet()
+      write(*,fmt="('Monojet signal exclusion CL is ',1PE10.1)") CL   
 #endif
 
 #ifdef OMEGA
@@ -516,7 +525,7 @@ C     call setVVdecay(2,2)
       Omega=darkOmega(Xf,fast,Beps)
       write(*,'(a,3x,1PE10.2)') 'Omega=',Omega
 
-      OmegaAppr=printChannels(Xf,cut,Beps,1,6)
+      if(Omega.gt.0)OmegaAppr=printChannels(Xf,cut,Beps,1,6)
 
 C!  See an  example of direct access to annihilation channels    
 c      do 555 i=1,20
@@ -768,15 +777,18 @@ C ======  Contained events
 #endif
 
 #ifdef CROSS_SECTIONS
-      write(*,*)
-      write(*,*)'======Calculations of cross sections======='
-      write(*,*) ' Process p,p -> ~o1,~o2'
-      Pcm=4000 
-      Qren=pMass("~o2")
-      Qfact=Qren
-      pTmin=0
-      cs=hCollider(Pcm,1,3,Qren, Qfact, "~o1","~o2",pTmin,1)
-      write(*,fmt="(1PE8.2,'[pb]')") cs 
+      call nextOdd(next,1,nextM)
+      if((next(1:1).ne.' ') .and. (nextM.lt.1000)) then 
+         call antiparticle(next_,next)
+         write(*,*)'======Calculations of cross sections======='
+         write(*,*) ' Process p,p -> ', next,next_
+         Pcm=6500 
+         Qren=nextM
+         Qfact=Qren
+         pTmin=0
+         cs=hCollider(Pcm,1,3,Qren, Qfact, next,next_,pTmin,1)
+         write(*,fmt="('total cross section  ', 1PE8.2,'[pb]')") cs 
+      endif
 #endif
 
 #ifdef CLEAN

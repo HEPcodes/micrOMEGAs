@@ -248,9 +248,7 @@ static void  addscmult( int nSpin )
 
    addvar("Helicity1",1);  
    addvar("Helicity2",1);
-   addvar("HelicityN1",1);  
-   addvar("HelicityN2",1);
-   
+   addvar("N_p1p2_",2);
    sortvar();
    symb_start(vardef->nvar, vardef->vars, nSpin, findMaxIndex(),py);
 
@@ -747,9 +745,7 @@ static void  formBlocks(void)
            char txt[150];
            int Paux;
            if(P==1) Paux=2; else Paux=1;
-           sprintf(txt,"m%d.m%d+i*HelicityN%d*eps(p%d,p%d,m%d,m%d)",
-           m1,m2, P,P,Paux,m1,m2);           
-            
+           sprintf(txt,"m%d.m%d -N_p1p2_*(m%d.p%d*m%d.p%d+m%d.p%d*m%d.p%d-i*Helicity%d*eps(p%d,p%d,m%d,m%d))",m1,m2, m1,P,m2,Paux,m1,Paux,m2,P, P,P,Paux,m1,m2);           
                                                       
            m=symb_read(txt);
 
@@ -1130,8 +1126,7 @@ static int toFinish=0;
 static void my_signal(int n) { toFinish=1;}
 
 void calcWithFork(int np, int * diag,int fi)
-{  int        ndel, ncalc, nrest;
-   long       nrecord;
+{  
    csdiagram  csd;
    unsigned   noutmemtot;
    shortstr   txt;
@@ -1150,14 +1145,13 @@ toFinish=0;
    new_action.sa_flags = 0;
    sigaction (SIGUSR1, &new_action, NULL);
 
-
    polyvars  varsInfo[3]={ {0,NULL}, {0,NULL}, {0,NULL} };
 
    memerror=heap_is_empty;
    memoryInfo=memoryInfo_;
- 
+
    sprintf(ctlgName,"%s_%d",CATALOG_NAME,np);
-   catalog = fopen(ctlgName,"ab");
+   catalog = fopen(ctlgName,"wb");
 
    ArcNum=1+10*np;
      
@@ -1171,11 +1165,14 @@ toFinish=0;
    { int one=1; 
      fseek(diagrq,sizeof(csd)*diag[k],SEEK_SET);
      FREAD1(csd,diagrq);
+     if(csd.status>0) continue;
      nsub=csd.nsub;
      ndiagr=csd.ndiagr;
      vardef=&varsInfo[0];
      mark_(&heap_beg);
      calcproc(&csd);
+ //printf(" calc %d by process %d  status=%d \n",  diag[k],np,csd.status );      
+     
      if(csd.status == 1)
      { 
         vardef=&(varsInfo[0]);     
@@ -1185,11 +1182,11 @@ toFinish=0;
      
      release_(&heap_beg);
      {int i; for(i=0;i<3;i++) clearVars(varsInfo+i);}
-     write(fi,&one,sizeof(int));
+//     write(fi,&one,sizeof(int));
      if(toFinish) goto exi;            
    }
 exi:
-
+//printf(" normal termination branch %d\n",np);
    fclose(diagrq); 
    fclose(catalog);
    whichArchive(0,0);      

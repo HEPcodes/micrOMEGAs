@@ -349,7 +349,7 @@ static double amotry(double *p, double *y, int ndim,
    for(j=0;j<ndim;j++) p_buff[j]=p_ilo[j]*fac;
    for(i=0;i<=ndim;i++)  if(i!=ilo) 
      {double *p_i=p+i*ndim;  for(j=0;j<ndim;j++) p_buff[j] +=p_i[j]*fac1;} 
-   ytry=(*f)(p_buff);
+   ytry=-(*f)(p_buff);
    
    if (ytry > y[ilo]) 
    {  for(j=0;j<ndim;j++) p_ilo[j]=p_buff[j];
@@ -371,9 +371,9 @@ double amoeba(double *pp, double * dp, int ndim, double (*f)(double *),
    for(j=0;j<=ndim;j++) for(i=0;i<ndim;i++)  p[i+j*ndim]=pp[i];
    for(j=1;j<=ndim;j++) p[j-1+j*ndim]+=dp[j-1];
  
-   for(j=0;j<=ndim;j++) y[j]=f(p+j*ndim);    
+   for(j=0;j<=ndim;j++) y[j]=-f(p+j*ndim);    
 
-   for(j=0;j<=ndim;j++) printf(" %e %e %e   %e\n",p[0+j*ndim],p[1+j*ndim],p[2+j*ndim], y[j]);
+//   for(j=0;j<=ndim;j++) printf(" %e %e %e   %e\n",p[0+j*ndim],p[1+j*ndim],p[2+j*ndim], -y[j]);
    
    
    for (;;) 
@@ -404,7 +404,7 @@ double amoeba(double *pp, double * dp, int ndim, double (*f)(double *),
                if (i != ihi)
      	       {  double * p_i=p+i*ndim;
      		  for(j=0;j<ndim;j++) p_i[j]=0.5*(p_i[j]+p_ihi[j]);
-     		  y[i]=(*f)(p_i);
+     		  y[i]=-(*f)(p_i);
      	       }
             }
 /*printf("srink\n");            */
@@ -415,7 +415,7 @@ double amoeba(double *pp, double * dp, int ndim, double (*f)(double *),
    for(i=0;i<ndim;i++){ pp[i]=p[i+ihi*ndim]; dp[i]=p[i+ilo*ndim]-p[i+ihi*ndim];}
    ysave=y[ihi];
    free(y); free(p);
-   return ysave;
+   return -ysave;
 }
 /*========================== end of amoeba ================*/
 

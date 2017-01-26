@@ -136,7 +136,7 @@ void LHAPDFList(void);
 extern void  setLHAPDF(int nset, char *name);
 extern int restorePDF(char*oldPDF);
 extern double hCollider(double Pcm, int pp, int nf, double Qren,double Qfact, char * name1,char *name2,double pTmin,int wrt);
-extern double monoJet(int nf, char * name1,char *name2, double ETmin);
+extern double monoJet(void);
 double pWidth(char *name, txtList *L);
 
 

@@ -18,7 +18,7 @@ int LiLithF(char*fname)
   for(i=0; i<4; i++) 
   {
     double mass = pMass(parts[i]);
-    if(mass < 123. || mass > 128.) {
+    if(mass < 123 || mass > 128) {
       continue;
     }
     ++npart;

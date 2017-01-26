@@ -22,7 +22,7 @@ int LiLithF(char*fname)
   fprintf(f, "<lilithinput>\n");
 
   double mass = pMass("h");
-  if(mass > 123. &&  mass < 128.) 
+  if(mass > 123 &&  mass < 128) 
   {
 
     // compute invisible and undetected branching ratios

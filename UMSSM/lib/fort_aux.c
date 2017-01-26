@@ -56,3 +56,5 @@ int lilithf_(char*fname,int len)
    free(cname);
    return err; 
 }
+
+int umssmtools_(int *PDG_LSP) {return umssmtools(*PDG_LSP);}
