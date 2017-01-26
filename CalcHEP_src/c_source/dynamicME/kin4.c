@@ -920,8 +920,9 @@ double pWidth(char *name, txtList * LL)
     txtList newr;
     process2Lib(l->txt ,libName);
     cc=getMEcode(0,ForceUG,l->txt,NULL,"",libName);
+    if(!cc) continue; 
     width=0;
-    if(cc){if(nout==3) width=width13(cc, 1, &err); else width=width14(cc, &err);}
+    if(nout==3) width=width13(cc, 1, &err); else width=width14(cc, &err);
     if(width >0)
     {
       sum+=width;
@@ -1045,35 +1046,62 @@ int passParameters(numout*cc)
    return 0;
 }
 
-int slhaDecayPrint(char * name,FILE*f)
+#define P_NAME_SIZE 11
+int slhaDecayPrint(char * name, int dVirt, FILE*f)
 {
    double w;
    txtList all;
    int i,dim; 
    long PDG;
+   char N[5][P_NAME_SIZE];
+   int id[5];
            
-   PDG=qNumbers(name,NULL,NULL,NULL);
+   PDG=pNum(name);
    if(!PDG) return 0;
-   w=pWidth(name,&all);
-   fprintf(f,"DECAY %d  %E  # %s\n",PDG,w,name);
+   fprintf(f,"DECAY %d  %E  # %s\n",PDG,pWidth(name,&all),name);
    for(;all;all=all->next)
    {  
-      char pn[20], buff[100], *chB,*chE;
-      strcpy(buff,all->txt);
-      sscanf(buff,"%s", pn);
-      chB=strstr(buff,"->");
+      char pn[20], *chB,*chE;
+      double br;
+      
+      sscanf(all->txt,"%s",pn);
+      sscanf(pn,"%lf",&br);
+      chB=strstr(all->txt,"->");
       chB+=2;
-      for(dim=0,chE=chB ; chE;dim++, chE=strchr(chE+1,',')) continue;
-      fprintf(f," %s   %d  ",pn,dim);
-
-      for(i=0;i<dim;i++)
-      { 
-         chE=strchr(chB,',');
-         if(chE)chE[0]=0;
-         sscanf(chB,"%s",pn);
-         fprintf(f," %d", qNumbers(pn,NULL,NULL,NULL));
-         if(chE)chB=chE+1;else break;           
+      for(dim=0,chE=chB ; chE;dim++, chE=strchr(chE+1,',')) 
+      {  sscanf(chE+1,"%[^,]",N[dim]); 
+         trim(N[dim]); 
+         id[dim]=pNum(N[dim]);
       }
+      if(dVirt && dim==2 && pMass(name)<= pMass(N[0])+pMass(N[1]))  
+      {  
+         int v[2],k; 
+         for(k=0;k<2;k++) v[k] = (id[k]==23 || abs(id[k])==24);
+          
+         if(v[0]||v[1])
+         { 
+            txtList LV;
+            if(id[0]!=id[1]) br/=2;   
+            for(k=0;k<2;k++) if(v[k])
+            { 
+               pWidth(N[k],&LV);
+               for(;LV;LV=LV->next)
+               {  double brV;
+                  char* chD=strstr(LV->txt,"->")+2;
+                  char name1[20],name2[20];
+                  sscanf(chD,"%[^,],%s", name1,name2);
+                  trim(name1);
+                  sscanf(LV->txt,"%lf",&brV);
+                  fprintf(f," %e  3  %d  %d  %d # %s,%s->%s\n",br*brV , id[1-k] , pNum(name1),pNum(name2),N[1-k],N[k],chD);
+               } 
+               if(id[0]==id[1]) break;
+            }
+            continue;   
+         }   
+      }     
+      
+      fprintf(f," %s   %d  ",pn,dim);
+      for(i=0;i<dim;i++) fprintf(f," %d", id[i] ); 
       chB=strstr(all->txt,"->");
       fprintf(f,"  # %s \n",chB+2);
    } 

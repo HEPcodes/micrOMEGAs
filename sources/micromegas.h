@@ -126,7 +126,6 @@ extern REAL Helicity[2];
 extern double hCollider(double Pcm, int pp, int nf, double Qren,double Qfact, char * name1,char *name2,double pTmin);
 double pWidth(char *name, txtList *L);
 
-extern int slhaDecayPrint(char * name,FILE*f);
 
 /*===================
       Variables 
@@ -183,13 +182,15 @@ extern double dY1F(double T);
 extern double dY2F(double T);
 extern double Y1F(double T);
 extern double Y2F(double T);
-
+extern double YF(double T);
 
 extern double darkOmegaFO(double *Xf,int fast,double Beps);
 extern double printChannels(double Xf,double cut,double Beps,int prcnt,FILE *f );   
 extern double oneChannel(double Xf,double Beps,char*n1,char*n2,char*n3,char*n4);
 extern void improveCrossSection(long n1,long n2,long n3,long n4,double Pcm, 
                                                             double * addr);
+
+extern double Yeq(double T);
 extern double Yeq1(double T);
 extern double Yeq2(double T);
 
@@ -273,6 +274,8 @@ extern void setProfileEinasto(double alpha);
 extern double noClumps(double r); 
 
 /*============ Positron and antiproton propagation =================*/
+
+extern int vcsMode;
 extern double pBarBackgroundFlux(double E);
 extern void pBarBackgroundTab(double Emax, double *pBarTab);
 

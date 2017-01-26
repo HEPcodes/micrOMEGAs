@@ -614,7 +614,14 @@ static int  readparticles(int  check, int ugForce )
            break;
         } 
       }
+      
+      prtclbase[nparticles-1].nHerm=0;
+      if(strchr(chlp,'*'))
+      { char *ch=strchr(chlp,'!');
+        if(ch) { ch[0]=' '; prtclbase[nparticles-1].nHerm=1;}
+      }
       trim(chlp);
+      
       if (strcmp(chlp,"") == 0) strcpy(chlp," ");
       prtclbase[nparticles-1].hlp = toupper(chlp[0]);
       if(check)
@@ -965,7 +972,7 @@ static int  readlagrangian(int check, int ugForce)
         if (f_copy[i] !=0)
         {
           mm=ghostmother(f_copy[i]);
-          f_copy[i]=prtclbase[mm-1].anti  + f_copy[i]-mm   ;
+          if(!prtclbase[mm-1].nHerm) f_copy[i]=prtclbase[mm-1].anti  + f_copy[i]-mm   ;
          }
       }
 

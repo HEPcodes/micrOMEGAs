@@ -16,6 +16,10 @@ C    Display information about SUSY and Higgs masses
 #define CONSTRAINTS
 C     Display  deltarho, B_>sgamma, Bs->mumu, gmuon and
 C     check LEP mass limits 
+
+C#define HIGGSBOUNDS  '../Packages/HiggsBounds-4.2.0'
+C#define HIGGSSIGNALS '../Packages/HiggsSignals-1.3.0'
+
 #define OMEGA
 C    Calculate relic density and display contribution of
 C                            individual channels 
@@ -78,7 +82,7 @@ C Variables
      > gMl2,gMl3,gMr2,gMr3,gMq2,gMq3,gMu2,gMu3,gMd2,gMd3,
      >Lambda,aKappa,aLambda
       INTEGER  narg,nw 
-      character *100 argv
+      character *100 argv, buff
       character*10 cdmName
       integer spin2,charge3,cdim,PDGcdm
       real*8 Pcm,cosmin, cosmax,rw,width
@@ -300,6 +304,47 @@ C     Call writeLesH('slha.out')
      >constr0,constrM, constrP 
  
 #endif
+
+#ifdef HIGGSBOUNDS
+      if(access(HIGGSBOUNDS//"/HiggsBounds",'x') .ne.0) call system('cd '//HIGGSBOUNDS//'; ./configure; make ')
+      call system('cat spectr decay > HB.in')
+      err=HBblocks('HB.in')
+      call system( HIGGSBOUNDS//'/HiggsBounds  LandH SLHA 5 1 HB.in HB.out >hb.stdout')
+      err=slhaRead("HB.out",1+4)
+      write(*,fmt='("HB result=",1PE10.1,"obsratio=", E10.1)')
+     .slhaVal2("HiggsBoundsResults",0.d0,1,2), slhaVal2("HiggsBoundsResults",0.,1,3)
+      if(0.eq.slhaSTRFormat("HiggsBoundsResults","1 5 ||%[^|]||",buff)) write(*,*) "Channel: ", buff
+
+#endif
+
+#ifdef HIGGSSIGNALS
+#define DataSet " latestresults "
+C#define Method  " peak " 
+C#define  Method " mass "
+#define  Method " both "
+C* PDF 1 - box ; 2 = Gaussian; 3 box+Gaussia
+#define PDF  " 2 " 
+#define dMh " 2 " 
+      write(*,*) 'HiggsSignals:'       
+      if(access(HIGGSSIGNALS// '/HiggsSignals','x').ne.0 ) call system( 'cd ' //HIGGSSIGNALS//'; ./configure; make')
+      call system('rm -f HS.in HS.out')
+      err=slhaWrite("HS.in")
+      err=HBblocks("HS.in")
+      call system('echo "BLOCK DMASS" >> HS.in')
+      call system('echo "  25 '//dMh// '" >> HS.in')
+      call system(HIGGSSIGNALS//'/HiggsSignals'//DataSet//Method//PDF//'SLHA 5 1 HS.in > hs.stdout');
+      call system('grep -A 10000  HiggsSignalsResults HS.in > HS.out')
+      err=slhaRead('HS.out',1+4)
+      write(*,fmt='("  Number of observables ",F5.0)') slhaVal1("HiggsSignalsResults",0.d0,7)
+      write(*,fmt='("  total chi^2=", 1PE10.1)') slhaVal1("HiggsSignalsResults",0.d0,12)
+      write(*,fmt='("  p-value =", 1PE10.1)') slhaVal1('HiggsSignalsResults',0.d0,13)
+#undef dMh
+#undef PDF
+#undef Method
+#undef DataSet
+      
+#endif
+
 
 
 #ifdef OMEGA

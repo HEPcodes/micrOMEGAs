@@ -410,7 +410,8 @@ SigmaFFPs   &   -0.046     &SigmaFFNs   &  -0.046   & \\
   Mcdm      &  GeV           & $\min(Mcdm1,Mcdm2)$ if both exist              & sortOddParticles  \\
   dmAsymm   &                & Asymmetry between relic density of ${DM}$- $\overline{DM}$ & darkOmega[FO]\\
   fracCDM2  &                & fraction of CDM2 in relic density.             & darkOmega2\\
-  Tstart  &   GeV              & Temperature in solution of differential equation            & darkOmega2\\  
+  Tstart, Tend &   GeV       & Temperature interval& \\
+&&   for solving the differential equation     &  darkOmega[2]\\  
 \hline
 \end{tabular}
 \end{center}
@@ -635,7 +636,13 @@ criteria for including a given coannihilation channel in the computation of the
 thermally averaged cross-section,~\cite{Belanger:2004yn}.   The
 recommended value is $Beps=10^{-4} - 10^{-6}$ whereas 
 if $Beps=1$ only annihilation of the
-lightest odd particle is computed.\\
+lightest odd particle is computed.
+   
+\verb|darkOmega| solves the differential equation for the abundance $Y(T)$   in the 
+temperature interval {\tt [Tend,Tstart]}.  This solution is tabulated and can be displayed  via the
+function {\tt YF(T)}. The equilibrium abundance can be accessed  with the function
+$Yeq(T)$. 
+
 \noindent
 $\bullet$ \verb|darkOmegaFO(&Xf, fast,  Beps)|\\
 calculates the  dark matter relic density $\Omega h^2$ using the freeze-out approximation.
@@ -922,6 +929,11 @@ the value of $E_i \frac{ dN}{dE_i} $ where  $E_i=E_{max} e^{Zi(i)}$,\\
 $\bullet$ \verb|Zi(i)=|$ -7 \ln 10 \left(\frac{i-1}{NZ}\right)^{1.5}$.\\
  That is the array  covers the  energy interval  $ Emax \ge E > 10^{-7}Emax$. 
 
+The routine 
+$\bullet$ \verb|addSpectrum(Spect,toAdd)|\\
+sums the  spectra \verb|toAdd   and \verb|Spect| and writes the result in \verb|Spect|. For example, this routine can be useful when it is needed to sum spectra 
+with different  maximal energy.
+
 \subsection{Annihilation spectra}
 $\bullet$ \verb|calcSpectrum(key,Sg,Se,Sp,Sne,Snm,Snl,&err)|\\
 calculates  the spectra  of DM annihilation 
@@ -1048,15 +1060,17 @@ above and the galactic coordinates is  $fi=\cos^{-1}(\cos(l)\cos(b))$.
  {\tt gammaFluxTabGC} integrates the flux over a     
 rectangle $[(l,b) - (l+dl,b+db)]$. 
 
+
 \noindent
-$\bullet$ \verb|gammaFlux(fi,dfi,vcs)|\\
-is the same function as \verb|gammaFluxTab| above  but corresponds to  
-a discrete photon spectrum. \verb|vcs| is the annihilation cross section, for instance in the {\t MSSM} it is 
-calculated with the \verb|loopGamma| function. The function
-returns the number of photons per $cm^2$ of detector surface
- per second. Note that for $\chi\chi \to \gamma\gamma$ the  
-result should be multiplied by a factor $2$ as each annihilation leads to the 
-production of two photons. 
+$\bullet$ \verb|gammaFlux(fi,dfi,dSigmavdE)|\\
+computes the photon flux for a given energy E and a differential cross section for photon production, \verb|dSigmavdE|. For example, one can substitute \verb|dSigmavdE=|$\sigma v$\verb|SpectdNdE(E,SpA)|where $\sigma v$ and SpA are obtained by calcSpectrum. This function can also be used to compute the flux from a monochromatic gamma-ray line by substituting the cross section at fixed energy (in $cm^3/s$)  instead of \verb|dSigmavdE|, for example the cross sections obtained with the
+\verb|loopGamma| function in  the   MSSM, NMSSM, CPVMSSM models (\verb|vcsAA| and \verb|vcsAZ|).
+In this case the  flux of photons can be calculated with \\
+\verb|gammaFlux(fi,dfi,2*vcsAA+vcsAZ)|.
+
+
+
+
 
 \noindent
 $\bullet$ \verb|gammaFluxGC(l,b,dl,db,vcs)|\\
@@ -1227,12 +1241,14 @@ in the CalcHEP notation. The names are separated by commas or spaces and can be 
 order. 
 
 \noindent
-$\bullet$ \verb|slhaDecayPrint(pname,FD)|\\
+$\bullet$ \verb|slhaDecayPrint(pname,delVirt,FD)|\\
 uses \verb|pWidth| described above to calculate the width and branching ratios of particle {\it pname} and writes down the result
 in SLHA format. The return value is the PDG particles code. In case of problem, for
 instance wrong particle names, this function returns zero. This function
 first tries to calculate $1\to2$  decays. If such decays are kinematically
-forbidden then $1\to3$ decay channels are computed. 
+forbidden then $1\to3$ decay channels are computed. If decay list contains
+virtual W/Z bosons and $delVirt \ne 0$, then  vector bosons will be presenter
+via their  decay probucts.
 
 
 \noindent
@@ -2544,7 +2560,7 @@ F.~Vissani,
 
 %\cite{Belanger:2014bga}
 \bibitem{Belanger:2014bga}
-  G.~B√©langer, K.~Kannike, A.~Pukhov and M.~Raidal,
+  G.~B\'elanger, K.~Kannike, A.~Pukhov and M.~Raidal,
   %``Minimal semi-annihilating $\mathbb{Z}_N$ scalar dark matter,''
   JCAP {\bf 1406} (2014) 021
   [arXiv:1403.4960 [hep-ph]].
@@ -2553,12 +2569,12 @@ F.~Vissani,
 
 
    \bibitem{Bechtle:2013xfa}
-   P.~Bechtle, S.~Heinemeyer, O.~Stål, T.~Stefaniak and G.~Weiglein,
+   P.~Bechtle, S.~Heinemeyer, O.~St\"al, T.~Stefaniak and G.~Weiglein,
    %``HiggsSignals: Confronting arbitrary Higgs sectors with measurements at the Tevatron and the LHC,''
    arXiv:1305.1933 [hep-ph].
  
    \bibitem{Bechtle:2013wla}
-   P.~Bechtle, O.~Brein, S.~Heinemeyer, O.~Stål, T.~Stefaniak, G.~Weiglein and K.~E.~Williams,
+   P.~Bechtle, O.~Brein, S.~Heinemeyer, O.~St\"al, T.~Stefaniak, G.~Weiglein and K.~E.~Williams,
    %``HiggsBounds-4: Improved Tests of Extended Higgs Sectors against Exclusion Bounds from LEP, the Tevatron and the LHC,''
    arXiv:1311.0055 [hep-ph].
 

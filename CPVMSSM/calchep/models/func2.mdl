@@ -4,7 +4,7 @@ CPV-MSSM/CPSH+hgg
 Lqcd     |initQCD5(alfSMZ, McMc, MbMb, Mtp)
 MbMt     |MbRun(Mtp)
 McMt     |McRun(Mtp)
-SHok     |cpHiggs(EE, alfSMZ, Mtp, McMt, MbMt, Ml, SW, tb, MHc, aMu, fiMu, aM1, fiM1, aM2, fiM2, aM3, fiM3, Mq3, Mu3, Md3, Ml3, Mr3, aAt, fiAt, aAb, fiAb, aAl, fiAl, aAu, fiAu, aAd, fiAd, aAm, fiAm)
+SHok     |cpHiggs(EE, alfSMZ, Mtp, McMt, MbMt, Ml, SW, tb, MHc, aMu, fiMu, aM1, fiM1, aM2, fiM2, aM3, fiM3, Mq3, Mu3, Md3, Ml3, Mr3, aAt, fiAt, aAb, fiAb, aAl, fiAl, aAu, fiAu, aAd, fiAd, aAe, fiAe, aAm, fiAm)
 RdOK     |slhaRead("cpsuperh2_slha.out", 4)
 CW       |sqrt(1-SW^2) % cos of the Weinberg angle
 MW       |MZ*CW % W mass

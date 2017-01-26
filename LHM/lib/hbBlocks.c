@@ -12,9 +12,9 @@ int  HBblocks(char * fname)
   
  fprintf(f,"Block Mass\n 25  %E # Higgs Mass\n\n",findValW("MH"));
    
-  slhaDecayPrint("H",f);
-  slhaDecayPrint("t",f);
-  slhaDecayPrint("~H+",f);
+  slhaDecayPrint("H",0,f);
+  slhaDecayPrint("t",0,f);
+  slhaDecayPrint("~H+",0,f);
 
   fprintf(f,"Block HiggsBoundsInputHiggsCouplingsBosons\n");
   fprintf(f,"# Effective coupling normalised to SM one and squared\n");
@@ -25,10 +25,15 @@ int  HBblocks(char * fname)
 ( 1.-findValW("del")*findValW("del")*findValW("vh")*findValW("vh")/findValW("v")/findValW("v")/3.)) );
   fprintf(f," %12.4E  3    25    25    23 # higgs-higgs-Z \n",   0. );
  
-  { assignVal("Q",pMass("H"));
-    calcMainFunc();
-    fprintf(f," %12.4E  3    25    21    21 # higgs-gluon-gluon\n",  SQR(findValW("LGGH")/findValW("LGGSM")) );           
-    fprintf(f," %12.4E  3    25    22    22 # higgs-gamma-gamma\n",  SQR(findValW("LAAH")/findValW("LAASM")) );
+  { double vev = 2*findValW("MW")*findValW("SW")/findValW("EE"),
+    MH = findValW("MH"),
+    aQCD=alphaQCD(MH)/M_PI,
+    LGGSM=lGGhSM(MH,aQCD, findValW("Mcp"),findValW("Mbp"),findValW("Mtp"),vev), 
+    LAASM=lGGhSM(MH,aQCD, findValW("Mcp"),findValW("Mbp"),findValW("Mtp"),vev);
+
+    
+    fprintf(f," %12.4E  3    25    21    21 # higgs-gluon-gluon\n",  SQR(findValW("LGGH")/LGGSM) );           
+    fprintf(f," %12.4E  3    25    22    22 # higgs-gamma-gamma\n",  SQR(findValW("LAAH")/LAASM) );
   }      
 
 

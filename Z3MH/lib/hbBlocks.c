@@ -12,10 +12,9 @@ int  HBblocks(char * fname)
   
   fprintf(f,"Block Mass\n 25  %E # Higgs Mass\n\n",findValW("Mh"));
    
-  slhaDecayPrint("h",f);
-  slhaDecayPrint("t",f);
-  slhaDecayPrint("~H+",f);
-
+  slhaDecayPrint("h",  0,f);
+  slhaDecayPrint("t",  0,f);
+  slhaDecayPrint("~H+",0,f);
 
 // MbSM=findValW("Mb");
  
@@ -27,10 +26,14 @@ int  HBblocks(char * fname)
   fprintf(f," %12.4E  3    25    23    23 # higgs-Z-Z \n",        1.  );
   fprintf(f," %12.4E  3    25    25    23 # higgs-higgs-Z \n",    0.   );
 
-  { assignVal("Q",pMass("h"));
-    calcMainFunc();
+  { double vev = findValW("V"),
+    Mh = findValW("Mh"),
+    aQCD=alphaQCD(Mh)/M_PI,
+    LGGSM=lGGhSM(Mh,aQCD, findValW("Mcp"),findValW("Mbp"),findValW("Mtp"),vev), 
+    LAASM=lGGhSM(Mh,aQCD, findValW("Mcp"),findValW("Mbp"),findValW("Mtp"),vev);
+
     fprintf(f," %12.4E  3    25    21    21 # higgs-gluon-gluon\n",  1. );           
-    fprintf(f," %12.4E  3    25    22    22 # higgs-gamma-gamma\n",  SQR(findValW("LAAh")/findValW("LAAhSM")) );
+    fprintf(f," %12.4E  3    25    22    22 # higgs-gamma-gamma\n",  SQR(findValW("LAAh")/LAASM) );
   }                          
  
   fprintf(f,"Block HiggsBoundsInputHiggsCouplingsFermions\n");

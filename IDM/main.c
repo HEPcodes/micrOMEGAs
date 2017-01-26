@@ -6,8 +6,8 @@
 #define MASSES_INFO      
   /* Display information about mass spectrum  */
 
-//#define HIGGSBOUNDS "../Packages/HiggsBounds-4.1.0"  
-//#define HIGGSSIGNALS "../Packages/HiggsSignals-1.2.0"
+//#define HIGGSBOUNDS "../Packages/HiggsBounds-4.2.0"  
+//#define HIGGSSIGNALS "../Packages/HiggsSignals-1.3.0"
 
 #define OMEGA            
   /* Calculate relic density and display contribution of  individual channels */

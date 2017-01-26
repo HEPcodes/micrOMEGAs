@@ -734,7 +734,8 @@ int A, int Z, double J,
 void (*Sxx)(double,double*,double*,double*),
 double(*LF)(double,double,double,double),
 double * dNdE)  
-{  int i; 
+{  int i;
+   double NfracCDM2; 
    if(CDM1  && !CDM2)   return nucleusRecoil1(CDM1,vfv,A,Z,J,Sxx, LF,dNdE); 
    if(!CDM1 &&  CDM2)   return nucleusRecoil1(CDM2,vfv,A,Z,J,Sxx, LF,dNdE); 
    if(CDM1  &&  CDM2) 
@@ -744,9 +745,12 @@ double * dNdE)
      if(fracCDM2!=0) r2= nucleusRecoil1(CDM2,vfv,A,Z,J,Sxx, LF,dNdE);
      if(fracCDM2==1) { free(dNdE1);   return r2;}
      if(fracCDM2==0) { for(i=0;i<NZ;i++) dNdE[i]=dNdE1[i]; free(dNdE1);   return r1;}
-     for(i=0;i<NZ;i++) dNdE[i]=(fracCDM2-1)*dNdE1[i]+ fracCDM2*dNdE[i];
+      
+     NfracCDM2=  fracCDM2*Mcdm1/(fracCDM2*Mcdm1 +(1-fracCDM2)*Mcdm2);      
+     
+     for(i=0;i<NZ;i++) dNdE[i]=(NfracCDM2-1)*dNdE1[i]+ NfracCDM2*dNdE[i];
      free(dNdE1); 
-     return r1*(fracCDM2-1)+r2*fracCDM2;
+     return r1*(NfracCDM2-1)+r2*NfracCDM2;
    }
 }
 

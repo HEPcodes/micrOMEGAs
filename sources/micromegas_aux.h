@@ -133,6 +133,8 @@ extern double amoeba(double *p, double * y, int ndim, double (*f)(double *), dou
 
 extern REAL *Qaddress;
 
+extern double lGGhSM(double Mh, double aQCDh, double Mcp,double Mbp,double Mtp,double vev);
+extern double lAAhSM(double Mh, double aQCDh, double Mcp,double Mbp,double Mtp,double vev);
 
 #include"../CalcHEP_src/include/num_in.h"
 

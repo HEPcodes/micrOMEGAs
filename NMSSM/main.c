@@ -4,8 +4,8 @@
   Otherwise the program should read SLHA file.
 =======================================*/ 
 
-#define SUGRA 
-//#define EWSB
+//#define SUGRA 
+#define EWSB
 
 /*====== Modules ===============
    Keys to switch on 
@@ -19,6 +19,10 @@
       /* Display  deltarho, B_>sgamma, Bs->mumu, gmuon and
          check LEP mass limits 
       */ 
+//#define HIGGSBOUNDS "../Packages/HiggsBounds-4.2.0"
+//#define HIGGSSIGNALS "../Packages/HiggsSignals-1.3.0"      
+      
+      
 #define OMEGA            
       /* Calculate relic density and display contribution of
          individual channels 
@@ -212,6 +216,48 @@ int main(int argc,char** argv)
      
 }
 #endif
+
+#ifdef HIGGSBOUNDS
+   if(access(HIGGSBOUNDS "/HiggsBounds",X_OK )) system( "cd " HIGGSBOUNDS "; ./configure; make ");
+   system("cat spectr decay > HB.in");
+   HBblocks("HB.in");
+   System("%s/HiggsBounds  LandH SLHA 5 1 HB.in HB.out >hb.stdout",HIGGSBOUNDS);
+   slhaRead("HB.out",1+4);
+   printf("HB result= %.0E  obsratio=%.2E\n",slhaVal("HiggsBoundsResults",0.,2,1,2), slhaVal("HiggsBoundsResults",0.,2,1,3)  );
+   { char hbInfo[100];
+    if(0==slhaSTRFormat("HiggsBoundsResults","1 5 ||%[^|]||",hbInfo)) printf("Channel: %s\n",hbInfo);
+   }  
+#endif
+
+#ifdef HIGGSSIGNALS
+#define DataSet " latestresults "
+//#define Method  " peak " 
+//#define  Method " mass "
+#define  Method " both "
+#define PDF  " 2 "  // Gaussian
+//#define PDF " 1 "  // box 
+//#define PDF " 3 "  // box+Gaussia
+#define dMh " 2 "
+   printf("HiggsSignals:\n");
+   if(access(HIGGSSIGNALS "/HiggsSignals",X_OK )) system( "cd " HIGGSSIGNALS "; ./configure; make ");
+     system("rm -f HS.in HS.out");
+     system("cat spectr decay > HS.in");
+     HBblocks("HS.in");
+     system("echo 'BLOCK DMASS\n 25 " dMh " '>> HS.in");
+     System(HIGGSSIGNALS "/HiggsSignals" DataSet Method  PDF " SLHA 5 1 HS.in > hs.stdout");
+     System("grep -A 10000  HiggsSignalsResults HS.in > HS.out");
+     slhaRead("HS.out",1+4);
+     printf("  Number of observables %.0f\n",slhaVal("HiggsSignalsResults",0.,1,7));
+     printf("  total chi^2= %.1E\n",slhaVal("HiggsSignalsResults",0.,1,12));
+     printf("  HS p-value = %.1E\n", slhaVal("HiggsSignalsResults",0.,1,13));
+#undef dMh
+#undef PDF
+#undef Method
+#undef DataSet
+     
+#endif
+
+
 
 #ifdef OMEGA
 { int fast=1;

@@ -946,6 +946,7 @@ double calcSpectrum(int key, double *Sg,double*Se, double*Sp, double*Sne,double*
   double weight[4][4];
   int checkGam[4][4];
   double  chStat[3]={0,0,0};
+  double NfracCDM2;
   
   err=readSpectra(); 
   if(err) { printf("calcSpectrum: Can not read data files for spectra\n");
@@ -955,8 +956,9 @@ double calcSpectrum(int key, double *Sg,double*Se, double*Sp, double*Sne,double*
           
 //printf("?WINPS[2]=%s  fracCDM2=%e \n",WINPS[2],fracCDM2);
  
-  if(fracCDM2==0) WINPS[2]=NULL;
-  if(fracCDM2==1) WINPS[0]=NULL;  
+  if(fracCDM2==0) { WINPS[2]=NULL; NfracCDM2=0; } else
+  if(fracCDM2==1) { WINPS[0]=NULL; NfracCDM2=1; } else
+   NfracCDM2=  fracCDM2*Mcdm1/(fracCDM2*Mcdm1 +(1-fracCDM2)*Mcdm2); 
 
 //printf("WINPS[2]=%s\n",WINPS[2]);
   if(WINPS[0])
@@ -969,8 +971,8 @@ double calcSpectrum(int key, double *Sg,double*Se, double*Sp, double*Sne,double*
     if( strcmp(ModelPrtcls[n-1].name,ModelPrtcls[n-1].aname)) WINPS[3]=ModelPrtcls[n-1].aname;
   }
   
-  double w1[4]={0.5*(1-fracCDM2)*(1+dmAsymm)  ,0.5*(1-fracCDM2)*(1-dmAsymm),
-                0.5*fracCDM2*(1+dmAsymm),      0.5*fracCDM2*(1-dmAsymm)};
+  double w1[4]={0.5*(1-NfracCDM2)*(1+dmAsymm)  ,0.5*(1-NfracCDM2)*(1-dmAsymm),
+                0.5*NfracCDM2*(1+dmAsymm),      0.5*NfracCDM2*(1-dmAsymm)};
   if(!WINPS[1]) { w1[0]+=w1[1]; w1[1]=0;}
   if(!WINPS[3]) { w1[2]+=w1[3]; w1[3]=0;}
 

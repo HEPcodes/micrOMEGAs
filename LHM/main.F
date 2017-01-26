@@ -9,8 +9,8 @@ C    Display information about SUSY and Higgs masses
 #define CONSTRAINTS
 C    Strongly depends on the model. 
 
-C#define HIGGSBOUNDS "../Packages/HiggsBounds-4.1.0"
-C#define HIGGSSIGNALS "../Packages/HiggsSignals-1.2.0"
+C#define HIGGSBOUNDS "../Packages/HiggsBounds-4.2.0"
+C#define HIGGSSIGNALS "../Packages/HiggsSignals-1.3.0"
 
 #define OMEGA
 C    Calculate relic density and display contribution of

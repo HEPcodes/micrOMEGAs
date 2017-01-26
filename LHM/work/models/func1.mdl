@@ -80,7 +80,7 @@ B00010 |6*CW*del^2*v^2*xh+3*SW*v^2-4*SW*del^2*vh^2
 B00011 |3*CW*SW*v^2+3*del^2*v^2*xh-6*SW^2*del^2*v^2*xh-4*CW*SW*del^2*vh^2
 B00012 |6*SW*del^2*v^2*xh-3*CW*v^2+4*CW*del^2*vh^2
 B00013 |2*f^2-3*del^2*f^2*sa^4+del^2*f^2*sa^2+2*del*f*sa^2*vh-2*vh^2
-B00014 |B00013+3*del^2*sa^4*vh^2-del^2*sa^2*vh^2
+*B00014|B00013+3*del^2*sa^4*vh^2-del^2*sa^2*vh^2
 B00015 |3-3*del^2*sa^4
 B00016 |2*ca*del*f^2*sa^2-2*ca*f*vh+3*ca*del^2*f*sa^4*vh-ca*del^2*f*sa^2*vh-2*ca*del*sa^2*vh^2
 B00017 |2*f^2*sa-del^2*f^2*sa+3*del^2*f^2*sa^3-3*del^2*f^2*sa^5+2*del*f*sa^3*vh

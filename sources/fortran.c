@@ -157,7 +157,7 @@ double decay2info_(char * pname, int *Nch, int len)
   return res;
 }
 
-int slhadecayprint_(char * pname,int *Nch,int len)
+int slhadecayprint_(char * pname,int*dVirt,int *Nch,int len)
 { double res;
   char cname[20]; 
   char fname[20];
@@ -166,7 +166,7 @@ int slhadecayprint_(char * pname,int *Nch,int len)
   sprintf(fname,"%d.tmptxt",getpid());
   f=fopen(fname,"w");
   fName2c(pname,cname,len);    
-  res=slhaDecayPrint(cname,f);
+  res=slhaDecayPrint(cname,*dVirt,f);
   fclose(f);
   fortreread_(Nch,fname,strlen(fname));
   unlink(fname); 
