@@ -9,7 +9,13 @@
 #define CONSTRAINTS     
       /* Display  deltarho, B_>sgamma, Bs->mumu, gmuon, Z1->inv,
          check LEP mass limits and Zprime limits
-      */ 
+      */
+
+//#define SLHAINPUT
+  /* Switch to use slha files as input instead of umssm.par or similar files */
+
+#define STABLE_NLSP      
+  /* Check if the (charged or colored) NLSP is completely stable */
 
 #define OMEGA            
   /* Calculate relic density and display contribution of  individual channels */
@@ -28,12 +34,9 @@
     A-dependence of Fermi-dencity
   */  
 
-//#define HIGGSBOUNDS  "../Packages/HiggsBounds-4.2.1"
-//#define HIGGSSIGNALS "../Packages/HiggsSignals-1.4.0"
-  
-#define LILITH "../Packages/Lilith-1.1.2"
-
-//#define SMODELS "../Packages/smodels-v1.0.3-micromegas"
+//#define HIGGSBOUNDS 
+#define LILITH
+//#define SMODELS 
 
 #define CDM_NUCLEON     
   /* Calculate amplitudes and cross-sections for  CDM-mucleon collisions */  
@@ -65,8 +68,8 @@
 /*===== End of DEFINE  settings ===== */
 
 
-#include"../sources/micromegas.h"
-#include"../sources/micromegas_aux.h"
+#include"../include/micromegas.h"
+#include"../include/micromegas_aux.h"
 #include"lib/pmodel.h"
 
 #define min(a,b) (a<=b?a:b)
@@ -75,19 +78,39 @@ int main(int argc,char** argv)
 {  int err;
    char cdmName[10];
    int spin2, charge3,cdim;
-   double Omega,bsg,DMd,DMs,bsmumu,btaunu,Damu,bxismu1,bxismu2,Delrho;
+   double Omega;
 
-  ForceUG=1;  /* to Force Unitary Gauge assign 1 */
+  ForceUG=0;  /* to Force Unitary Gauge assign 1 */
 
+#ifdef SLHAINPUT
+{ 
+   printf("\n========= SLHA file input =========\n");
+
+   if(argc <2) 
+   {  printf("The program needs one argument: the name of SLHA input file.\n"
+            "Example: ./main UMSSM_inp.dat \n");
+      exit(1);
+   }  
+   
+   printf("Initial file  \"%s\"\n",argv[1]);
+   err=lesHinput(argv[1]);
+   if(err) exit(2);
+}
+
+#else
+{  
   if(argc==1)
   { 
       printf(" Correct usage:  ./main  <file with parameters> \n");
-      printf("Example: ./main data1.par\n");
+      printf("Example: ./main umssm.par\n");
       exit(1);
   }
-                               
+ 
   err=readVar(argv[1]);
-  
+}
+#endif
+
+
   if(err==-1)     {printf("Can not open the file\n"); exit(1);}
   else if(err>0)  { printf("Wrong file contents at line %d\n",err);exit(1);}
            
@@ -95,12 +118,12 @@ int main(int argc,char** argv)
   err=sortOddParticles(cdmName);
 
    
-  err=UMSSMTools();      
+  err=umssmtools();      
   slhaWarnings(stdout);
    
 #ifdef MASSES_INFO
 {
-  printf("\n=== MASSES OF HIGGS AND ODD PARTICLES: ===\n");
+  printf("\n=== MASSES OF HIGGS AND SUSY PARTICLES: ===\n");
   printHiggs(stdout);
   printMasses(stdout,1);
 }
@@ -114,28 +137,37 @@ int main(int argc,char** argv)
     cdmName,       spin2); 
    if(charge3) { printf("Dark Matter has electric charge %d/3\n",charge3); exit(1);}
    if(cdim!=1) { printf("Dark Matter is a color particle\n"); exit(1);}
-   txtList L;
-   double MNLSP,NLSPMass;
-   qNumbers(nextOdd(1, &NLSPMass), &spin2, &charge3, &cdim);
-   MNLSP=pMass(nextOdd(1, &NLSPMass));
-   printf("NLSP is '%s' with spin=%d/2, electric charge %d/3 and the mass difference with the LSP is %f GeV\n",nextOdd(1, &NLSPMass),spin2,charge3,MNLSP-Mcdm);
-   if(cdim!=1)printf("NLSP is a color particle\n");
-   if (pWidth(nextOdd(1, &NLSPMass),&L)==0){printf("WARNING: the NLSP '%s' is stable\n",nextOdd(1, &NLSPMass));}
-
+ 
+#ifdef STABLE_NLSP
+{
+    double NLSPMass;
+    qNumbers(nextOdd(1, &NLSPMass), &spin2, &charge3, &cdim);
+    if(charge3 || cdim!=1)
+    {
+    printf("\n=== CHECK IF THE (CHARGED OR COLORED) NLSP IS STABLE: ===\n");
+    txtList L;
+    double MNLSP;
+    MNLSP=pMass(nextOdd(1, &NLSPMass));
+    printf("NLSP is '%s' with spin=%d/2, electric charge %d/3 and the mass difference with the LSP is %f GeV\n",nextOdd(1, &NLSPMass),spin2,charge3,MNLSP-Mcdm);
+    if (pWidth(nextOdd(1, &NLSPMass),&L)==0){printf("WARNING: the NLSP '%s' is stable\n",nextOdd(1, &NLSPMass));}
+    }
+}
+#endif
 
    if(strcmp(cdmName,"~o1")) printf("~o1 is not CDM\n"); 
    else o1Contents(stdout);
   
 //Get the corrected Higgs branching ratios from UMSSMTools :
-slhaRead("UMSSM_decay.dat",0);  
-  
+slhaRead("UMSSM_decay.dat",1);  
+
+
 #ifdef OMEGA
 {
   int fast=1;
   double Beps=1.E-5, cut=0.01;
   double Xf;   
   
-// to include processes with virtual W/Z in DM   annihilation      
+// to exclude processes with virtual W/Z in DM   annihilation      
    VZdecay=0; VWdecay=0; cleanDecayTable(); 
 
 // to include processes with virtual W/Z  also  in co-annihilation 
@@ -161,134 +193,111 @@ if(omegaCh){
 }
 #endif
 
+
 #ifdef CONSTRAINTS
-{
-slhaRead("UMSSM_spectr.dat",0);
-printf("\n\n==================================\n");
-printf("==== Low energy observables: =====\n");
-printf("==================================\n");
+{ double constr0,constrM, constrP,cs;
+  slhaRead("UMSSM_spectr.dat",0);
+  printf("\n\n================================\n");
+  printf("==== Physical Constraints: =====\n");
+  printf("================================\n");
+  printf("deltartho = %.2E\n",deltarho());
 
+  constr0=bsgnlo(&constrM,&constrP);
+  printf("B->s,gamma = %.2E (%.2E , %.2E ) \n",constr0,constrM, constrP );
 
-bsg=slhaVal("LOWEN",0.,1,1);
-printf("\n BR(B -> Xs gamma) = %.3e",slhaVal("LOWEN",0.,1,1));
-DMd=slhaVal("LOWEN",0.,1,2);
-printf("\n Delta M_d = %.3e ps^-1",slhaVal("LOWEN",0.,1,2));
-DMs=slhaVal("LOWEN",0.,1,3);
-printf("\n Delta M_s = %.3e ps^-1",slhaVal("LOWEN",0.,1,3));
-bsmumu=slhaVal("LOWEN",0.,1,4);
-printf("\n BR(Bs->mu+mu-) = %.3e",slhaVal("LOWEN",0.,1,4));
-btaunu=slhaVal("LOWEN",0.,1,5);
-printf("\n BR(B+ -> tau+ + nu_tau) = %.3e",slhaVal("LOWEN",0.,1,5));
-Damu=slhaVal("LOWEN",0.,1,6);
-printf("\n BSM contr. to Delta a_mu = %.3e",slhaVal("LOWEN",0.,1,6));
-bxismu1=slhaVal("LOWEN",0.,1,7);
-printf("\n BR(B-->X_s mu+ mu) for low M_{l+l-}^2 = %.3e",slhaVal("LOWEN",0.,1,7));
-bxismu2=slhaVal("LOWEN",0.,1,8);
-printf("\n BR(B-->X_s mu+ mu) for high M_{l+l-}^2 = %.3e",slhaVal("LOWEN",0.,1,8));
-printf("\n deltartho = %.3e\n",deltarho());
-Delrho=deltarho();
-if(Zinv()==0) {printf("Limit on the invisible Z1-width OK\n");}
-if(masslimits()==0) printf("LEP limits OK\n");
-if(Zprimelimits()==0) {printf("LHC limits on new Zprime OK\n");}
+  constr0= bsmumu(&constrM,&constrP);
+  printf("Bs->mu,mu  = %.2E (%.2E , %.2E ) \n",constr0,constrM, constrP );
+  
+  constr0=btaunu(&constrM,&constrP);
+  printf("B+->tau+,nu= %.2E (%.2E , %.2E ) \n",constr0, constrM, constrP );
+  
+  constr0=deltamd(&constrM,&constrP);
+  printf("deltaMd    = %.2E (%.2E , %.2E ) ps^-1\n",constr0,constrM, constrP );
+
+  constr0=deltams(&constrM,&constrP);
+  printf("deltaMs    = %.2E (%.2E , %.2E ) ps^-1\n",constr0,constrM, constrP );
+
+  constr0=gmuon(&constrM,&constrP);
+  printf("(g-2)/BSM = %.2E (%.2E , %.2E ) \n",constr0,constrM, constrP );
+
+  constr0=bxismulow(&constrM,&constrP);
+  printf("B-->X_s mu+ mu for low M_{l+l-}^2 = %.2E (%.2E , %.2E ) \n",constr0,constrM, constrP );
+  
+  constr0=bxismuhigh(&constrM,&constrP);
+  printf("B-->X_s mu+ mu for high M_{l+l-}^2 = %.2E (%.2E , %.2E ) \n",constr0,constrM, constrP );   
+
+  if(masslimits()==0) printf("LEP limits OK\n");
+  if(Zprimelimits()==0) {printf("LHC limits on new Zprime OK\n");}
+  if(Zinvisible()) printf("Excluded by Z->invisible\n");
+  if(LspNlsp_LEP(&cs)) printf("Excluded by LEP  by e+,e- -> DM q qbar. Cross section =%.2E [pb] \n",cs);  
 }
 #endif
 
-
 #ifdef HIGGSBOUNDS
-
-printf("\n\n=======================\n");
-printf("==== HIGGSBOUNDS: =====\n");
-printf("=======================\n");
-
-   if(access(HIGGSBOUNDS "/HiggsBounds",X_OK )) system( "cd " HIGGSBOUNDS "; ./configure; make ");
+{
+   printf("\n\n=======================\n");
+   printf("==== HIGGSBOUNDS: =====\n");
+   printf("=======================\n");
+   int NH0=4, NHch=1; // number of neutral and charged Higgs particles.
+   double HB_result,HB_obsratio,HS_observ,HS_chi2, HS_pval;
+   char HB_chan[100]={""}, HB_version[50], HS_version[50]; 
    system("cat UMSSM_spectr.dat UMSSM_decay.dat > HB.in");
-   HBblocks("HB.in");
-  System("%s/HiggsBounds  LandH SLHA 4 1 HB.in HB.out >hb.stdout",HIGGSBOUNDS);
-  slhaRead("HB.out",1+4);
-   printf("HB result= %.0E  obsratio=%.2E\n",slhaVal("HiggsBoundsResults",0.,2,1,2), slhaVal("HiggsBoundsResults",0.,2,1,3)  );
-   { char hbInfo[100];
-    if(0==slhaSTRFormat("HiggsBoundsResults","1 5 ||%[^|]||",hbInfo)) printf("Channel: %s\n",hbInfo);
-   } 
-
-#endif
-
-
-
-#ifdef HIGGSSIGNALS
-#define DataSet " latestresults "
-#define Method  " peak " 
-//#define  Method " mass "
-//#define  Method " both "
-#define PDF  " 2 "  // Gaussian
-//#define PDF " 1 "  // box 
-//#define PDF " 3 "  // box+Gaussia
-#define dMh " 2 "
-printf("\n\n========================\n");
-printf("==== HIGGSSIGNALS: =====\n");
-printf("========================\n");
-
-   if(access(HIGGSSIGNALS "/HiggsSignals",X_OK )) system( "cd " HIGGSSIGNALS "; ./configure; make ");
-     system("rm -f HS.in HS.out");
-     system("cat UMSSM_spectr.dat UMSSM_decay.dat > HS.in");
-     HBblocks("HS.in");
-     system("echo 'BLOCK DMASS\n 25 " dMh " '>> HS.in");
-     System(HIGGSSIGNALS "/HiggsSignals" DataSet Method  PDF " SLHA 4 1 HS.in > hs.stdout");
-     System("grep -A 10000  HiggsSignalsResults HS.in > HS.out");
-     slhaRead("HS.out",1+4);
-     printf("  Number of observables %.0f\n",slhaVal("HiggsSignalsResults",0.,1,7));
-     printf("  total chi^2= %.1E\n",slhaVal("HiggsSignalsResults",0.,1,12));
-     printf("  HS p-value = %.1E\n", slhaVal("HiggsSignalsResults",0.,1,13));
-#undef dMh
-#undef PDF
-#undef Method
-#undef DataSet
-     
+   HBblocks("HB.in");     
+   system("echo 'BLOCK DMASS\n 25  2  '>> HB.in");
+#include "../include/hBandS.inc"
+   printf("HB(%s): result=%.0f  obsratio=%.2E  channel= %s \n", HB_version,HB_result,HB_obsratio,HB_chan);
+   printf("HS(%s): Nobservables=%.0f chi^2 = %.2E pval= %.2E\n",HS_version,HS_observ,HS_chi2, HS_pval);
+}
 #endif
 
 #ifdef LILITH
+{  double m2logL, m2logL_reference=0,pvalue;
+   int exp_ndf,n_par=0,ndf;
+   char call_lilith[100], Lilith_version[20];
+
    if(LiLithF("Lilith_in.xml"))
-   {  double  like; 
-      int exp_ndf;
-      system("python " LILITH "/run_lilith.py  Lilith_in.xml  -s -r  Lilith_out.slha");
-      slhaRead("Lilith_out.slha", 1);
-      like = slhaVal("LilithResults",0.,1,0);
-      exp_ndf = slhaVal("LilithResults",0.,1,1);
-      printf("LILITH:  -2*log(L): %f; exp ndf: %d \n", like,exp_ndf );
+   {        
+#include "../include/Lilith.inc"
+      printf("LILITH(DB%s):  -2*log(L): %.2f; -2*log(L_reference): %.2f; ndf: %d; p-value: %.2E \n", 
+      Lilith_version,m2logL,m2logL_reference,ndf,pvalue);
    } else printf("LILITH: there is no Higgs candidate\n");
-     
+}     
 #endif
 
-#ifdef SMODELS
-{  int res;
 
-   smodels(4000.,5, 0.1, "smodels.in",0);
-   system("make -C " SMODELS); 
-   system(SMODELS "/runTools.py xseccomputer -p -N -O -f smodels.in");
-   system(SMODELS "/runSModelS.py -f smodels.in -s smodels.res -particles ./  > smodels.out "); 
-   slhaRead("smodels.res", 1);
-   res=slhaVal("SModelS_Exclusion",0.,2,0,0); 
-   switch(res)
-   { case -1: printf("SMODELS: no channels for testing\n");break;
-     case  0: printf("SMODELS: not excluded\n");break; 
-     case  1:  printf("SMODELS: excluded\n");break;
-   }  
+#ifdef SMODELS
+{  int result=0;
+   double Rvalue=0;
+   char analysis[30]={},topology[30]={}; 
+#include "../include/SMODELS.inc" 
 }   
 #endif 
+
 
 #ifdef INDIRECT_DETECTION
 { 
   int err,i;
-  double Emin=1,/* Energy cut  in GeV   */  sigmaV;
-  double vcs_gz,vcs_gg;
+  double Emin=1,SMmev=320;/*Energy cut in GeV and solar potential in MV*/
+  double  sigmaV;
   char txt[100];
   double SpA[NZ],SpE[NZ],SpP[NZ];
   double FluxA[NZ],FluxE[NZ],FluxP[NZ];
-  double * SpNe=NULL,*SpNm=NULL,*SpNl=NULL;
+  double SpNe[NZ],SpNm[NZ],SpNl[NZ];  
+//  double * SpNe=NULL,*SpNm=NULL,*SpNl=NULL;
   double Etest=Mcdm/2;
+ 
+/* default DarkSUSY parameters */
+
+/*
+    K_dif=0.036;
+    L_dif=4;  
+    Delta_dif=0.6; 
+    Vc_dif=10;
+    Rdisk=30;
+    SMmev=320;
+*/                        
   
 printf("\n==== Indirect detection =======\n");  
-
-
 
   sigmaV=calcSpectrum(1+2+4,SpA,SpE,SpP,SpNe,SpNm,SpNl ,&err);
     /* Returns sigma*v in cm^3/sec.     SpX - calculated spectra of annihilation.
@@ -298,41 +307,45 @@ printf("\n==== Indirect detection =======\n");
                        2-includes gammas for 2->2+gamma
                        4-print cross sections             
     */
-  printf("sigmav=%.2E[cm^3/s]\n",sigmaV);  
-
+    
 
   if(SpA)
   { 
-     double fi=0.1,dfi=0.05; /* angle of sight and 1/2 of cone angle in [rad] */ 
+     double fi=0.1,dfi=M_PI/180.; /* angle of sight and 1/2 of cone angle in [rad] */ 
+                                                   /* dfi corresponds to solid angle 1.E-3sr */                                             
+     printf("\nPhoton flux  for angle of sight f=%.2f[rad]\n"
+     "and spherical region described by cone with angle %.4f[rad]\n",fi,2*dfi);
+     gammaFluxTab(fi,dfi, sigmaV, SpA, FluxA);
 
-     gammaFluxTab(fi,dfi, sigmaV, SpA,  FluxA);     
-     printf("Photon flux  for angle of sight f=%.2f[rad]\n"
-     "and spherical region described by cone with angle %.2f[rad]\n",fi,2*dfi);
+     printf("Photon flux = %.2E[cm^2 s GeV]^{-1} for E=%.1f[GeV]\n",SpectdNdE(Etest, FluxA), Etest);
+
 #ifdef SHOWPLOTS
-     sprintf(txt,"Photon flux[cm^2 s GeV]^{1} at f=%.2f[rad], cone angle %.2f[rad]",fi,2*dfi);
-     displaySpectrum(FluxA,txt,Emin,Mcdm,1);
+     sprintf(txt,"Photon flux for angle of sight %.2f[rad] and cone angle %.2f[rad]",fi,2*dfi);
+     displaySpectrum(txt,Emin,Mcdm,FluxA);
 #endif
-     printf("Photon flux = %.2E[cm^2 s GeV]^{-1} for E=%.1f[GeV]\n",SpectdNdE(Etest, FluxA), Etest);       
   }
 
   if(SpE)
   { 
-    posiFluxTab(Emin, sigmaV, SpE,  FluxE);
+    posiFluxTab(Emin, sigmaV, SpE, FluxE);
+    if(SMmev>0)  solarModulation(SMmev,0.0005,FluxE,FluxE);
 #ifdef SHOWPLOTS     
-    displaySpectrum(FluxE,"positron flux [cm^2 s sr GeV]^{-1}" ,Emin,Mcdm, 1);
+    displaySpectrum("positron flux [cm^2 s sr GeV]^{-1}" ,Emin,Mcdm,FluxE);
 #endif
-    printf("Positron flux  =  %.2E[cm^2 sr s GeV]^{-1} for E=%.1f[GeV] \n",
-    SpectdNdE(Etest, FluxE),  Etest);           
+    printf("\nPositron flux  =  %.2E[cm^2 sr s GeV]^{-1} for E=%.1f[GeV] \n",
+    SpectdNdE(Etest, FluxE),  Etest); 
   }
   
   if(SpP)
-  { 
-    pbarFluxTab(Emin, sigmaV, SpP,  FluxP  ); 
+  {
+    pbarFluxTab(Emin, sigmaV, SpP,  FluxP); 
+    
+    if(SMmev>0)  solarModulation(SMmev,1,FluxP,FluxP);     
 #ifdef SHOWPLOTS    
-     displaySpectrum(FluxP,"antiproton flux [cm^2 s sr GeV]^{-1}" ,Emin, Mcdm,1);
+     displaySpectrum("antiproton flux [cm^2 s sr GeV]^{-1}" ,Emin,Mcdm,FluxP);
 #endif
-    printf("Antiproton flux  =  %.2E[cm^2 sr s GeV]^{-1} for E=%.1f[GeV] \n",
-    SpectdNdE(Etest, FluxP),  Etest);             
+    printf("\nAntiproton flux  =  %.2E[cm^2 sr s GeV]^{-1} for E=%.1f[GeV] \n",
+    SpectdNdE(Etest, FluxP),  Etest);     
   }
 }  
 #endif
@@ -456,7 +469,7 @@ printf("\n======== Direct Detection ========\n");
    displaySpectra("neutrino fluxes [1/Year/km^2/GeV]",Emin,Mcdm,2,nu,"nu",nu_bar,"nu_bar");
 #endif
 
-   printf(" E>%.1E GeV neutrino/anti-neutrin fluxes   %.2E/%.2E [1/Year/km^2]\n",Emin,
+   printf(" E>%.1E GeV neutrino/anti-neutrino fluxes   %.2E/%.2E [1/Year/km^2]\n",Emin,
           spectrInfo(Emin,nu,NULL), spectrInfo(Emin,nu_bar,NULL));
  
 //ICE CUBE  
@@ -495,7 +508,11 @@ Emin=0.1;
    pname = "~o2";
    width=pWidth(pname,&L);
    printf("\n%s :   total width=%.2E \n and Branchings:\n",pname,width);
-   printTxtList(L,stdout);            
+   printTxtList(L,stdout);  
+
+   numout*cc=newProcess("~o2->~o1,e,E");
+   int err;
+   printf("width(~o2->~o1,e,E)=%e\n", pWidthCC(cc,&err));          
 }
 #endif
 
@@ -507,7 +524,7 @@ Emin=0.1;
   Qfact=pMass(CDM1);
   Qren=pTmin;
 
-  printf("pp -> DM,DM +jet(pt>%.2E GeV)  at %.2E GeV\n",pTmin,Pcm);  
+  printf("pp -> DM,DM +jet(pt>%.2E GeV)  at sqrt(s)=%.2E GeV\n",pTmin,2*Pcm);  
   
   cs=hCollider(Pcm,1,nf,Qren, Qfact, CDM1,aCDM1,pTmin,1);
   printf("cs(pp->~o1,~o2)=%.2E[pb]\n",cs);
@@ -522,5 +539,6 @@ Emin=0.1;
   printf("\n====================================\n");    
 #endif 
 
-return 0;
+  killPlots();
+  return 0;
 }

@@ -12,13 +12,13 @@ I. General  installation.
    
    and  compile  
        CalcHEP_src/bin/s_calchep 
-       sources/micromegas.a
+       lib/micromegas.a
 
    Possible problems are discussed in Section VII below. 
 
    micromegas_3.1 was tested for  Linux, and  Darwin
  
-II. To work with MSSM, NMSSM, CPVMSSM, IDM, LHM, RHNM, SM4, Z3M  models
+II. To work with MSSM, NMSSM, CPVMSSM, UMSSM, IDM, LHM,   Z3IDM, Z4IDSM  models
     go to the corresponding directory. 
 
     To generate an executable use

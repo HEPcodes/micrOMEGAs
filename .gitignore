@@ -1,6 +1,6 @@
 *.dSYM
-/sources/micromegas.a
-/sources/microPath.h
+/include/microPath.h
+
 /CalcHEP_src/include/rootDir.h
 /CalcHEP_src/work/bin
 /CalcHEP_src/FlagsForMake
@@ -18,8 +18,10 @@
 /CalcHEP_src/bin/s_calchep
 /CalcHEP_src/bin/show_distr
 /CalcHEP_src/bin/sum_distr
+/CalcHEP_src/bin/lhapdf2pdt
 
 /CalcHEP_src/lib/*.a
 /CalcHEP_src/lib/*.o
 /CalcHEP_src/lib/*.so
 
+/lib/micromegas.a

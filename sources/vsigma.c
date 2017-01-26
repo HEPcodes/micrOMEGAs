@@ -58,7 +58,6 @@ static double u_integrand_( double u)
    double ms,md,sqrtS,PcmIn,res0;
    
    if(u==0. || u==1.) return 0.;
-   
    z=1-u*u;
    sqrtS=M1+M2-3*T_*log(z);
    if(sqrtS<=M1+M2 || sqrtS<=pmass[2]+pmass[3]) return 0;
@@ -174,7 +173,7 @@ static double vsigma24integrand0(double *x, double w)
 }
 
 
-double vSigmaCC(double T,numout* cc)
+double vSigmaCC(double T,numout* cc, int mode)
 {
   int i,err,n,n0,m,w;
   char*s, *pname[6];
@@ -186,9 +185,12 @@ double vSigmaCC(double T,numout* cc)
   
   double bEps=1.E-4;
   double dI;
+  int dmOut;
       
   CI=cc->interface; 
   T_=T;
+  
+
 
   if(passParameters(cc)) return -1;
   if(Qaddress && CI->nout==2) 
@@ -200,9 +202,19 @@ double vSigmaCC(double T,numout* cc)
   }
   
   for(i=0;i<2+CI->nout;i++) pname[i]=CI->pinf(1,i+1,pmass+i,pdg+i);  
- 
+
   M1=pmass[0];
   M2=pmass[1];
+  
+
+  if(mode) 
+  { if(pname[0][0]!='~' || pname[1][0]!='~') return 0;
+    if(T==0 && (M1< Mcdm || M2<Mcdm)) return 0;
+    dmOut=0; 
+    for(i=2;i<2+CI->nout;i++) if(pname[i][0]=='~') dmOut++;
+    if(dmOut==2) return 0; 
+  }    
+ 
   for(i=2,msum=0;i<CI->nout;i++) msum+=pmass[i];
   
   sqrtSmin=M1+M2;
@@ -224,7 +236,7 @@ double vSigmaCC(double T,numout* cc)
        if(T==0) a=vcs22(cc,1,&err); else
        {  double eps=1.E-3;
           sqme22=CI->sqme;
-          nsub22=1;    
+          nsub22=1;
           a=simpson(u_integrand_,0.,1.,eps)*3.8937966E8;
        }   
        break;
@@ -250,7 +262,7 @@ double vSigmaCC(double T,numout* cc)
             for(i5=2;i5<5;i5++)  if(i5!=i3 && i5!=i4) break;
             for(i6=i5+1;i6<=5;i6++) if(i6!=i3 && i6!=i4) break;
          }else { i3=2;i4=3;i5=4;i6=5;} 
-         printf("i3,i4,i5,i6= %d %d %d %d\n", i3,i4,i5,i6); 
+//         printf("i3,i4,i5,i6= %d %d %d %d\n", i3,i4,i5,i6); 
          if(T==0) a=vegas_chain(6, vsigma24integrand0 ,4000,1., 0.03,&dI);
          else     a=vegas_chain(8, vsigma24integrandT ,5000,1., 0.03,&dI);
                                 
@@ -259,15 +271,42 @@ double vSigmaCC(double T,numout* cc)
         printf("Too many outgoing particles\n");
         a=0;  
    }  
+
 //   WIDTH_FOR_OMEGA=0;
-   if(Qaddress && CI->nout==2) { *Qaddress=oldQ; calcMainFunc();}
   
+   if(mode)
+   {  a*= 1-0.5*dmOut;
+      char *p0=pname[0],*p1=pname[1],*c0=NULL,*c1=NULL;
+      double s=0,k=M1*M1*M2*M2/sqrt(M1*M2)*K2pol(T/M1)*K2pol(T/M2);            
+      for(i=0;i<nModelParticles;i++) if(ModelPrtcls[i].name[0]=='~')
+      {  double m=pMass(ModelPrtcls[i].name);
+         int dim=ModelPrtcls[i].cdim*(ModelPrtcls[i].spin2+1);
+         
+              if(strcmp(p0,ModelPrtcls[i].name) ==0){ c0=ModelPrtcls[i].aname;k*=dim;} 
+         else if(strcmp(p0,ModelPrtcls[i].aname)==0){ c0=ModelPrtcls[i].name; k*=dim;}
+              if(strcmp(p1,ModelPrtcls[i].name) ==0){ c1=ModelPrtcls[i].aname;k*=dim;} 
+         else if(strcmp(p1,ModelPrtcls[i].aname)==0){ c1=ModelPrtcls[i].name; k*=dim;}
+         if(strcmp(ModelPrtcls[i].name,ModelPrtcls[i].aname)!=0) dim*=2;
+         if(0.5*(M1+M2)-m >30*T){ k=0;s=1;break;}
+         s+=dim*m*m/sqrt(m)*K2pol(T/m)*exp(-(m-0.5*(M1+M2))/T); 
+      }
+      if(k)      
+      {  if(strcmp(p0,p1)) k*=2;
+         if(! (  (strcmp(p0,c0)==0 && strcmp(p1,c1)==0)
+               ||(strcmp(p0,c1)==0 && strcmp(p1,c0)==0)
+              ) ) k*=2;   
+      } 
+      a*=k/s/s;
+   }  
+
+   if(Qaddress && CI->nout==2) { *Qaddress=oldQ; calcMainFunc();}
+   
    return a;
 }
 
-double vsigmacc_(double *T, int *ccf)
+double vsigmacc_(double *T, int *ccf,int*mode)
 {
   numout*cc;
   memcpy(&cc,ccf,sizeof(cc));
-  return vSigmaCC(*T,cc); 
+  return vSigmaCC(*T,cc,*mode); 
 }

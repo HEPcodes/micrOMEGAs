@@ -81,39 +81,51 @@ static int sub_men__(void)
 }
 
 
-
 static void f7_prog(int mode)
 { int pos=1;
   void *pscr=NULL;
-  if(mode>2) 
-  { messanykey(10,15," Highlight the corresponding\n"
-                     "structure function");
-    return;
-  }     
-
-  if(!sf_num[mode-1]) return;
-  
   f3_key[4]=NULL;
 
   for(;;)
-  {  static double xMin=0.0, xMax=1.0, scale = 91.187;
+  {  static double xMin=1E-5, xMax=1.0, q0 = 91.187,qMin=1.5,qMax=1.E4,x0=0.1;
      static int nPoints=100;
-     double f[150];
-     
-     char strmen[]="\030 "
+     static int both=1,LOG=1;  
+     int on[2]={0,0};
+
+
+     char strmen[]="\030"
                   " x-Min = XXX            "
                   " x-Max = YYY            "
+                  " q-Min = QXX            "
+                  " q-Max = QYY            " 
                   " Npoints = NNN          "
-                  " QCD-scale= QQQ         "
+                  " q0      = QQQ          "
+                  " x0      = xXX          "
+                  " log scale argument LOG "  
                   " Display plot x*F(x)    "
-                  " Display plot F(x)      ";
-     
-     improveStr(strmen,"XXX","%.3f",xMin);
-     improveStr(strmen,"YYY","%.3f",xMax);
-     improveStr(strmen,"NNN","%d",nPoints);
-     improveStr(strmen,"QQQ","%.1fGeV",scale); 
+                  " Display plot   F(x)    "
+                  " Display plot   F(Q)    "
+                  " both PDF1&PDF2    BOTH ";
 
-     menu1(54,14,"",strmen,"n_alpha_view",&pscr,&pos);
+               
+     improveStr(strmen,"XXX","%.3E",xMin); 
+     improveStr(strmen,"YYY","%.3E",xMax);
+     improveStr(strmen,"QXX","%.3E",qMin);
+     improveStr(strmen,"QYY","%.3E",qMax);
+     improveStr(strmen,"NNN","%d",nPoints);
+     improveStr(strmen,"QQQ","%.2fGeV",q0); 
+     improveStr(strmen,"xXX","%.2E",x0);
+     if(LOG) improveStr(strmen,"LOG","ON"); else improveStr(strmen,"LOG","OFF");
+     
+     if(mode>2) both=1;
+     if(both){ on[0]=1,on[1]=1;} else  on[mode-1]=1;
+
+     if(!sf_num[0]) on[0]=0;
+     if(!sf_num[1]) on[1]=0;
+     if(sf_num[0]==0 && sf_num[1]==0) return;
+      
+     if(both) improveStr(strmen,"BOTH","ON"); else improveStr(strmen,"BOTH","OFF");
+     menu1(54,10,"PDF plots",strmen,"n_pdf_plots_*",&pscr,&pos);
 
      switch(pos)
      {  case 0: f3_key[4]=f7_prog; 
@@ -125,41 +137,73 @@ static void f7_prog(int mode)
           correctDouble(55,18,"xMax = ",&xMax,1);                  
           break; 
         case 3:
+          correctDouble(55,18,"qMin = ",&qMin,1);
+          break; 
+        case 4:  
+          correctDouble(55,18,"qMax = ",&qMax,1);
+          break; 
+        case 5:
           correctInt(50,18,"nPoints = ",&nPoints,1);
           break; 
-        case 4: 
-          correctDouble(50,18,"QCD-scale = ",&scale,1);
+        case 6: 
+          correctDouble(50,18,"q0 = ",&q0,1);
           break;
-        case 5: case 6:
-         if(xMin>=0 && xMax>xMin && xMax<=1 
-            && nPoints>=3 && nPoints<=150 && scale>0.5)
-         {
+        case 7:
+          correctDouble(50,18,"x0 = ",&x0,1);
+           break;
+        case 8: LOG=!LOG; break;             
+        case 9: case 10: case 11:
+        { double z1,z2;
+          if(pos==11) {z1=qMin;z2=qMax;} else {z1=xMin;z2=xMax;}
+
+          if(z1>=0 && (!LOG||z1>0) && z2>z1 && nPoints>=3 && nPoints<=150 )
+         { int l,i;
+           double * df[2]={NULL,NULL};
+           double f[2][250];
+           char p_name[2][30], title[100];
+           char*xName;
            void * screen;
-           double dx=(xMax-xMin)/(2*nPoints);
-           double be=sf_be[mode-1];
-           int i;
+           
            get_text(1,1,maxCol(),maxRow(),&screen);
-           for(i=0;i<nPoints;i++)
-           {  double x=xMin+(i+0.5)*(xMax-xMin)/nPoints;
-              f[i]=strfun_(mode,x,scale);
-              if(pos==5) f[i]*=x;
-              if(be!=1.) f[i]*=be*pow(1.-x,be-1.);
+           if(LOG) {z1=log10(z1); z2=log10(z2);}
+           for(l=0;l<2; l++) if(on[l])
+           {  double be=sf_be[l]; 
+              sprintf(p_name[l],"pdf%d(%s)", l+1,pinf_int(Nsub,l+1,NULL,NULL) ); 
+              for(i=0;i<nPoints;i++)
+              {  double x=x0,q=q0,z;
+                 z=z1+(i+0.5)*(z2-z1)/nPoints;
+                 if(LOG) z=pow(10,z);
+                 if(pos==11) q=z; else x=z;
+                 f[l][i]=strfun_(l+1,x,q);
+                 if(pos==9) f[l][i]*=x;
+//          if(pos==11) f[l][i]/=q*q;
+                 if(be!=1.) f[l][i]*=be*pow(1.-x,be-1.);
+              }
            }
-           {
-              char p_name[20], mess[STRSIZ];
-              strcpy(p_name,pinf_int(Nsub,mode,NULL,NULL));
-              if(pos==5) strcat(p_name,"(x)*x"); else strcat(p_name,"(x)");
-              strFunName(mode,mess);
-              trim(mess);
-              sprintf(mess+strlen(mess)," [QCD-scale = %.1f GeV]",scale); 
-              plot_1(xMin+dx,xMax-dx,nPoints,f,NULL,mess,"x",p_name);  
+//           strcpy(title,"Incoming particle distribution");
+           title[0]=0;  
+           
+           switch(pos)
+           { case  9: sprintf(title+strlen(title)," x*F(x,Q=%.2E)",q0);   break;
+             case 10: sprintf(title+strlen(title)," F(x,Q= %.2E)",q0);     break;
+             case 11: sprintf(title+strlen(title)," F(x=%.2E,Q)",x0);     break;
            }
+           if(pos==11) 
+           {if(LOG) xName="log10(Q)"; else xName="Q";} else {if(LOG) xName="log10(x)"; else xName="x";}
+           
+           if(on[0]&&on[1]) plot_N(title,z1,z2, xName, nPoints,2, f[0],NULL,p_name[0],f[1],NULL,p_name[1]);
+           else 
+           { if(on[0]) l=0; else l=1;
+              plot_N(title,z1,z2, xName, nPoints,1, f[l],NULL,p_name[l]);   
+           }  
            put_text(&screen);
          } else messanykey(16,5," Correct input is \n"
                                 "  0<=xMin<xMax<=1,\n"
-                                " QCD-scale > 0.5 GeV\n"
-                                " 3<=nPoints<=150");    
-         break;    
+                                " 3<=nPoints<=150");
+        }                        
+        break;                        
+        case 12: both=!both;    
+        break; 
       }
    }
 }
@@ -412,7 +456,7 @@ int monte_carlo_menu(void)
                   " IN state               "
                   " Model parameters       "
                   " Constraints            "
-                  " QCD coupling           "
+                  " QCD  alpha & scales    "
                   " Breit-Wigner           "
 	          " Aliases                "
 	          " Cuts                   "

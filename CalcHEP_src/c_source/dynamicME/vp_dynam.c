@@ -40,7 +40,7 @@ int getDynamicVP(void)
                      "$CALCHEP/bin/make_VandP models 1 6\n"
                      " . $CALCHEP/FlagsForSh;"
                      " . ./EXTLIBsh;"
-                     "$CC $CFLAGS $SHARED -o so_generated/VandP.so VandP.c $CALCHEP/include/VandPgate.c $EXTLIB $CALCHEP/lib/dummy.a  $CALCHEP/lib/libSLHAplus.a -lm"
+                     "$CC $CFLAGS $SHARED -o so_generated/VandP.so VandP.c $CALCHEP/include/VandPgate.c $EXTLIB  $CALCHEP/lib/dummy.a  $CALCHEP/lib/libSLHAplus.a -lm"
                     ,rootDir,compDir);
      err=system(command);
      free(command);

@@ -28,6 +28,15 @@ static float phidiff[Nin][Nout][NEn][NZ];
 double Zi(int i) { return log(1.E-7)*pow((double)(i-1)/(double)(NZ),1.5) ;}
 static  int Iz(double z) { return NZ*pow(z/log(1.E-7),1./1.5)+1; }
 
+void  fillSpect(double (*dNdE)(double ), double Emax, double * SpectAr)
+{ int i;
+  SpectAr[0]=Emax;
+  for(i=1;i<NZ;i++) 
+  { double E=exp(Zi(i))*Emax;  
+    SpectAr[i]=dNdE(E)*E;
+  }
+}
+
 
 /* v*cs22 at v=0 */  
 double  vcs22(numout * cc,int nsub,int * err)
@@ -1052,8 +1061,8 @@ double calcSpectrum(int key, double *Sg,double*Se, double*Sp, double*Sne,double*
      if(weight[i][j])
      { int ni=pTabPos(WINPS[i]);   
        int nj=pTabPos(WINPS[j]);
-       if(ModelPrtcls[ni-1].spin2==0 && ModelPrtcls[nj-1].spin2==0) checkGam[i][j]=1;
-       if( WINPS[ni]==WINPS[nj]  && ModelPrtcls[nj-1].spin2==1)    checkGam[i][j]=1;
+       if(ModelPrtcls[ni-1].spin2==0 && ModelPrtcls[nj-1].spin2==0) checkGam[i][j]=1;       
+       if( WINPS[i]==WINPS[j]  && ModelPrtcls[nj-1].spin2==1)    checkGam[i][j]=1;
      } 
   }
   

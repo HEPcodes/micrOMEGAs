@@ -1,5 +1,5 @@
-#include"../../sources/micromegas.h"
-#include"../../sources/micromegas_aux.h"
+#include"../../include/micromegas.h"
+#include"../../include/micromegas_aux.h"
 #include "pmodel.h"
 
 int LiLithF(char*fname)
@@ -73,3 +73,12 @@ int LiLithF(char*fname)
   return npart;
 }
 
+int lilithf_(char*fname,int len)
+{
+   char * cname=malloc(len+2);
+   int err;
+   fName2c(fname,cname,len);
+   err= LiLithF(cname);
+   free(cname);
+   return err; 
+}

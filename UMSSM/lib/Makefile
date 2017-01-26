@@ -15,7 +15,7 @@ aLib.a:aLib.a($(aLibOBJ))
 	$(RANLIB) aLib.a
 	rm -f $(aLibOBJ)
 
-aLib.a(calchep_func.o): lpath.h
+aLib.a(mo_func.o): lpath.h
 
 lpath.h:
 	echo \#define LPATH \"`pwd`\" > lpath.h

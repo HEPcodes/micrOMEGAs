@@ -1,4 +1,3 @@
-
 #include"micromegas.h"
 #include"micromegas_aux.h"
 #include"../CalcHEP_src/c_source/chep_crt/include/crt.h"
@@ -46,7 +45,7 @@ void displayPlotN(char * title, double xMin, double xMax,  char*xName,  int dim,
      sprintf(pathtocalchep,"%s/",calchepDir);
      sprintf(pathtohelp,"%s/help/",pathtocalchep);
      clearTypeAhead();     
-     plot_Nar(title,xMin,xMax,xName, dim, N, f,ff,Y);
+     plot_Nar(NULL,title,xMin,xMax,xName, dim, N, f,ff,Y);
      finish();
      exit(0);
   } else pidList[newPID++]=pid;
@@ -78,16 +77,28 @@ void displayPlot(char * title, double xMin, double xMax,  char*xName,  int dim, 
 
 void  killPlots(void)
 {
-  int  C,i;
-  
-  for(i=0;i<newPID;i++) if(waitpid(pidList[i],NULL,WNOHANG)) break;
+  int  C,i,pid;
 
-  if(newPID && i==newPID)
-  {
-    printf("Kill all plots (Y/N)? "); 
-    C=getchar();
-    if(C=='y'|| C=='Y')  kill(0,SIGKILL); else kill(0,SIGUSR1);
-  }
+  if(!newPID) return;
+  for(i=0;i<newPID;i++) if(waitpid(pidList[i],NULL,WNOHANG)==0) break; else pidList[i]=0;
+  
+  if(i!=newPID)
+  { int id=fork();
+    if(id==0)
+    {  printf("Kill all plots (Y/N)? "); 
+       C=getchar();
+       if(C=='y'|| C=='Y')   exit(0); else exit(1); 
+    } else for(;;) 
+    {  sleep(1);
+       int status;
+       for(i=0;i<newPID;i++ ) if(pidList[i]){ if(waitpid(pidList[i],NULL,WNOHANG)==0) break; else pidList[i]=0; }
+       if(i==newPID)  kill(0,SIGKILL);
+       else  if( waitpid(id,&status,WNOHANG))
+       {  if( !WIFEXITED(status) ||  WEXITSTATUS(status)==0)   kill(0,SIGKILL); else kill(0,SIGUSR1);
+          break; 
+       } 
+    }
+  }  
   newPID=0;
 }
 
@@ -95,20 +106,24 @@ void  killPlots(void)
 
 void  killplots_(void) { killPlots();}
 
-void displayFunc(double (*F)(double), double x1  ,double x2, char * mess)
+void displayFunc(char*title, double (*F)(double), double x1  ,double x2, char * varName)
 {
   int i;
   double f[100];
-  
+  char buff[100];
+  sprintf(buff,"F(%s)",varName);
   for(i=0;i<100;i++) f[i]=F(x1+(i+0.5)*(x2-x1)/100.);
-  displayPlot(mess,x1,x2,"x",100,1,f,NULL,"F(x)");
+  displayPlot(title,x1,x2,varName,100,1,f,NULL,buff);
 }  
 
-void displayFunc10(double (*F)(double), double x1  ,double x2, char * mess)
+void displayFunc10(char*title, double (*F)(double), double x1  ,double x2, char * varName)
 {
   int i;
   double f[100];
-  
-  for(i=0;i<100;i++) f[i]=F(pow(10,x1+(i+0.5)*(x2-x1)/99.));
-  displayPlot(mess,x1,x2,"x",100,1,f,NULL,"F(10^x)");
+  char buff[100],buff2[100];
+  double l1=log10(x1),l2=log10(x2);
+   sprintf(buff,"F(%s)",varName);
+   sprintf(buff2,"log10(%s)",varName); 
+  for(i=0;i<100;i++) f[i]=F(pow(10,l1+(i+0.5)*(l2-l1)/100.));
+  displayPlot(title,log10(x1),log10(x2),buff2,100,1,f,NULL,buff);
 }  

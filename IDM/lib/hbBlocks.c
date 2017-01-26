@@ -1,5 +1,5 @@
-#include"../../sources/micromegas.h"
-#include"../../sources/micromegas_aux.h"
+#include"../../include/micromegas.h"
+#include"../../include/micromegas_aux.h"
 #include "pmodel.h"
 
 #define SQR(x) (x)*(x)
@@ -11,7 +11,6 @@ int  HBblocks(char * fname)
   fprintf(f,"Block Mass\n 25  %E # Higgs Mass\n\n",findValW("Mh"));
   
   slhaDecayPrint("h",0,f);
-  slhaDecayPrint("H",0,f);
   slhaDecayPrint("t",0,f);
   slhaDecayPrint("~H+",0,f);
 

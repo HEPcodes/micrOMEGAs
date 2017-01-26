@@ -117,7 +117,6 @@ int main(int argc,char** argv)
             dn[n]=malloc(xDim*sizeof(double));
             ch=chh+3; 
           }
-          printf(" Y[%d]= %s f=%p d=%p\n",n,Y[n],fn[n],dn[n]);
        }
        for(i=0;i<xDim;i++) for(n=0;n<N;n++)
        { fscanf(F,"%lf",fn[n]+i); 
@@ -131,7 +130,7 @@ int main(int argc,char** argv)
        sprintf(icon_name,"%s/include/icon",pathtocalchep);
        start1(VERSION_ ,icon_name,"calchep.ini;../calchep.ini",NULL);
        clearTypeAhead();
-       plot_Nar(procName,xMin,xMax,xName,xDim,N,fn,dn,Y);
+       plot_Nar(argv[1],procName,xMin,xMax,xName,xDim,N,fn,dn,Y);
        finish();
        return 0; 
     }

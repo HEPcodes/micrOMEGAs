@@ -280,7 +280,7 @@
 	WRITE(17,899) "# Info about spectrum calculator"
 	WRITE(17,899) "BLOCK SPINFO        # Program information"
 	WRITE(17,900) 1,"UMSSMTools # spectrum calculator"
-	WRITE(17,900) 2,"1.0        # version number"
+	WRITE(17,900) 2,"1.0.3      # version number"
 
 	  WRITE(17,900) 3,"WARNINGS FROM UMSSMTools :"
 	  WRITE(17,900) 3,"Flags 2-23,38-39,41-45,51-52; else 0=OK"
@@ -653,7 +653,7 @@
 	WRITE(18,899) "# Info about decay package"
 	WRITE(18,899) "BLOCK DCINFO        # Program information"
 	WRITE(18,900) 1,"UMSSMTools # Decay package"
-	WRITE(18,900) 2,"1.0        # Version number"
+	WRITE(18,900) 2,"1.0.3      # Version number"
 
 	WRITE(18,899) "#           PDG          Width"
       DO I=1,3
@@ -932,7 +932,7 @@
 	WRITE(16,899) "# Info about decay package"
 	WRITE(16,899) "BLOCK DCINFO        # Program information"
 	WRITE(16,900) 1,"UMSSMTools # Decay package"
-	WRITE(16,900) 2,"1.0        # Version number"
+	WRITE(16,900) 2,"1.0.3      # Version number"
 
 	WRITE(16,899) "#           PDG          Width"
       DO I=1,3

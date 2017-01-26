@@ -29,3 +29,4 @@ $(NMSSMTools)/main/nmhdecay:
 
 clean: 
 	rm -f lpath.h *.o *.a  
+	make -C nngg-nm4b clean

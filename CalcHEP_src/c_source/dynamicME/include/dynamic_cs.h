@@ -82,6 +82,7 @@ extern void     cleanDecayTable(void);
 extern int      pname2lib(char*pname, char * libname);
 extern double   decay2Info(char * pname, FILE* f);
 extern double   pWidth(char *name, txtList * LL);
+extern double   pWidthCC(numout*cc,int*err);
 extern double   aWidth(char *name);
 extern double   findBr(txtList L, char * pattern);
 extern double   pWidth2(numout * cc, int nsub);

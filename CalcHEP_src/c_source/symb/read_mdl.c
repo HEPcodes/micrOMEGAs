@@ -238,8 +238,12 @@ static int  readvars(int  check)
       trim(name); trim(numtxt);
       if(name[0]=='%') continue;
       for(i=1;i<=nv0;i++) if(strcmp(name,resName[i])==0) break;
-      if(i<=nv0) continue;
-        
+      if(i<=nv0){ if(check)
+                  {  char txt[50];
+                     sprintf(txt,"Variable %s ignored",resName[i]); 
+                     messanykey(10,10,txt);   
+                  }  continue;
+                }
       if (check && (!isVarName(name)) )
       {  errorMessage("Name","incorrect or reserved name '%s'",name);
          goto errExi1;
@@ -288,9 +292,14 @@ static int  readvars(int  check)
             }  
             continue;
          }
-         for(i=1;i<nv0;i++) if( strcmp(name,resName[i])==0) break;
-         if(i<nv0)  continue;
-      }
+         for(i=1;i<=nv0;i++) if( strcmp(name,resName[i])==0) break;
+         if(i<=nv0){   if(check)
+                       { char txt[50];
+                         sprintf(txt,"Constraint %s ignored",resName[i]); 
+                         messanykey(10,10,txt);   
+                       }  continue;
+                   }
+      }               
       if (! isVarName(name))
       {  errorMessage("Name","incorrect or reserved name '%s'",name);
 	 goto errExi1;
@@ -546,7 +555,7 @@ static int  readparticles(int  check, int ugForce )
             return 0;
          }
       }
-      
+
       prtclbase[nparticles-1].spin=itmp;
       
       if( 1!=sscanf(numtxt,"%ld",&prtclbase[nparticles-1].N)) prtclbase[nparticles-1].N=0;
@@ -1174,7 +1183,7 @@ static int find3charge(void)
          if(dec==NULL)
          {  prtclbase[i].q3=0;
             prtclbase[i_].q3=0;
-printf(" zero charge %s %s\n", prtclbase[i].name,prtclbase[i_]);            
+printf(" zero charge %s %s\n", prtclbase[i].name,prtclbase[i_].name);            
             cont=1;
          }             
       }

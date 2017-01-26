@@ -26,7 +26,7 @@ C===== End of DEFINE  settings =====
 
 
       IMPLICIT NONE
-#include "../sources/micromegas.fh"
+#include "../include/micromegas.fh"
 #include "lib/pmodel.fh"
 
 C  =================      INPUT PARAMETERS  =============

@@ -29,7 +29,6 @@
 /* ======================================================== */
 typedef char prtclsarray[MAXINOUT][P_NAME_SIZE];
 
-int noPict=0;
 int noCChain=0;
 int tWidths=0;
 static int sumDiag=0;

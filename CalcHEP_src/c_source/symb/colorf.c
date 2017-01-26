@@ -405,7 +405,7 @@ static void rem833_866(int n3,int n6, cgraph ** c)
    n62=findl2(2,n6,cg,&l62);        //          :
    lg=cg->vl[n3].e[0];              //  v61--<--*--<--v62
                                     //         v6
-   cg->pow2--;
+//   cg->pow2--;
        
    cg->vl[n3].vt = v633;                cg->vl[n6].vt = V633;
    cg->vl[n3].e[0]=cg->vl[n62].e[l62];  cg->vl[n6].e[0]=cg->vl[n61].e[l61];
@@ -477,6 +477,7 @@ static void rem866_Fabc(int n866,int n3g, cgraph  ** c)
    printf("rem866_Fabc(%d,%d)\n", n866,n3g);
 #  endif 
 
+   cg->pow2++;
    findl2(0,n866,cg,&i0);
    i1=(i0+1)%3;
    i2=(i1+1)%3;
@@ -513,6 +514,8 @@ static void exp866(int n866, cgraph  ** c)
    printf("exp866(%d)\n",n866);
 #  endif 
 
+   cg->pow2++;
+
    N1=getv2(cg,V633);  cg->vl[N1].e[0]=cg->vl[n866].e[1];
    N2=getv2(cg,v633);  cg->vl[N2].e[0]=cg->vl[n866].e[2];
    
@@ -522,7 +525,6 @@ static void exp866(int n866, cgraph  ** c)
    
    cg->vl[n833].e[1]=cg->vl[N1].e[1]= ++(cg->en); 
    cg->vl[n833].e[2]=cg->vl[N2].e[1]= ++(cg->en);
-
 #  if (CDEBLEV > DEBLEV) 
        wrcg(cg);
 #  endif 

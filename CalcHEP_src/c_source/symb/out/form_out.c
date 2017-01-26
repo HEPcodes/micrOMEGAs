@@ -84,7 +84,7 @@ static void  diagramForm(vcsect * vcs, catrec * cr )
 
    writeF("\n*Diagrama number %d-%d;\n",cr->nsub_,cr->ndiagr_); 
 
-   if (vcs != NULL)  DiagramToOutFile(vcs,0,'*');
+   if (vcs != NULL && !noPict)  DiagramToOutFile(vcs,0,'*');
 
    seekArchiv(cr->factpos);
    readvardef(archiv);

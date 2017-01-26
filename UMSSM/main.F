@@ -7,7 +7,14 @@ C================================
 #define MASSES_INFO
 C    Display information about SUSY and Higgs masses
 #define CONSTRAINTS
-C    Strongly depends on the model. 
+C    Display  deltarho, B_>sgamma, Bs->mumu, gmuon, Z1->inv,
+C    check LEP mass limits and Zprime limits
+C#define SLHAINPUT
+C    Switch to use slha files as input instead of umssm.par or similar files
+C#define HIGGSBOUNDS 
+#define LILITH
+C#define SMODELS
+
 #define OMEGA
 C    Calculate relic density and display contribution of
 C                            individual channels 
@@ -29,8 +36,15 @@ C     and recoil energy distibution for various nuclei
 
 C================ end of Modules  ======
 
-#define NEUTRINO
-#define DECAYS
+#define NEUTRINO   neutrino telescope
+
+C#define DECAYS 
+C     Calculates particle widths and branchings
+
+#define CROSS_SECTIONS
+C     Calculate cross sections and widths for
+C     reactions specified by the user
+
 C===== Options ========
 
 C#define SHOWPLOTS
@@ -45,7 +59,7 @@ C===== End of DEFINE  settings =====
 
       IMPLICIT NONE
 C! external functions 
-#include "../sources/micromegas.fh"
+#include "../include/micromegas.fh"
 #include "lib/pmodel.fh"
 *      external iargc
 *      integer iargc
@@ -56,12 +70,31 @@ C! local  Parameters
 C Variables      
       INTEGER err
       REAL*8 Omega,OmegaAppr,Xf
-      character *100 argv, mess
+      character *100 argv, mess, buff
       character*20 cdmName
       integer spin2,charge3,cdim,PDGcdm
-      real*8  Emin,sigmaV,fi,dfi,Etest
+      integer narg 
+      real*8 Emin,sigmaV,fi,dfi,Etest,cs,Qren,Qfact,pTmin
+      real*8 Pcm,SMmev 
       real*8 SpA(250),Spe(250),SpP(250) 
-      real*8 FluxA(250),FluxE(250),FluxP(250) 
+      real*8 FluxA(250),FluxE(250),FluxP(250)
+C  for CONSTRAINTS    
+      real*8 constr0,constrM, constrP,csLim
+C for HIGGSBOUNDS/HIGGSSIGNALS
+      integer  NH0/4/, NHch/1/
+      real*8 HB_result,HB_obsratio,HS_observ,HS_chi2, HS_pval
+      character*70 HB_chan
+      character*7 HB_version, HS_version
+C for SMODELS 
+      integer result 
+      real*8 Rvalue
+      character*30 analysis,topology
+      character*10 smodels_version
+C for LILITH 
+      real*8 m2logL, m2logL_reference,pvalue
+      integer exp_ndf,n_par,ndf
+      character*100 call_lilith
+      character*10 lilith_version
 C for CDM_NUCLEON
       real*8  pA0(2),pA5(2),nA0(2),nA5(2),Nmass,SCcoeff
 C  for CDM_NUCLEUS
@@ -76,19 +109,39 @@ C  for NEUTRINO
       real*8 IntFlux, rhoDet
       real*8 FluxN(NZ),FluxNb(NZ),FluxMu(NZ) 
 
+C   to Force calculation of matrix elements in Unitary Gauge call with (1)
+      call ForceUG(0)
 
 C   to save the SLHA  input/output file  uncomment  
 C*      call delFiles(0)
+
+
+#ifdef SLHAINPUT
+      write(*,*) '\n========= SLHA file input ========='
+      narg=iargc()
+      if(narg.eq.0) then 
+        write(*,*)'The program needs one argument: name of SLHA file'
+        write(*,*) 'Example: ./main UMSSM_inp.dat'
+        stop
+      endif
+      call getarg(1,argv)
+      write(*,*) 'Initial file: ',argv
+     
+      err=lesHinput(argv)
+      if(err.ne.0) stop
+#else
  
       if(iargc().eq.0) then
          write(*,*)'Correct usage: ./main  <file with parameters>'
-         write(*,*)'Example: ./main  data1.par' 
+         write(*,*)'Example: ./main  umssm.par' 
          stop
       endif
 
-      call getarg(1,argv)                               
+      call getarg(1,argv)
        
       err=readVar(argv)
+
+#endif
 
       if(err.eq.-1) then
           write(*,*) 'Can not open the file'
@@ -104,13 +157,16 @@ C  To print list of variables uncomment
 C      CALL printVar(6)
 
       err=sortOddParticles(cdmName)
+      err=umssmtools()
+
       if(err.ne.0) then
         write(*,*) 'Can t calculate ', cdmName
         STOP
       endif 
 
       PDGcdm=qNumbers(cdmName,spin2, charge3,  cdim)
-      write(*,fmt="('Dark matter candidate is ', A5,'with spin=', I1,'/2 mass=',1PE10.2)") cdmName, spin2,Mcdm
+      write(*,fmt="('Dark matter candidate is ', A5,'with spin=',
+     >I1,'/2 mass=',1PE10.2)") cdmName, spin2,Mcdm
 
       if(charge3.ne.0) then 
          write(*,fmt="('DM has electric charge',I1,'/3')") charge3
@@ -122,18 +178,93 @@ C      CALL printVar(6)
          STOP
       endif
 
-
-#ifdef MASSES_INFO  
+#ifdef MASSES_INFO
       CALL printHiggs(6)
-      write(*,*) '=== MASSES OF HIGGS AND ODD SECTOR: ===' 
+      write(*,*) '=== MASSES OF HIGGS AND SUSY PARTICLES: ===' 
       CALL printMasses(6,1)
 #endif
 
-#ifdef CONSTRAINTS
 
+#ifdef CONSTRAINTS
+      err=slhaRead('UMSSM_spectr.dat',0)
+      if(err.ne.0) stop
+      write(*,*)
+      write(*,*) '==== Physical Constraints: ====='
+      write(*,fmt='(A,1x, 1PE8.2)') 'deltartho=', deltarho()
+      constr0=bsgnlo(constrM,constrP)
+      write(*,fmt="('B->s,gamma = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP 
+
+      constr0= bsmumu(constrM,constrP)
+      write(*,fmt="('Bs->mu,mu = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP  
+  
+      constr0=btaunu(constrM,constrP)
+      write(*,fmt="('B+->tau+,nu = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP 
+
+  
+      constr0=deltamd(constrM,constrP)
+      write(*,fmt="('deltaMd = ',1PE9.2,'(',E9.2,',',E9.2,') ps^-1')") 
+     >constr0,constrM, constrP 
+
+      constr0=deltams(constrM,constrP)
+      write(*,fmt="('deltaMs = ',1PE9.2,'(',E9.2,',',E9.2,') ps^-1')") 
+     >constr0,constrM, constrP 
+
+      constr0=gmuon(constrM,constrP)
+      write(*,fmt="('gmuon/BSM = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP 
+
+      constr0=bxismulow(constrM,constrP)
+      write(*,fmt="('B-->X_s mu+ mu for low M_{l+l-}^2 = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP 
+
+      constr0=bxismuhigh(constrM,constrP)
+      write(*,fmt="('B-->X_s mu+ mu for high M_{l+l-}^2 = ',1PE9.2,'(',E9.2,',',E9.2,')')") 
+     >constr0,constrM, constrP 
+
+      if(MassLimits().eq.0)  write(*,*) 'MassLimits OK'
+      if(zprimelimits().eq.0) write(*,*) 'LHC limits on new Zprime OK'
+      if(Zinvisible().ne.0) write(*,*) "Excluded by Z->invisible"
+      if(LspNlsp_LEP(csLim).ne.0) write(*,fmt='("Excluded by LEP  by e+,e- -> DM q qbar, Cross section=",E10.2,"pb")') csLim 
+#endif
+
+#ifdef HIGGSBOUNDS
+      call system("cat UMSSM_spectr.dat UMSSM_decay.dat > HB.in");
+      err=HBblocks("HB.in")
+      call system('echo BLOCK DMASS  >> HB.in')
+      call system('echo "  25  2"  >> HB.in')
+#include "../include/hBandS.inc_f"
+      write(*,fmt='("HB(",A, ")result=",1PE10.1,3x,"obsratio=", E10.1," channel=", A )') HB_version, HB_result,HB_obsratio,HB_chan
+      write(*,fmt='("HS(",A, "): Nobservables=",F5.0," chi^2 =", 1PE10.2," pval= ", E10.2)') HS_version,HS_observ,HS_chi2, HS_pval
 #endif
 
 
+#ifdef LILITH
+      if(LiLithF("Lilith_in.xml").ne.0) then 
+         m2logL_reference=0
+         n_par=0
+#include "../include/Lilith.inc_f"
+         write(*,fmt='("LILITH(DB",A,"):  -2*log(L): ",F5.2,"; -2*log(L_reference): ",F5.2,"; ndf: ",I3"; p-value: ",F5.2)') lilith_version, m2logL,m2logL_reference,ndf,pvalue
+      else 
+         write(*,*) "LILITH: there is no Higgs candidate"
+      endif     
+#endif
+
+
+#ifdef SMODELS
+      write(*,*) "SMODELS:"
+#include "../include/SMODELS.inc_f"
+      if(result.ge.0) write(*,fmt='("highest R=",1PE10.2," from ",A," topology ",A)') Rvalue,analysis,topology
+      if(result.eq.-1) write(*,*) 'no channels for testing.'
+      if(result.eq.0)  write(*,*) 'not excluded.' 
+      if(result.eq.1)  write(*,*) 'excluded.'
+#endif
+
+C Get the corrected Higgs branching ratios from UMSSMTools :
+      err=slhaRead('UMSSM_decay.dat',1)
+      if(err.ne.0) stop
 
 #ifdef OMEGA
 
@@ -145,15 +276,28 @@ C     call setVVdecay(2,2)
 
       write(*,*)
       write(*,*) '==== Calculation of relic density ====='
-      write(*,*) 'Dark Matter candidate is ', cdmName                                                                                                             
+      write(*,*) 'Dark Matter candidate is ', cdmName
+      if(cdmName.ne.'~o1') then
+          write(*,*) '~o1 is not LSP'
+      else
+          call o1Contents(6)
+      endif
+
       Omega=darkOmega(Xf,fast,Beps)
       write(*,'(a,3x,1PE10.2)') 'Omega=',Omega
 
       OmegaAppr=printChannels(Xf,cut,Beps,1,6)
 
+C!  See an  example of direct access to annihilation channels    
+c      do 555 i=1,20
+c      err=omegach(i,weight,prtcls10_4)
+c      if( weight.gt.0) then   
+c      write(*,*) err, weight
+c      write(*,*)prtcls10_4(1),prtcls10_4(2),prtcls10_4(3),prtcls10_4(4)
+c555   contine     
+c      endif
 C    restore default VZdecay,VWdecay
        call setVVdecay(1,1)
-
 #endif
 
 
@@ -166,38 +310,37 @@ C** Emin - energy cut in GeV
       Etest=Mcdm/2
 C** fi angle of sight [rad], dfi - half of cone angle    
       fi=0.1
-      dfi=0.05
-      sigmaV=calcSpectrum(4,SpA,SpE,SpP,NULL,NULL,NULL,err)    
+      dfi=M_PI/180
+      sigmaV=calcSpectrum(4+2+1,SpA,SpE,SpP,NULL,NULL,NULL,err)    
 C  Returns  sigma*v in cm^3/sec.
 C  SpX - calculated spectra of annihilation.
-C       Use SpectdNdE(E, SpX) to calculate energy distribution in  1/GeV units.
-C       
-C       First parameter 1-includes W/Z polarization
-C                       2-includes gammas for 2->2+gamma
-C                       4-print cross sections             
-
-
+C  Use SpectdNdE(E, SpX) to calculate energy distribution in 1/GeV units.
       write(*,*)
       write(*,fmt="('sigma*v=',1PE8.2,'[cm^3/s]')") sigmaV
 
       write(*,*) 'Photons'
-      call gammaFluxTab(fi,dfi, sigmaV, SpA, FluxA)
-      write(*,fmt="('Phonton flux  for angle of sight ',F4.2,'[rad]')") fi
-      write(*,fmt="('and spherical region described by cone with angle ',F4.2,'[rad]' )") 2*dfi
+      call gammaFluxTab(fi,dfi, sigmaV, SpA,  FluxA)
+      write(*,fmt="('Photon flux  for angle of sight ',
+     < F4.2,'[rad]')") fi
+      write(*,fmt="('and spherical region described by cone with angle '
+     >,F7.4,'[rad]' )") 2*dfi
 #ifdef SHOWPLOTS      
-      write(mess,fmt="('gamma flux[cm^2 s GeV]^{-1} at fi=',F4.2,' from cone with angle=',F4.2,'[rad]')")fi,dfi*2  
-      err= displaySpectrum(FluxA,mess,Emin,Mcdm,1)
+      write(mess,fmt="('gamma flux[cm^2 s GeV]^{-1} at fi=',F4.2,
+     > ' from cone with angle=',F4.2,'[rad]')")fi,dfi*2  
+      err= displaySpectrum(mess,Emin,Mcdm,FluxA)
 #endif
-      write(*,fmt="('Photon flux =',1PE8.2,'[cm^2 s GeV]^{-1} for E=',0PF5.1,'[GeV]')")
+      write(*,fmt="('Photon flux =',1PE8.2,
+     >'[cm^2 s GeV]^{-1} for E=',0PF5.1,'[GeV]')")
      > SpectdNdE(Etest, FluxA), Etest
- 
       write(*,*) 'Positrons'
-      call  posiFluxTab(Emin, sigmaV, SpE,  FluxE)
-
+      call  posiFluxTab(Emin, sigmaV, SpE, FluxE)
 #ifdef SHOWPLOTS      
-      err=displaySpectrum(FluxE,'positron flux [cm^2 s sr GeV]^{-1}',
-     >Emin,Mcdm,1)
+      err= 
+     >displaySpectrum('positron flux [cm^2 s sr GeV]^{-1}',
+     >Emin,Mcdm,FluxE)
 #endif
+      SMmev=320 
+      if(SMmev.gt.0) call solarModulation(SMmev,0.0005d0,FluxE,FluxE)
       write(*,fmt="('Positron flux  = ',1PE8.2,
      >'[cm^2 sr s GeV]^{-1} for E=',0PF6.1,'[GeV]')")
      > SpectdNdE(Etest, FluxE),  Etest     
@@ -205,17 +348,16 @@ C                       4-print cross sections
       write(*,*) 'antiProtons'
       call  pbarFluxTab(Emin, sigmaV, SpP,  FluxP)
 
+      if(SMmev.gt.0) call solarModulation(SMmev,1.d0,FluxP,FluxP)
 #ifdef SHOWPLOTS      
-      err=displaySpectrum(FluxP,'a-proton flux [cm^2 s sr GeV]^{-1}',
-     >Emin,Mcdm,1)
+      err= 
+     >displaySpectrum('a-proton flux [cm^2 s sr GeV]^{-1}',Emin,
+     >Mcdm,FluxP)
 #endif
-
       write(*,fmt="('Anti proton flux  = ',1PE8.2,
      >'[cm^2 sr s GeV]^{-1} for E=',0PF6.1,'[GeV]')")
-     > SpectdNdE(Etest, FluxP),  Etest     
-
+     > SpectdNdE(Etest, FluxP),  Etest
 #endif
-
 
 #ifdef RESET_FORMFACTORS
 
@@ -226,15 +368,20 @@ C   where <Type> can be "Scalar", "pVector", and "Sigma";
 C         <Nucleon>     "P" or "N" for proton and neutron
 C         <q>            "d", "u","s"
 C
-C   calcScalarFF( Mu/Md, Ms/Md, sigmaPiN[MeV], sigma0[MeV])  
+C   calcScalarQuarkFF( Mu/Md, Ms/Md, sigmaPiN[MeV], sigmaS[MeV])  
 C   calculates and rewrites Scalar form factors
-      write(*,*) 
-      write(*,*) '===== RESET_FORMFACTOR ============'
 
       write(*,fmt='(" protonFF (default)  d, u, s ", 1PE10.2,E10.2,E10.2)') ScalarFFPd,ScalarFFPu,ScalarFFPs
       write(*,fmt='(" neutronFF(default)  d, u, s ", 1PE10.2,E10.2,E10.2)') ScalarFFNd,ScalarFFNu,ScalarFFNs                          
-
       write(*,*) '===========Redefinition of form factors========='  
+      
+      call calcScalarQuarkFF(0.46d0,27.5d0,34.d0,42.d0)
+
+
+C    To restore default form factors of  version 2  call
+C      call  calcScalarQuarkFF(0.553d0,18.9d0,55.d0,243.5d0)
+
+
       write(*,fmt='(" protonFF (new)      d, u, s ", 1PE10.2,E10.2,E10.2)') ScalarFFPd,ScalarFFPu,ScalarFFPs                           
       write(*,fmt='(" neutronFF(new)      d, u, s ", 1PE10.2,E10.2,E10.2)') ScalarFFNd,ScalarFFNu,ScalarFFNs                    
 
@@ -243,10 +390,11 @@ C   calculates and rewrites Scalar form factors
 
 #ifdef  CDM_NUCLEON
       write(*,*)
-      write(*,*) '==== Calculation of CDM-nucleons amplitudes  ====='   
+      write(*,*) '==== Calculation of CDM-nucleons amplitudes  ====='
 
-      err=nucleonAmplitudes(NoLoop, pA0,pA5,nA0,nA5)
-      write(*,*) cdmName,  ' -nucleon amplitudes:'
+
+      err=nucleonAmplitudes(CDM1, pA0,pA5,nA0,nA5)
+      write(*,*)'CDM-nucleon amplitudes:'
       write(*,fmt="(' proton:  SI=',1PE9.2,' SD=',E9.2)")pA0(1),pA5(1)
       write(*,fmt="(' neutron: SI=',1PE9.2,' SD=',E9.2)")nA0(1),nA5(1) 
 
@@ -255,59 +403,52 @@ C  nucleon mass
 
       SCcoeff=4/M_PI*3.8937966E8
      >*(Nmass*Mcdm/(Nmass+ Mcdm))**2
-      write(*,*) cdmName , '-nucleon cross sections[pb]:'
-    
+      write(*,*) 'CDM-nucleon cross sections[pb]:'
+
       write(*,fmt="(' proton  SI=',1PE9.2,' SD=',E9.2)")
      >                           SCcoeff*pA0(1)**2,3*SCcoeff*pA5(1)**2
       write(*,fmt="(' neutron SI=',1PE9.2,' SD=',E9.2)")
      >                           SCcoeff*nA0(1)**2,3*SCcoeff*nA5(1)**2
-
-      write(*,*) 'anti-',cdmName,  ' -nucleon amplitudes:'
-      write(*,fmt="(' proton:  SI=',1PE9.2,' SD=',E9.2)")pA0(2),pA5(2)
-      write(*,fmt="(' neutron: SI=',1PE9.2,' SD=',E9.2)")nA0(2),nA5(2) 
-
-
-      write(*,*) 'anti-',cdmName , '- nucleon cross sections:'
-    
-      write(*,fmt="(' proton  SI=',1PE9.2,' SD=',E9.2)")
-     >                           SCcoeff*pA0(2)**2,3*SCcoeff*pA5(2)**2
-      write(*,fmt="(' neutron SI=',1PE9.2,' SD=',E9.2)")
-     >                           SCcoeff*nA0(2)**2,3*SCcoeff*nA5(2)**2
-
 #endif
 
 
 #ifdef CDM_NUCLEUS
       write(*,*)
+      write(*,*)'=========  Direct Detection ==========='
 
-      write(*,*) '========= Direct Detection ==============='
+      write(*,*) 'Ge:'
 
-      write(*,*) 'CDM-73Ge:'
       nEvents=nucleusRecoil(Maxwell,73,Z_Ge,J_Ge73,
-     >SxxGe73,NoLoop,dNdE)
-      write(*,fmt="('73Ge: Total number of events=',1PE10.2,
-     >' /day/kg')") nEvents
-      write(*,fmt="(' Number of events in 10 - 50 KeV region=',
-     >1PE10.2,' /day/kg')") cutRecoilResult(dNdE,10.D0,50.D0)
+     >SxxGe73,dNdE)
+C  See '../include/micromegas.h' for description of arguments
+C  Instead of Maxwell  one can use 'fDvDelta' Delta-function
+C  velocity distribution.
+      write(*,fmt="('Total number of events=',1PE9.2,' /day/kg')") 
+     >nEvents
+
+      write(*,fmt=
+     >"(' Number of events in 10 - 50 KeV region=',1PE9.2,' /day/kg')") 
+     >cutRecoilResult(dNdE,10.d0,50.d0) 
+
 
 #ifdef SHOWPLOTS
        err=displayRecoilPlot(dNdE,
-     >               'Distribution of recoil energy of 73Ge',0,199)
+     >           'Distribution of recoil energy of 73Ge',0.d0,199.d0)
 #endif
-       write(*,*) 
-       write(*,*) 'CDM-131Xe:' 
+       write(*,*)
+       write(*,*) '131Xe:'  
        nEvents=nucleusRecoil(Maxwell,131,Z_Xe,J_Xe131,
-     > SxxXe131,NoLoop,dNdE)
-      write(*,fmt="('131Xe: Total number of events=',1PE10.2,
-     >' /day/kg')") nEvents
+     > SxxXe131,dNdE)
+
+      write(*,fmt=
+     >"('Total number of events=',1PE9.2,' /day/kg')")nEvents
       write(*,fmt="(' Number of events in 10 - 50 KeV region=',
-     >1PE10.2,' /day/kg')") cutRecoilResult(dNdE,10.D0,50.D0)
+     >   1PE9.2, ' /day/kg')")cutRecoilResult(dNdE,1.d1,5.d1)
 
 #ifdef SHOWPLOTS
       err=displayRecoilPlot(dNdE,
-     >    'Distribution of recoil energy of 131Xe',0,199);
+     >    'Distribution of recoil energy of 131Xe',0.d0,199.d0)
 #endif
-
 
 #endif
 
@@ -327,35 +468,31 @@ C rhoDet - detector density
 
       err=neutrinoFlux(Maxwell,forSun, FluxN,FluxNb)
 #ifdef SHOWPLOTS
-      err=displaySpectrum(FluxN, "nu flux from Sun [1/Year/km^2/GeV]",Emin,Mcdm,1)
-      err=displaySpectrum(FluxNb,"nu-bar from Sun  [1/Year/km^2/GeV]",Emin,Mcdm,1)
+      err=displaySpectrum("nu flux from Sun [1/Year/km^2/GeV]",Emin,Mcdm,FluxN)
+      err=displaySpectrum("nu-bar from Sun  [1/Year/km^2/GeV]",Emin,Mcdm,FluxNb)
 #endif
-      call spectrInfo(Emin/Mcdm,FluxN, IntFlux,NULL)
-      write(*,fmt='("E>", 1PE8.2," GeV neutrino flux =", E8.2," [1/Year/km^2]")') Emin,IntFlux
-      call  spectrInfo(Emin/Mcdm,FluxNb, IntFlux,NULL)
-      write(*,fmt='("E>", 1PE8.2," GeV anti-neutrino flux =", E8.2," [1/Year/km^2]")') Emin,IntFlux 
-
+      write(*,fmt='("E>", 1PE8.2," GeV neutrino flux =", E8.2," [1/Year/km^2]")') Emin,spectrInfo(Emin,FluxN,NULL)
+      write(*,fmt='("E>", 1PE8.2," GeV anti-neutrino flux =", E8.2," [1/Year/km^2]")') Emin, spectrInfo(Emin,FluxNb,NULL) 
+ 
+C!  ICE CUBE
       if(forSun.eq.1) then 
          write(*,fmt='("IceCube22 exclusion confidence level = ",1PE8.2,"%")')  100*exLevIC22(FluxN,FluxNb,NULL)
       endif
-  
 C ======  Upward events
   
       call muonUpward(FluxN,FluxNb,FluxMu)
 #ifdef SHOWPLOTS  
-      err= displaySpectrum(FluxMu,"Upward muons[1/Year/km^2/GeV]",Emin,Mcdm/2,1)
+      err= displaySpectrum("Upward muons[1/Year/km^2/GeV]",Emin,Mcdm/2,FluxMu)
 #endif
 
-      call spectrInfo(Emin/Mcdm,FluxMu, IntFlux,NULL)
-      write(*,fmt='("E>", 1PE8.2," GeV Upward muon flux =", E8.2," [1/Year/km^2]")') Emin,IntFlux
+      write(*,fmt='("E>", 1PE8.2," GeV Upward muon flux =", E8.2," [1/Year/km^2]")') Emin,spectrInfo(Emin,FluxMu,NULL)
   
 C ======  Contained events 
       call muonContained(FluxN,FluxNb,rhoDet, FluxMu)
 #ifdef SHOWPLOTS  
-      err=displaySpectrum(FluxMu,"Contained  muons[1/Year/km^3/GeV]",Emin,Mcdm,1)
+      err=displaySpectrum("Contained  muons[1/Year/km^3/GeV]",Emin,Mcdm,FluxMu)
 #endif
-      call spectrInfo(Emin/Mcdm,FluxMu, IntFlux,NULL)
-      write(*,fmt='("E>", 1PE8.2," Contained muon flux =", E8.2," [1/Year/km^3]")') Emin,IntFlux
+      write(*,fmt='("E>", 1PE8.2," Contained muon flux =", E8.2," [1/Year/km^3]")') Emin,spectrInfo(Emin,FluxMu,NULL)
 #endif
 
 
@@ -366,52 +503,41 @@ C ======  Contained events
       write(*,*)
       write(*,*)'======Calculations of widths======='
 
-      call pdg2name(23,pname)
-      if(pname .ne. ' ') then
-         width=pWidth(pname,txtL)
-         write(*,fmt="(A5,':  total width ',1PE8.2,'[GeV]')") pname,width
-         write(*,*)'and Branchings:'
-         call printTxtList(txtL,6)
-      endif 
+      write(*,*) 
+      pname = 'h1'
+      width=pWidth(pname,txtL)
+      write(*,fmt="(A8, ':  total width ',1PE8.2,'[GeV]')") pname, width
+      write(*,*)'and Branchings:'
+      call printTxtList(txtL,6)
 
-      call pdg2name(25,pname)
-      if(pname .ne. ' ') then
-         width=pWidth(pname,txtL)
-         write(*,fmt="(A5,' :  total width ',1PE8.2,'[GeV]')") pname,width
-         write(*,*)'and Branchings:'
-         call printTxtList(txtL,6)
-      endif 
+      write(*,*) 
+      pname = '~o2'
+      width=pWidth(pname,txtL)
+      write(*,fmt="(A8,':  total width ',1PE8.2,'[GeV]')")pname, width
+      write(*,*)'and Branchings:'
+      call printTxtList(txtL,6)
 
 #endif
 
 #ifdef CROSS_SECTIONS
       write(*,*)
       write(*,*)'======Calculations of cross sections======='
-
-      Pcm=500
-      cosmin=-0.99
-      cosmax=0.99
-      write(*,fmt="('Process e,E->2*x at Pcm= ',F6.1,'[GeV]')") Pcm
-      call setHelicities(0.5D0,-0.5D0)
-      call newProcess('e%,E%->2*x',cc)
-      if(cc(1).ne.0 ) then
-        call procInfo1(cc,ntot,nin,nout)
-        do l=1,ntot
-          cs= cs22(cc,l,Pcm,cosmin,cosmax,err)
-          if((err.eq.0) .and. (cs.ne.0)) then 
-            call procInfo2(cc,l,name,mass)
-            write(*,fmt='(A3,1x,A3,A4,A3,1x,A3,$)')
-     >      name(1),name(2),' -> ', name(3),name(4)
-            write(*,fmt="(1PE8.2,'[pb]')") cs
-          endif 
-        enddo
-      endif     
+      write(*,*) ' Process p,p -> ~o1,~o2'
+      Pcm=4000 
+      Qren=pMass("~o2")
+      Qfact=Qren
+      pTmin=0
+      cs=hCollider(Pcm,1,3,Qren, Qfact, "~o1","~o2",pTmin,1)
+      write(*,fmt="(1PE8.2,'[pb]')") cs 
 #endif
-
 
 #ifdef CLEAN
-
-#endif
+      call system("rm -f SM_decay.dat UMSSM*")
+      call system("rm -f  nngg.out output.flha ")
+      call system("rm -f HB.* HS.* hb.* hs.*  debug*  Key.dat")
+      call system("rm -f Lilith_*   particles.py*")
+      call system("rm -f  smodels.* summary.*")
+#endif 
 
       call killPlots
       END

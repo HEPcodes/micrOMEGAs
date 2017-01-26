@@ -1,6 +1,6 @@
 /* UMSSM parameters for UMSSMTools */
 #include "../../pmodel.h"
-#include "../../../../sources/micromegas.h"
+#include "../../../../include/micromegas.h"
 #include "../../../../CalcHEP_src/include/VandP.h"
 
 

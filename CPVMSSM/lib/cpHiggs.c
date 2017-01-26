@@ -2,8 +2,8 @@
 #include<math.h>
 #include <stdlib.h>
 #include<string.h>
-#include"../../sources/micromegas.h"
-#include"../../sources/micromegas_aux.h"
+#include"../../include/micromegas.h"
+#include"../../include/micromegas_aux.h"
 #include "pmodel.h"
 #include "localpath.h"
 

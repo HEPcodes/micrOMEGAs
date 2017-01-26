@@ -68,9 +68,9 @@ void  fillHists(double w,double*V)
      
     if(hists->key[1][0]=='0')      
     { for(k=0;k<n0;k++)
-      { 
-        i=300*(z0[k] - hists->hMin[0])/(hists->hMax[0] - hists->hMin[0]);
-        if(i<0 || i>=300) continue;
+      { double id=300*(z0[k] - hists->hMin[0])/(hists->hMax[0] - hists->hMin[0]);
+        if(id<0 || id>=300) continue;
+        i=id;
         hists->f[i]+=w;
         hists->ff[i]+=w*w;
       }

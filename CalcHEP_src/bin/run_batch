@@ -1,9 +1,13 @@
 #!/usr/bin/perl
 # (c) 2008 Neil Christensen
-$version="1.26";
+$version="1.30";
 #############################################################################################################
 #Version Notes:
 #############################################################################################################
+#1.30 : Added QCD scale support fot Z and S symbols in case of particles change the place
+#1.29 : Added QCD scale support fot T symbol in case of particles change the place
+#1.28 : More $LHAPDFPATH.
+#1.27 : Added $LHAPDFPATH.
 #1.26 : If cs=0, set nevents=0.
 #1.25 : Updated for change in event generation.
 #1.24 : Fixed fix in 1.22.
@@ -612,6 +616,8 @@ if($CH_PATH eq ""){
 }
 #print "$CH_PATH\n";
 #print "$ARGV[0]\n";
+
+$LHAPDFPATH=$ENV{'LHAPDFPATH'};
 
 
 
@@ -2088,6 +2094,7 @@ for (my $k=0;$k<=$#subprocesses;$k++){
 		open(JOB_FILE,">job_script")
 			or die("Couldn't open $dir_name/single/jobscript.");
 		print JOB_FILE "#!/bin/bash\n";
+		print JOB_FILE "LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$LHAPDFPATH\n";
 		my $job_name = $subprocess;
 		$job_name =~ s/'//g;#'
 		if($par_meth=~/[Pp][Bb][Ss]/){write_PBS_info($job_name,"cs.out",1);}
@@ -2196,6 +2203,7 @@ for (my $k=0;$k<=$#subprocesses;$k++){
 			open(JOB_FILE,">job_script")
 			or die("Couldn't open $dir_name/$subdir_name/jobscript.");
 			print JOB_FILE "#!/bin/bash\n";
+			print JOB_FILE "LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$LHAPDFPATH\n";
 			my $job_name = $subprocess;
 			$job_name =~ s/'//g;#'
 			if($par_meth=~/[Pp][Bb][Ss]/){write_PBS_info($job_name,"cs.out",1);}
@@ -2284,6 +2292,7 @@ for (my $k=0;$k<=$#decay_subprocesses;$k++){
     open(JOB_FILE,">job_script")
       or die("Couldn't open $dir_name/single/jobscript.");
     print JOB_FILE "#!/bin/bash\n";
+    print JOB_FILE "LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$LHAPDFPATH\n";
     my $job_name = $subprocess;
     $job_name =~ s/'//g;#'
     if($par_meth=~/[Pp][Bb][Ss]/){write_PBS_info($job_name,"cs.out",0);}
@@ -2362,6 +2371,7 @@ for (my $k=0;$k<=$#decay_subprocesses;$k++){
       open(JOB_FILE,">job_script")
 	or die("Couldn't open $dir_name/$subdir_name/jobscript.");
       print JOB_FILE "#!/bin/bash\n";
+      print JOB_FILE "LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$LHAPDFPATH\n";
       my $job_name = $subprocess;
       $job_name =~ s/'//g;#'
       if($par_meth=~/[Pp][Bb][Ss]/){write_PBS_info($job_name,"cs.out",0);}
@@ -2769,6 +2779,7 @@ for (my $k=0;$k<=$#subprocesses;$k++){
 		open(JOB_FILE,">job_script")
 			or die("Couldn't open $dir_name/single/jobscript.");
 		print JOB_FILE "#!/bin/bash\n";
+		print JOB_FILE "LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$LHAPDFPATH\n";
 		my $job_name = $subprocesses[$k];
 		$job_name =~ s/'//g;#'
 		if($par_meth=~/[Pp][Bb][Ss]/){write_PBS_info($job_name,"job.out",1);}
@@ -2786,7 +2797,7 @@ for (my $k=0;$k<=$#subprocesses;$k++){
 		if($sub_gen_n =~ /[Tt]rue/){$nevents[$k] = $n_events;}
 		if($cs[$k]==0||$cs[$k]*$max_lumi<1) {$nevents[$k]=0;}
 		#my $systemString = sprintf ("$CH_PATH/bin/subproc_cycle 1E+50 %d",$nevents[$k]);
-		my $systemString = "./n_calchep -blind \"[[[[[[[[[{[[[[[[[[[{{${nevents[$k]}{[{0\"";
+		my $systemString = "./n_calchep -blind \"[[[[[[[[[{[[[[[[[[[{${nevents[$k]}{[{0\"";
 		if($nevents[$k]==0){$systemString="echo \"cs=0\"";}
 		$systemString = $systemString."  2>&1 1>  job.o";
 		if ($par_meth =~ /[Pp][Bb][Ss]/ || $par_meth =~ /[Ll][Ss][Ff]/ || $par_meth =~ /[Ss][Ll][Uu][Rr][Mm]/){print JOB_FILE "$systemString\n";}
@@ -2824,6 +2835,7 @@ for (my $k=0;$k<=$#subprocesses;$k++){
 			open(JOB_FILE,">job_script")
 			or die("Couldn't open $dir_name/$subdir_name/jobscript.");
 			print JOB_FILE "#!/bin/bash\n";
+			print JOB_FILE "LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$LHAPDFPATH\n";
 			my $job_name = $subprocesses[$k];
 			$job_name =~ s/'//g;#'
 			if($par_meth=~/[Pp][Bb][Ss]/){write_PBS_info($job_name,"job.out",1);}
@@ -2845,7 +2857,7 @@ for (my $k=0;$k<=$#subprocesses;$k++){
 			if($sub_gen_n =~ /[Tt]rue/){$nevents[$k][$j] = $n_events;}
 			if($cs[$k][$j]==0||$cs[$k][$j]*$max_lumi<1) {$nevents[$k][$j]=0;}
 			#my $systemString = sprintf ("$CH_PATH/bin/subproc_cycle 1E+50 %d",$nevents[$k][$j]);
-			my $systemString = "./n_calchep -blind \"[[[[[[[[[{[[[[[[[[[{{${nevents[$k][$j]}{[{0\"";
+			my $systemString = "./n_calchep -blind \"[[[[[[[[[{[[[[[[[[[{${nevents[$k][$j]}{[{0\"";
 			if($nevents[$k][$j]==0){$systemString="echo \"cs=0\"";}
 			$systemString = $systemString."  2>&1 1>  job.o";
 			if ($par_meth =~ /[Pp][Bb][Ss]/ || $par_meth =~ /[Ll][Ss][Ff]/ || $par_meth =~ /[Ss][Ll][Uu][Rr][Mm]/){print JOB_FILE "$systemString\n";}
@@ -2893,6 +2905,7 @@ for (my $k=0;$k<=$#decay_subprocesses;$k++){
 		open(JOB_FILE,">job_script")
 			or die("Couldn't open $dir_name/single/jobscript.");
 		print JOB_FILE "#!/bin/bash\n";
+		print JOB_FILE "LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$LHAPDFPATH\n";
 		my $job_name = $subprocess;
 		$job_name =~ s/'//g;#'
 		if($par_meth=~/[Pp][Bb][Ss]/){write_PBS_info($job_name,"job.out",0);}
@@ -2902,7 +2915,7 @@ for (my $k=0;$k<=$#decay_subprocesses;$k++){
 		$nevents[$#subprocesses+$k+1] = int(5.1*$n_events);
 		if($cs[$#subprocesses+$k+1]==0) {$nevents[$#subprocesses+$k+1]=0;}
 		#my $systemString = sprintf ("$CH_PATH/bin/subproc_cycle %d",$nevents[$#subprocesses+$k+1]);
-		my $systemString = "./n_calchep -blind \"[[[[[[[[[{[[[[[[[[[{{${nevents[$#subprocesses+$k+1]}{[{0\"";
+		my $systemString = "./n_calchep -blind \"[[[[[[[[[{[[[[[[[[[{${nevents[$#subprocesses+$k+1]}{[{0\"";
 		if($nevents[$#subprocesses+$k+1]==0){$systemString = "echo \"width=0\"";}
 		$systemString = $systemString."  2>&1 1>  job.o";
 		if ($par_meth =~ /[Pp][Bb][Ss]/ || $par_meth =~ /[Ll][Ss][Ff]/ || $par_meth =~ /[Ss][Ll][Uu][Rr][Mm]/){print JOB_FILE "        $systemString\n";}
@@ -2934,6 +2947,7 @@ for (my $k=0;$k<=$#decay_subprocesses;$k++){
 			open(JOB_FILE,">job_script")
 			or die("Couldn't open $dir_name/$subdir_name/jobscript.");
 			print JOB_FILE "#!/bin/bash\n";
+			print JOB_FILE "LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$LHAPDFPATH\n";
 			my $job_name = $subprocess;
 			$job_name =~ s/'//g;#'
 			if($par_meth=~/[Pp][Bb][Ss]/){write_PBS_info($job_name,"job.out",0);}
@@ -2943,7 +2957,7 @@ for (my $k=0;$k<=$#decay_subprocesses;$k++){
 			$nevents[$#subprocesses+$k+1][$j] = int(5.1*$n_events);
 			if($cs[$#subprocesses+$k+1][$j]==0) {$nevents[$#subprocesses+$k+1][$j]=0;}
 			#my $systemString = sprintf ("$CH_PATH/bin/subproc_cycle %d",$nevents[$#subprocesses+$k+1][$j]);
-			my $systemString = "./n_calchep -blind \"[[[[[[[[[{[[[[[[[[[{{${nevents[$#subprocesses+$k+1][$j]}{[{0\"";
+			my $systemString = "./n_calchep -blind \"[[[[[[[[[{[[[[[[[[[{${nevents[$#subprocesses+$k+1][$j]}{[{0\"";
 			if($nevents[$#subprocesses+$k+1][$j]==0){$systemString="echo \"width=0\"";}
 			$systemString = $systemString."  2>&1 1>  job.o";
 			if ($par_meth =~ /[Pp][Bb][Ss]/ || $par_meth =~ /[Ll][Ss][Ff]/ || $par_meth =~ /[Ss][Ll][Uu][Rr][Mm]/){print JOB_FILE "        $systemString\n";}
@@ -3019,6 +3033,7 @@ if ($#step<0){
 	open(JOB_FILE,">job_script")
 		or die("Couldn't open $dir_name/single/jobscript.");
 	print JOB_FILE "#!/bin/bash\n";
+	print JOB_FILE "LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$LHAPDFPATH\n";
 	my $job_name = $subprocess;
 	$job_name =~ s/'//g;#'
 	if($par_meth=~/[Pp][Bb][Ss]/){write_PBS_info($job_name,"job.out",0);}
@@ -3111,6 +3126,7 @@ else {
 		open(JOB_FILE,">job_script")
 		or die("Couldn't open $dir_name/$subdir_name/jobscript.");
 		print JOB_FILE "#!/bin/bash\n";
+		print JOB_FILE "LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$LHAPDFPATH\n";
 		my $job_name = "Widths";
 		$job_name =~ s/'//g;#'
 		if($par_meth=~/[Pp][Bb][Ss]/){write_PBS_info($job_name,"job.out",0);}
@@ -3678,6 +3694,11 @@ ifneq (\$(SONAME),)
 else
    soname_VandP :=
 endif
+
+ifneq (\$(LHAPDFPATH),)
+  EXTLIB := -L\$(LHAPDFPATH) -lLHAPDF \$(EXTLIB)
+endif
+
 VandP.so:VandP.c \$(DEPEND) models/extlib$model_num.mdl
 \t\$(CC) \$(CFLAGS)  -shared -o VandP.so \$(soname_VandP) VandP.c \$(CALCHEP)/include/VandPgate.c  \$(EXTLIB) \$(CALCHEP)/lib/libSLHAplus.a \$(CALCHEP)/lib/dummy.a  -lm -lpthread
 ENDMK
@@ -3850,6 +3871,7 @@ sub create_calchep {
   open(CALCHEP,">$_[0]");
 print CALCHEP <<ENDCH;
 #!/bin/bash
+LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$LHAPDFPATH
 CALCHEP=$CH_PATH
 export CALCHEP
 WORK=`pwd`
@@ -4178,13 +4200,6 @@ sub update_session {
 		}
 		if ($qcdscales_section==1){
 			print NEW_SESSION_FILE "#QCDscales\n";
-			my $aScale = "M12";
-			for (my $l=0;$l<=$#alphaFactScale;$l++){
-			  if ($alphaFactNumber[$l]==$subproc_which_proc[$_[1]]||$alphaFactNumber[$l]==-1){
-			    $aScale=renumber_Mparts($alphaFactScale[$l],$_[1]);
-			  }
-			}
-			printf NEW_SESSION_FILE  " Factorization %s\n", $aScale;
 			$aScale = "M12";
 			for (my $l=0;$l<=$#alphaRenScale;$l++){
 			  if ($alphaRenNumber[$l]==$subproc_which_proc[$_[1]]||$alphaRenNumber[$l]==-1){
@@ -4192,6 +4207,18 @@ sub update_session {
 			  }
 			}
 			printf NEW_SESSION_FILE " Renormalization %s\n", $aScale;
+						
+			my $aScale = "M12";
+			for (my $l=0;$l<=$#alphaFactScale;$l++){
+			  if ($alphaFactNumber[$l]==$subproc_which_proc[$_[1]]||$alphaFactNumber[$l]==-1){
+			    $aScale=renumber_Mparts($alphaFactScale[$l],$_[1]);
+			  }
+			}
+			printf NEW_SESSION_FILE  " Factorization1 %s\n", $aScale;
+			printf NEW_SESSION_FILE  " Factorization2  Qpdf1\n";
+			printf NEW_SESSION_FILE  " Showering  Qred\n";
+			    
+
 			$qcdscales_section=2;
 		}
 		if ($init_section==0&&$param_section==0&&$BW_section==0&&$cuts_section==0&& $reg_section==0 && $kinematics_section==0 && $dists_section==0&&$qcdscales_section==0&&$composite_section==0){
@@ -4228,6 +4255,13 @@ sub update_session {
 sub renumber_Mparts {
   my $MtermOn=0;
   my $Mterm="";
+  my $StermOn=0;
+  my $Sterm="";
+  my $TtermOn=0;
+  my $Tterm="";
+  my $ZtermOn=0;
+  my $Zterm="";
+ 
   my $Rterm="";
   for(my $i=0;$i<length($_[0]);$i++){
     my $cur_symb = substr($_[0],$i,1);
@@ -4239,12 +4273,52 @@ sub renumber_Mparts {
       $MtermOn=0;
       $Mterm="";
     }
+#<#AB insetion begin ###########    
+    elsif($cur_symb =~ /S/){$StermOn=1;$Sterm=$Sterm.$cur_symb;}
+    elsif($StermOn==1 and $cur_symb =~ /[0-9]/){$Sterm=$Sterm.$cur_symb;}
+    elsif($StermOn==1){
+      $Sterm=$Sterm.$cur_symb;
+      $Rterm=$Rterm.renumber_parts($Sterm,$_[1]);
+      $StermOn=0;
+      $Sterm="";
+    }
+    elsif($cur_symb =~ /T/){$TtermOn=1;$Tterm=$Tterm.$cur_symb;}
+    elsif($TtermOn==1 and $cur_symb =~ /[0-9]/){$Tterm=$Tterm.$cur_symb;}
+    elsif($TtermOn==1){
+      $Tterm=$Tterm.$cur_symb;
+      $Rterm=$Rterm.renumber_parts($Tterm,$_[1]);
+      $TtermOn=0;
+      $Tterm="";
+    }
+    elsif($cur_symb =~ /Z/){$ZtermOn=1;$Zterm=$Zterm.$cur_symb;}
+    elsif($ZtermOn==1 and $cur_symb =~ /[0-9]/){$Zterm=$Zterm.$cur_symb;}
+    elsif($ZtermOn==1){
+      $Zterm=$Zterm.$cur_symb;
+      $Rterm=$Rterm.renumber_parts($Zterm,$_[1]);
+      $ZtermOn=0;
+      $Zterm="";
+    }
+#>#AB insetion end ###########
     else {$Rterm=$Rterm.$cur_symb;}
   }
   if(length($Mterm)>0){
     $Mterm=$Mterm.$cur_symb;
     $Rterm=$Rterm.renumber_parts($Mterm,$_[1]);
   }
+#<#AB insetion begin ###########    
+  if(length($Sterm)>0){
+    $Sterm=$Sterm.$cur_symb;
+    $Rterm=$Rterm.renumber_parts($Sterm,$_[1]);
+  }
+  if(length($Tterm)>0){
+    $Tterm=$Tterm.$cur_symb;
+    $Rterm=$Rterm.renumber_parts($Tterm,$_[1]);
+  }
+  if(length($Zterm)>0){
+    $Zterm=$Zterm.$cur_symb;
+    $Rterm=$Rterm.renumber_parts($Zterm,$_[1]);
+  }
+#>#AB insetion end ###########
   return $Rterm;
 }
 
@@ -4927,7 +5001,7 @@ sub combine_distributions {
 		for ($k=0;$k<=$#tmp_dist_param;$k++){
 			$i++;
 			#$system_string="$CH_PATH/bin/show_distr -blind  '\\06".$dist_param[$j]."{{\\06 ".$dist_n_bins[$j]." {{ [[[{0'   distr";
-			$system_string="$CH_PATH/bin/show_distr -blind  'f".$dist_param[$j]."{{f ".$dist_n_bins[$j]." {{[[[[{[{0'   distr";
+			$system_string="$CH_PATH/bin/show_distr -blind  'f".$dist_param[$j]."{{f ".$dist_n_bins[$j]."{{{[[[[{[[[[{0'   distr";
 			#print "$system_string\n";
 			system($system_string);
 			my $min = $dist_min[$j];

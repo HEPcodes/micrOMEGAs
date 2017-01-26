@@ -25,11 +25,6 @@ char * pdg2name(int pdg)
   {          if(ModelPrtcls[i].NPDG==pdg) return ModelPrtcls[i].name;
      else  { if(ModelPrtcls[i].NPDG==-pdg) return ModelPrtcls[i].aname;}
   }   
-  {
-    static char name[20];
-    sprintf(name,"#%d\n",pdg);
-    return name;
-  }
   return NULL;
 } 
 

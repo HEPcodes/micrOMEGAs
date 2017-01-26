@@ -4,7 +4,7 @@
 #include"pmodel_f.h"
 
 #include<errno.h>
-#include"../../sources/micromegas_aux.h"
+#include"../../include/micromegas_aux.h"
 
 
 double deltamb_(void){ return  deltaMb();}
@@ -59,4 +59,14 @@ int  hbblocks_(char * fname,int len)
   err=HBblocks(cname);
   free(cname);
   return err;           
+}
+
+int lilithf_(char*fname,int len)
+{
+   char * cname=malloc(len+2);
+   int err;
+   fName2c(fname,cname,len);
+   err= LiLithF(cname);
+   free(cname);
+   return err; 
 }

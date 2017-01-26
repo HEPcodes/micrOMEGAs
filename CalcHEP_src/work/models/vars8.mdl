@@ -1,0 +1,101 @@
+Top EFT
+ Parameters
+  Name         | Value       |> Comment                                                                <|
+cabi           |0.227736     |Cabibbo angle
+Lambda         |1000         |Scale of the new physics
+RC3phiq        |1            |Real part of the coefficient of O3phiq
+IC3phiq        |1            |Imaginary part of the coefficient of O3phiq
+RCtW           |1            |Real part of the coefficient of OtW
+ICtW           |1            |Imaginary part of the coefficient of OtW
+RCbW           |1            |Real part of the coefficient of ObW
+ICbW           |1            |Imaginary part of the coefficient of ObW
+RCtG           |1            |Real part of the coefficient of OtG
+ICtG           |1            |Imaginary part of the coefficient of OtG
+CG             |1            |coefficient of OG
+CphiG          |1            |coefficient of OphiG
+C13qq          |1            |coefficient of O13qq
+C1qq           |1            |coefficient of O1qq
+RC1ud          |1            |real part of coefficient of O1ud
+IC1ud          |1            |image part of coefficient of O1ud
+RC8ud          |1            |real part of coefficient of O8ud
+IC8ud          |1            |image part of coefficient of O8ud
+C81qq          |1            |coefficient of O81qq
+C83qq          |1            |coefficient of O83qq
+C8ut           |1            |coefficient of O8ut
+C8dt           |1            |coefficient of O8dt
+RC1qu          |1            |real part of coefficient of O1qu
+IC1qu          |1            |image part of coefficient of O1qu
+RC8qu          |1            |real part of coefficient of O8qu
+IC8qu          |1            |image part of coefficient of O8qu
+RC1qd          |1            |real part of coefficient of O1qd
+IC1qd          |1            |image part of coefficient of O1qd
+RC8qd          |1            |real part of coefficient of O8qd
+IC8qd          |1            |image part of coefficient of O8qd
+RC1Qd31        |1            |real part of coefficient of O1Qd31                                      |
+IC1Qd31        |1            |image part of coefficient of O1Qd31                                     |
+RC1Qd33        |1            |real part of coefficient of O1Qd33                                      |
+IC1Qd33        |1            |image part of coefficient of O1Qd33                                     |
+RC1Qd13        |1            |real part of coefficient of O1Qd13                                      |
+IC1Qd13        |1            |image part of coefficient of O1Qd13                                     |
+RC1Qd11        |1            |real part of coefficient of O1Qd11                                      |
+IC1Qd11        |1            |image part of coefficient of O1Qd11                                     |
+RC8Qd31        |1            |real part of coefficient of O8Qd31                                      |
+IC8Qd31        |1            |image part of coefficient of O8Qd31                                     |
+RC8Qd33        |1            |real part of coefficient of O8Qd33                                      |
+IC8Qd33        |1            |image part of coefficient of O8Qd33                                     |
+RC8Qd13        |1            |real part of coefficient of O8Qd13                                      |
+IC8Qd13        |1            |image part of coefficient of O8Qd13                                     |
+RC8Qd11        |1            |real part of coefficient of O8Qd11                                      |
+IC8Qd11        |1            |image part of coefficient of O8Qd11                                     |
+C1qt           |1            |coefficient of O1qt
+aEWM1          |127.9        |Inverse of the EW coupling constant at the Z pole
+Gf             |0.0000116637 |Fermi constant
+aS             |0.1184       |Strong coupling constant at the Z pole
+ymb            |4.7          |Bottom Yukawa mass
+ymt            |172          |Top Yukawa mass
+ymtau          |1.777        |Tau Yukawa mass
+GG             |1.21977796370|Strong coupling constant at the Z pole   This value will be ignored and ca
+MZ             |91.1876      |Mass of G0.
+MWPR           |1000         |Mass of WPR.
+MW1qq          |1000         |Mass of W1qq.
+MW1ud          |1000         |Mass of W1ud.
+MW8ud          |1000         |Mass of W8ud.
+MW1qu          |1000         |Mass of W1qu.
+MW8qu          |1000         |Mass of W8qu.
+MW1qd          |1000         |Mass of W1qd.
+MW8qd          |1000         |Mass of W8qd.
+MW1Qd31        |1000         |Mass of W1Qd31.                                                         |
+MW1Qd33        |1000         |Mass of W1Qd33.                                                         |
+MW1Qd11        |1000         |Mass of W1Qd11.                                                         |
+MW1Qd13        |1000         |Mass of W1Qd13.                                                         |
+MW8Qd31        |1000         |Mass of W8Qd31.                                                         |
+MW8Qd33        |1000         |Mass of W8Qd33.                                                         |
+MW8Qd11        |1000         |Mass of W8Qd11.                                                         |
+MW8Qd13        |1000         |Mass of W8Qd13.                                                         |
+MTA            |1.777        |Mass of ta.
+MT             |172          |Mass of t.
+MB             |4.7          |Mass of b.
+MH             |125          |Mass of H.
+%WZ            |2.4952       |Width of G0.
+%WW            |2.085        |Width of GP.
+%WWPR          |1            |Width of WPR.
+%WW1qq         |1            |Width of W1qq.
+%WW1ud         |1            |Width of W1ud.
+%WW8ud         |1            |Width of W8ud.
+%WW1qu         |1            |Width of W1qu.
+%WW8qu         |1            |Width of W8qu.
+%WW1qd         |1            |Width of W1qd.
+%WW8qd         |1            |Width of W8qd.
+%WW1Qd31       |1            |Width of W1Qd31.                                                        |
+%WW1Qd33       |1            |Width of W1Qd33.                                                        |
+%WW1Qd11       |1            |Width of W1Qd11.                                                        |
+%WW1Qd13       |1            |Width of W1Qd13.                                                        |
+%WW8Qd31       |1            |Width of W8Qd31.                                                        |
+%WW8Qd33       |1            |Width of W8Qd33.                                                        |
+%WW8Qd11       |1            |Width of W8Qd11.                                                        |
+%WW8Qd13       |1            |Width of W8Qd13.                                                        |
+%WT            |1.50833649   |Width of t.
+%WH            |0.00407      |Width of H.
+E              |2.71828182845|The base of the natural logarithm.
+Pi             |3.14159265358|The circumference of a circle divided by the diameter.
+=========================================================================================================

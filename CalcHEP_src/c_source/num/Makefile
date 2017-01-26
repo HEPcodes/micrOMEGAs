@@ -2,7 +2,7 @@
 
 include ../../FlagsForMake
 
-Idir = .. chep_crt plot  service2 getmem dynamicME SLHAplus ntools
+Idir = .. chep_crt plot  service2 getmem dynamicME SLHAplus ntools strfun
 
 override CFLAGS += -Iinclude $(patsubst %,-I../%/include ,$(Idir))
 

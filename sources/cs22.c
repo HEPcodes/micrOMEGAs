@@ -90,7 +90,7 @@ static REAL pmass[5];
 static int pc1_,pc2_;
 static int ppFlag;
 static int i3,i4,i5;
-static double pTmin_;
+static double pTmin_,METmin_;
 
 static numout * colliderProduction(char * name1,char *name2, int nf, int J)
 { 
@@ -144,7 +144,7 @@ static numout * colliderProduction(char * name1,char *name2, int nf, int J)
 
 
 static double  cos_integrand(double xcos)
-{ int err;
+{ int err=0;
   double xsin=sqrt(1-xcos*xcos);
   double q;
   pvect[9]=pcmOut*xcos;
@@ -183,26 +183,27 @@ static double  s_integrand(double y)
    return r; 
 }
 
+#define pt2etRange 1
 
 static double M45_min,M45_max,S34_min,S34_max,S35_min,S35_max;
 static int npole34=0,npole35=0,npole45,npole12;
 static double * pole34=NULL,*pole35=NULL,*pole45=NULL,*pole12=NULL;
-
+static int MET=0;
 
 static double veg_intergrand(double *x, double w)
 {
    double r;
 //   double pp=1.5;
    double M12,pcmIn;
-   int err;
+   int err=0;
    double P,M45,m3q,sn_,cs_,J45,cs45,S34,S35;
    double M34_min=sqrt(S34_min),M34_max=sqrt(S34_max),
           M35_min=sqrt(S35_min),M35_max=sqrt(S35_max);
    double M34,M35;
-          
-   
-   M12=sqrt(sMin)+x[0]*sqrt(sMax); 
   
+   REAL pvect[20]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};        
+   
+   M12=sqrt(sMin)+x[0]*(sqrt(sMax)-sqrt(sMin)); 
    pcmIn=decayPcm(M12,pmass[0], pmass[1]);
    if(pcmIn==0) return 0;
  
@@ -211,9 +212,12 @@ static double veg_intergrand(double *x, double w)
    if(M12<=pmass[i3]+M45) return 0;
    P=decayPcm(M12,pmass[i3], M45); 
    if(P<=pTmin_) return 0; 
+   
    sn_=pTmin_/P;
 
    cs_=sqrt(1-sn_*sn_);
+   double cs=cs_*(2*x[2]-1),sn=sqrt(1-cs*cs),PT=P*sn;
+   
    if(npole34==0 && npole35==0)  { cs45=(2*x[3]-1); J45=2;}  else 
    {  
       double E3= 0.5*(M12*M12-M45*M45-pmass[i3]*pmass[i3])/M45; 
@@ -264,15 +268,44 @@ static double veg_intergrand(double *x, double w)
    } 
    if(fabs(cs45)>1) return 0;
    r=  kinematic_23(pcmIn,i3,M45, cs_*(2*x[2]-1) ,cs45,M_PI*x[4],pmass, pvect)*4*M_PI*(M45_max-M45_min)*J45*cs_/pcmIn;
-   {   double q= Q_ren>0? Q_ren : M12;
+   
+   {   double q= Q_ren>0? Q_ren : PT;
        double x0=M12*M12/sMax;
       
        r*= sqme22(nsub22,sqrt(4*M_PI*parton_alpha(q)),pvect,NULL,&err);
-       q= Q_fact>0? Q_fact: M12;
-       r*= convStrFun2(x0,q,pc1_,pc2_,ppFlag);
+       q= Q_fact>0? Q_fact: M45;
+       r*= convStrFun2(x0,q,pc1_,pc2_,ppFlag);       
    }
    r*= 2*M12/sMax*(sqrt(sMax) - sqrt(sMin));
 
+   if(MET)
+   { 
+     double parr[3]={200,400,600};
+     double carr[3]={0.74,0.71,0.68};
+     double warr[3]={1.269701e-01,8.907702e-02,7.772618e-02};
+     double darr[3]={5.279701e-02,3.057419e-02,1.684293e-02};
+     double delta=0.01684;
+     double w0=0.0777;
+     double C=0.68;
+     int i;
+     if(PT<600)
+     { delta=polint1(PT,3,parr,darr);
+       C    =polint1(PT,3,parr,carr);
+       w0   =polint1(PT,3,parr,warr);
+     }
+    
+//     printf("PT=%E delta=%E C=%E w0=%E\n", PT,delta,C,w0);
+       
+     double p=2.5;
+          
+     double det=2*pt2etRange*(x[5]-0.5);
+     double et=PT*(1+delta +det);
+     if(et<METmin_) return 0;
+     double ww=2*pt2etRange*C/(2.6*w0*(1 +pow(fabs(det)/w0,p)));
+          
+     r*= ww;  
+   }
+   
    return r; 
 }
 
@@ -403,89 +436,78 @@ static double vegas_cycle(vegasGrid *vegPtr, double eps, double aeps,int maxStep
   return ii;
 }
 
-double hCollider(double Pcm, int pp, int nf, double Qren,double Qfact, char * name1,char *name2,double pTmin,int wrt)
+
+#define METDIM 7
+static double metGrig[METDIM]={250,300,350,400,450,500,550}; 
+static double metArr[METDIM];
+
+
+static double hColliderStat(double Pcm, int pp, int nf, double Qren,double Qfact, char * name1,char *name2,double pTmin,int met, int wrt)
 { 
-  double  sigma_tot=0, Qstat;
+  double  sigma_tot=0;
   int i;
   numout *cc;
-  int n1,n2;
+  int n1=0,n2=0;
   int nout;
-  double dI,m1,m2;
+  double dI,m1=0,m2=0;
   
-  if(name1==NULL  && name2==NULL) return 0;
-  
+  if(met) MET=1; else MET=0;
+
+  ppFlag=pp;   
+  Q_fact=Qfact;
+  Q_ren=Qren;
+    
   if(nf>5)nf=5; 
   if(nf<0)nf=0;
-  
-  
- if(name1) 
- { n1=pTabPos(name1);  
+    
+  if(name1) 
+  { n1=pTabPos(name1);  
     if(n1==0) { printf("%s - no such particle\n",name1); return 0;}
     m1=pMass(name1);
- }
- else { n1=0; m1=0;}
- if(name2) 
- {  n2=pTabPos(name2);  
-    if(n2==0) { printf("%s - no such particle\n",name2); return 0;}
-    m2=+pMass(name2);   
- }
- else { n2=0; m2=0;}
+  }
+
+  if(name2) 
+  {  n2=pTabPos(name2);  
+     if(n2==0) { printf("%s - no such particle\n",name2); return 0;}
+     m2=+pMass(name2);   
+  }
+
+  if(!(n1 || n2)) return 0;
  
   
   sMax=4*Pcm*Pcm; 
-  if(pTmin<=0) sMin=m1+m2;
-  else 
-  {
-    double MM=m1+m2;
-    sMin=sqrt(MM*MM+pTmin*pTmin)+pTmin;
-    pTmin_=pTmin;
-  }
-  sMin*=sMin; sMin+=1; 
+  if(pTmin<0) pTmin_=0; else  pTmin_=pTmin;
+  sMin=sqrt((m1+m2)*(m1+m2)+pTmin_*pTmin_)+pTmin_;  
+  sMin*=sMin;
   
-  ppFlag=pp;   
   cc=colliderProduction( name1,name2, nf, pTmin>0);
-  
-  if(!cc) return 0;
-   
-  Q_fact=Qfact;
-  Q_ren=Qren;
-   
-  if(Qaddress)
-  { Qstat=*Qaddress;
-    *Qaddress=sqrt(sMin);
-//    printf("Q=%E\n",findValW("Q"));
-    calcMainFunc();
-  }  
-  
+  if(!cc) return 0; 
   if(passParameters(cc)) return 0;
-
-  *(cc->interface->gtwidth)=0;
-  *(cc->interface->twidth)=0;
-  *(cc->interface->gswidth)=0;
-  sqme22=cc->interface->sqme;
       
   sigma_tot=0;
-  if(pTmin>0) nout=1;else nout=0;
-  if(n1)nout++;
-  if(n2)nout++;
+  
+  nout=cc->interface->nout;
+  sqme22=cc->interface->sqme; 
+  
   for(nsub22=1;nsub22<=cc->interface->nprc; nsub22++) 
   { int pc[5];
     char*n[5];
-    double tmp,dI;
+    double tmp=0,dI;
     for(i=0;i<2+nout;i++) n[i]=cc->interface->pinf(nsub22,i+1,pmass+i,pc+i); 
+    
     
     if(pc[0]<=pc[1])
     { pc1_=pc[0];
       pc2_=pc[1];
       
-     if(wrt)for(i=0;i<2+nout;i++) {printf("%s ",n[i]); if(i==1) printf(" -> ");}
-     
-     switch(nout)
-     { case 1: 
-       { 
+      if(wrt)for(i=0;i<2+nout;i++) {printf("%s ",n[i]); if(i==1) printf(" -> "); }
+ 
+      switch(nout)
+      { case 1: 
+        { 
           double pcmIn=decayPcm(pmass[2],pmass[0], pmass[1]);
           double q;
-          int err;
+          int err=0;
           
           if(pcmIn==0) return 0;
            pvect[0]=sqrt(pmass[0]*pmass[0]+pcmIn*pcmIn);
@@ -494,69 +516,79 @@ double hCollider(double Pcm, int pp, int nf, double Qren,double Qfact, char * na
            pvect[5]=-pcmIn; pvect[6]=0; pvect[7]=0;
            pvect[8]=pmass[2];pvect[9]=pvect[10]=pvect[11]=0;
            q=Q_fact>0? Q_fact: pmass[2];
-          tmp=convStrFun2(pmass[2]*pmass[2]/sMax,q,pc1_,pc2_,ppFlag);
+           tmp=convStrFun2(pmass[2]*pmass[2]/sMax,q,pc1_,pc2_,ppFlag);
            q=Q_ren>0? Q_ren: pmass[2];
-          tmp*=cc->interface->sqme(nsub22,sqrt(4*M_PI*parton_alpha(q)),pvect,NULL,&err);
-          tmp*=389379660.0*M_PI/(2*pcmIn*pmass[2]*sMax);
-          if(wrt)printf("cs=%E \n",tmp); 
+           tmp*=cc->interface->sqme(nsub22,sqrt(4*M_PI*parton_alpha(q)),pvect,NULL,&err);
+           tmp*=389379660.0*M_PI/(2*pcmIn*pmass[2]*sMax);
+           if(wrt)printf("cs=%E \n",tmp); 
           break;
-       }
-       case 2:  tmp=simpson(s_integrand,0.,1.,1.E-2); if(wrt)printf("cs=%E \n", tmp);  break;
-       case 3:
-       { double m3q;
-         vegasGrid *vegPtr=vegas_init(5,veg_intergrand,50);
-         char s0[3]={0,0,0};
-         double eps,aEps;
+        }
+        case 2: tmp=simpson(s_integrand,0.,1.,1.E-2);
+                if(wrt)printf("cs=%E \n", tmp);  
+                break;
+        case 3:
+        {  double m3q;
+           double vdim=5;
+           if(met)vdim++;
+           vegasGrid *vegPtr=vegas_init(vdim,veg_intergrand,50);
+           char s0[3]={0,0,0};
+           double eps,aEps;
          
-         for(i3=2;i3<5;i++)  if( (pc[i]<6 && pc[i]>-6) || pc[i]==21) break;
-         for(i4=2;i4<5;i4++) if(i4!=i3) break;
-         for(i5=2;i5<5;i5++) if(i5!=i3 && i5!=i4) break; 
+           for(i3=2;i3<5;i++)  if( (pc[i]<6 && pc[i]>-6) || pc[i]==21) break;
+           for(i4=2;i4<5;i4++) if(i4!=i3) break;
+           for(i5=2;i5<5;i5++) if(i5!=i3 && i5!=i4) break; 
 
-         M45_min=pmass[i4]+pmass[i5];
-         S35_min=pmass[i3]+pmass[i5]; S35_min*=S35_min;
-         S34_min=pmass[i3]+pmass[i4]; S34_min*=S34_min;
+           M45_min=pmass[i4]+pmass[i5];
+           S35_min=pmass[i3]+pmass[i5]; S35_min*=S35_min;
+           S34_min=pmass[i3]+pmass[i4]; S34_min*=S34_min;
          
-         m3q=pmass[i3]*pmass[i3];
-         M45_max= sMax-2*sqrt((pTmin_*pTmin_+m3q)*sMax)+m3q;
-         if(M45_max<=M45_min*M45_min) return 0;
-         M45_max=sqrt(M45_max);
-         S34_max=sqrt(sMax-pmass[i5]); S34_max*=S34_max;
-         S35_max=sqrt(sMax-pmass[i4]); S35_max*=S35_max;
+           m3q=pmass[i3]*pmass[i3];
+           M45_max= sMax-2*sqrt((pTmin_*pTmin_+m3q)*sMax)+m3q;
+           if(M45_max<=M45_min*M45_min) return 0;
+           M45_max=sqrt(M45_max);
+           S34_max=sqrt(sMax-pmass[i5]); S34_max*=S34_max;
+           S35_max=sqrt(sMax-pmass[i4]); S35_max*=S35_max;
          
-         s0[0]=i3+1;s0[1]=i4+1; getPoles(cc,nsub22,s0,sqrt(S34_min),sqrt(S34_max),&npole34,&pole34);
-         s0[0]=i3+1;s0[1]=i5+1; getPoles(cc,nsub22,s0,sqrt(S35_min),sqrt(S35_max),&npole35,&pole35);        
-         s0[0]=i4+1;s0[1]=i5+1; getPoles(cc,nsub22,s0,M45_min,      M45_max,      &npole45,&pole45); 
-         s0[0]=1;   s0[1]=2;    getPoles(cc,nsub22,s0,sqrt(sMin),   sqrt(sMax),   &npole12,&pole12);                 
+           s0[0]=i3+1;s0[1]=i4+1; getPoles(cc,nsub22,s0,sqrt(S34_min),sqrt(S34_max),&npole34,&pole34);
+           s0[0]=i3+1;s0[1]=i5+1; getPoles(cc,nsub22,s0,sqrt(S35_min),sqrt(S35_max),&npole35,&pole35);        
+           s0[0]=i4+1;s0[1]=i5+1; getPoles(cc,nsub22,s0,M45_min,      M45_max,      &npole45,&pole45); 
+           s0[0]=1;   s0[1]=2;    getPoles(cc,nsub22,s0,sqrt(sMin),   sqrt(sMax),   &npole12,&pole12);                 
 
-         setGrid(50,  vegPtr->x_grid[0]   , 0, 1,sqrt(sMin),sqrt(sMax),npole12,pole12);
-         setGrid(50,  vegPtr->x_grid[1]   , 0, 1,M45_min,M45_max,npole45,pole45);
+           setGrid(50,  vegPtr->x_grid[0]   , 0, 1,sqrt(sMin),sqrt(sMax),npole12,pole12);
+           setGrid(50,  vegPtr->x_grid[1]   , 0, 1,M45_min,M45_max,npole45,pole45);
          
-         if(npole34 && npole35)
-         { setGrid(25,  vegPtr->x_grid[3], 0, 0.5, sqrt(S34_min),sqrt(S34_max),npole34,pole34);
-           setGrid(25,  vegPtr->x_grid[3]+25, 0.5, 1, sqrt(S35_min),sqrt(S35_max),npole35,pole35);
-         }else if(npole34)
-           setGrid(50,  vegPtr->x_grid[3], 0, 1, sqrt(S34_min),sqrt(S34_max),npole34,pole34);
-          else if (npole35)
-           setGrid(50,  vegPtr->x_grid[3], 0, 1, sqrt(S35_min),sqrt(S35_max),npole35,pole35);
-         eps=0.01;
-         aEps=1E-6;
-         if(fabs(sigma_tot)*eps>aEps) aEps=sigma_tot*eps;
-         tmp=vegas_cycle(vegPtr,0.05, aEps, 20,5000, 1.1,&dI); 
-         vegas_finish(vegPtr);
-         if(wrt)printf("cs=%E +/-%E \n", tmp,dI);
-         free(pole12); free(pole34); free(pole35); free(pole45);
-         pole12=pole34=pole35=pole45=NULL;
-         break;
-       }  
+           if(npole34 && npole35)
+           { setGrid(25,  vegPtr->x_grid[3], 0, 0.5, sqrt(S34_min),sqrt(S34_max),npole34,pole34);
+             setGrid(25,  vegPtr->x_grid[3]+25, 0.5, 1, sqrt(S35_min),sqrt(S35_max),npole35,pole35);
+           }else if(npole34)
+             setGrid(50,  vegPtr->x_grid[3], 0, 1, sqrt(S34_min),sqrt(S34_max),npole34,pole34);
+           else if (npole35)
+             setGrid(50,  vegPtr->x_grid[3], 0, 1, sqrt(S35_min),sqrt(S35_max),npole35,pole35);
+
+           convStrFun2(0.1,100,pc1_,pc2_,ppFlag); //testing call
+           eps=0.001;
+           aEps=1E-6;
+           if(fabs(sigma_tot)*eps>aEps) aEps=sigma_tot*eps;
+           tmp=vegas_cycle(vegPtr,eps, aEps, 200,10000, 1.1,&dI); 
+           vegas_finish(vegPtr);
+           if(wrt)printf("cs=%E +/-%E \n", tmp,dI);
+           free(pole12); free(pole34); free(pole35); free(pole45);
+           pole12=pole34=pole35=pole45=NULL;
+           break;
+        }  
      }
      sigma_tot+=tmp;
     }
   }  
 
-  if(Qaddress){ *Qaddress=Qstat; calcMainFunc();} 
-            
   return sigma_tot;
 }
+
+double hCollider(double Pcm,int pp,int nf,double Qren,double Qfact,char*name1,char*name2,double pTmin, int wrt)
+{ 
+  return hColliderStat(Pcm, pp, nf, Qren, Qfact, name1, name2, pTmin, 0, wrt);
+} 
+
 
 #ifdef plazmaWidth
 static numout* plazmaWidth_cc;

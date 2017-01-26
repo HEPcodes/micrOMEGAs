@@ -1,2 +1,10 @@
 C to declare  types  of Fortran routines
 
+      integer  zprimelimits,readLesH,lesHinput,HBblocks,lilithf,
+     >         masslimits,umssmtools
+      external zprimelimits,readLesH,lesHinput,HBblocks,lilithf,
+     >         masslimits,umssmtools
+      external deltarho
+      real*8   deltarho, bsgnlo, deltamd, deltams,
+     >         bsmumu, btaunu, gmuon, bxismulow, bxismuhigh
+

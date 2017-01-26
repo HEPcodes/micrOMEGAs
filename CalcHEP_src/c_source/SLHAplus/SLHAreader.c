@@ -504,7 +504,7 @@ int slhaBasicReader( int mode, int (*getLnPar)(int, char*), int *anydate,char * 
       }
 
       *anydate=1;           
-      if(m4)
+      if(m4 || pNum==23 || abs(pNum)==24)
       { 
         for(;;)
         { double x;
@@ -733,7 +733,6 @@ int   slhaSTRFormat(char * Block, char * format, char *txt)
   char BLOCK[BlckLn];
   blockStr* blck=blockList;
   blockRec * dr;
-
   if(strlen(Block)>=BlckLn) {FError=1; return 0;}
       
   for(i=0; Block[i];i++)  BLOCK[i]=toupper(Block[i]);
@@ -754,7 +753,6 @@ int   slhaSTRFormat(char * Block, char * format, char *txt)
        char buff[StrLn];
        sprintf(body_,"%s #",dr->body);
        err=sscanf(body_,format_,txt,buff);
-//printf("body=|%s| format=|%s|,err=%d\n",body_,format_,err);
        if(err==2 && strcmp(buff,"#")==0) {return 0; }
      }  
   }

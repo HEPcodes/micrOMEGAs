@@ -1,0 +1,18 @@
+dirDMvMED
+ Parameters 
+  Name | Value       |  Comment                                                                   |
+   EE  |0.31343      |Electroweak coupling. EE=0.31223 corresponds to alpha=EE^2/(4*PI)=1/128.9
+ alfSMZ|0.1184       |MS-BAR Srtong coupling at  MZ
+ Mm    |0.1057       |muon mass
+ Ml    |1.777        |tau-lepton mass
+ Q     |100          | QCD scale
+ Mc    |1.4          |
+ Mb    |5            |
+Mtop   |170          |
+ MV    |1000         |Mass of vector mediator
+ Mdm   |1            |mass of DM
+Gx     |1            |DM-mediator coupling
+Gq     |0.25         |quark-mediator coupling
+GG     |2            |
+PT     |250          |                                                                            |
+===================================================================================================

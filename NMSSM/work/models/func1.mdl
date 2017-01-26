@@ -480,7 +480,7 @@ B00272 |-4*MW*SW*Zn51*Zuu12*sb+3*CW*Mq*Zn54*Zuu11
 B00273 |3*CW*MW*Zn52*Zuu21*sb+MW*SW*Zn51*Zuu21*sb+3*CW*Mq*Zn54*Zuu22
 B00274 |-4*MW*SW*Zn51*Zuu22*sb+3*CW*Mq*Zn54*Zuu21
 B00275 |Zh11*cb+Zh12*sb
-B00276 |Zh21*cb+Zh22*sb
+*B00276|Zh21*cb+Zh22*sb
 B00277 |Zh31*cb+Zh32*sb
 B00278 |-Zh11*cb-Zh12*sb
 B00279 |-Zh21*cb-Zh22*sb

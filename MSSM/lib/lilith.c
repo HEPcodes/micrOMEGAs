@@ -1,5 +1,5 @@
-#include"../../sources/micromegas.h"
-#include"../../sources/micromegas_aux.h"
+#include"../../include/micromegas.h"
+#include"../../include/micromegas_aux.h"
 #include "pmodel.h"
 
 int LiLithF(char*fname)
@@ -114,3 +114,4 @@ int LiLithF(char*fname)
   return npart;
 }
 
+ 
