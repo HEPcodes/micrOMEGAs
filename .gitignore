@@ -5,6 +5,7 @@
 /CalcHEP_src/work/bin
 /CalcHEP_src/FlagsForMake
 /CalcHEP_src/FlagsForSh
+/CalcHEP_src/sbin/make-j
 
 /CalcHEP_src/bin/Int
 /CalcHEP_src/bin/calc

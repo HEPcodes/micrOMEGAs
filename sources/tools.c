@@ -372,50 +372,6 @@ int buildInterpolation(double (*Fun)(double), double x1,double x2, double eps,do
 }
 
 
-#define SQ(x)  ((x)*(x))
-
-double   LintIk(int II,double MSQ,double MQ,double MNE)
-{  
-  double LAM,SPPM,SPMM,R1,R2,R3,del,CMD;
-  double msq2=MSQ*MSQ, mq2=MQ*MQ, mne2=MNE*MNE;
-
-  SPPM=  msq2+mq2-mne2, SPMM= msq2-mq2-mne2;
-  R1  =(msq2-mq2)/mne2;
-  R2  =(mq2-mne2)/msq2;
-  R3  =(msq2-mne2)/mq2;
-
-  del =2.*mne2*(mq2+msq2)-mne2*mne2-SQ(msq2-mq2);
-  
-  if(del>0) LAM=2.*atan(sqrt(del)/SPPM)/sqrt(del);
-  if(del<0) LAM=log((SPPM+sqrt(-del))/(SPPM-sqrt(-del)))/sqrt(-del);
-
-  switch(II)
-  { 
-    case 1:  
-      CMD=1./del*(R2/3-2/3.*R3-5/3.+ (2*msq2-2/3.*mne2)*LAM);	
-    break; 
-    case 2: 
-      CMD=(log(msq2/mq2)-SPMM*LAM)/2./mne2/mne2+
-         ( ((mq2*mq2-mq2*msq2)/mne2-7/3.*mq2+2/3.*(mne2-msq2))*LAM+R2/3+R1+2/3.
-         )/del;
-    break;
-    case 3:
-      CMD=-3/SQ(del)*SPPM+LAM/del*(-1+6*mq2*msq2/del);
-    break;	
-    case 4:
-      CMD=((log(msq2/mq2) - SPMM*LAM)/2/mne2-1/msq2 -mq2*SPMM/del*LAM)/mne2/mne2
-      
-         +( mq2/mne2/mne2-SQ(1-mq2/mne2)/msq2+0.5/mne2
-            +3*mq2/del*(1 +  R1 + (-R1*mq2-2*mq2-msq2+mne2)*LAM)
-          )/del;
-    break;
-    case 5:
-     CMD=(log(msq2/mq2)-SPMM*LAM)/(2*mne2*mne2)-(LAM*(2*(msq2-mne2)+3*mq2+R1*mq2)-3-R1)/del;
-     break;
-    default: CMD=0.; 
-  }
-  return CMD;
-}
 
 double MaxGapLim(double x, double mu) 
 /* S.Yellin, Phys.Rev. D66,032005(2002)
@@ -544,11 +500,11 @@ int N0, double Nfact, double eps,double * dI)
   double ti[MAXSTEP],dti[MAXSTEP];
   double ii,dii,chi2;
 
-  vegPtr=vegas_init(ndim,50);
+  vegPtr=vegas_init(ndim,Integrand,50);
   
   for(k=0;k<MAXSTEP;k++)
   { double s0=0,s1=0,s2=0; 
-    vegas_int(vegPtr, N0 , 1.5, Integrand, ti+k, dti+k);
+    vegas_int(vegPtr, N0 , 1.5, nPROCSS, ti+k, dti+k);
     printf("ti=%E dti=%E\n",ti[k], dti[k]);
     if(dti[k]==0) break;
     for(l=k;l>=k/2;l--)
@@ -571,6 +527,8 @@ int N0, double Nfact, double eps,double * dI)
   if(dI) *dI=dii;
   return ii;
 }  
+
+
 
 void spline(double x[], double y[], int n, double y2[])
 {

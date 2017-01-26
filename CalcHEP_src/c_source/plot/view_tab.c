@@ -103,7 +103,7 @@ int main(int argc,char** argv)
  sprintf(icon_name,"%s/include/icon",pathtocalchep);
  start1(VERSION_ ,icon_name,"calchep.ini;../calchep.ini",NULL);  
  clearTypeAhead();
- if(ptype==2) plot_2(xMin,xMax,xDim,yMin,yMax,yDim,f,df,procName,xName,yName);
+ if(ptype==2) plot_2D(xMin,xMax,xDim,yMin,yMax,yDim,f,df,procName,xName,yName);
  else plot_1(xMin,xMax,xDim,f,df,procName, xName, yName);
  fclose(F);
  finish();

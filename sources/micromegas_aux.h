@@ -13,7 +13,8 @@ extern "C" {
 
 
 /*==================== displayPlot =================*/
-extern void displayPlot(char*title,char*xName,char*yName,double xMin,double xMax,int dim,double*f,double*ff);
+extern void displayPlotN(char * title, double xMin, double xMax,  char*xName,  int dim, int N, double**f,double**ff,char**Y);
+extern void displayPlot(char*title,double xMin,double xMax, char*xName,  int dim,  int N, ...);
 
 /*======================
    Lock/UnLock service
@@ -100,7 +101,7 @@ extern numout*newProcess_(int twidth, int model,int UG,char*Process,
 
 //=====  2->2 processes ===========
 
-extern double (*sqme22)(int nsub, double GG, REAL *pvect, int * err_code); 
+extern double (*sqme22)(int nsub, double GG, REAL *pvect, REAL*cb_coeff, int * err_code); 
 
 extern int     kin22(double PcmIn,REAL * pmass);
 extern double  kinematic_23(double Pcm,int i3, double M45, double cs1, double cs2,  double fi,REAL*pmass, REAL*pvect);
@@ -118,15 +119,15 @@ extern double  vcs22(numout * cc,int nsub,int * err);
 typedef  double (forCalchep1)(double);
 typedef  double (forCalchep2)(double,double);
 
-/*  Loop integrals I1 ... I5 */
-
-extern double   LintIk(int i,double MSQ,double MQ,double MNE);
+/*  Loop integrals I1 ... I5   DreesNojiri */
+extern double   LintIk(int II,double MSQ,double MQ,double MNE);
 
 extern int readVarSpecial(char *fname, int nVar, char ** names);
 
 extern double parton_x( int pNum, double  Q);
-extern double parton_alpha(double q);
-extern double parton_distr(int pNum, double x, double q);
+
+extern double (*parton_alpha)(double q);
+extern double (*parton_distr)(int pNum, double x, double q);
 
 
 
@@ -150,6 +151,9 @@ extern REAL *Qaddress;
 
 extern double lGGhSM(double Mh, double aQCDh, double Mcp,double Mbp,double Mtp,double vev);
 extern double lAAhSM(double Mh, double aQCDh, double Mcp,double Mbp,double Mtp,double vev);
+
+extern int makePdtConv(void);
+extern int initPDFconv(void);
 
 #include"../CalcHEP_src/include/num_in.h"
 
