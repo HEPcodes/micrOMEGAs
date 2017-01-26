@@ -361,34 +361,6 @@ double captureAux(double(*vfv)(double),int forSun, double csIp,double csIn,doubl
        else  return captureEarth(vfv,pA0,nA0,pA5,nA5);               
 }
 
-static double  vcs22(numout * cc,int nsub,int * err)
-{
-   int i;
-   double pcm,r;
-   REAL pmass[4], pvect[16];
-   double  GG=sqrt(4*M_PI*parton_alpha(3*Mcdm));
-   for(i=1;i<=cc->interface->nvar;i++) if(cc->link[i]) 
-   cc->interface->va[i]=*(cc->link[i]);
-
-   if( cc->interface->calcFunc()>0 ) {*err=4; return 0;}
-   *(cc->interface->gtwidth)=0;
-   *(cc->interface->twidth)=0;
-   *(cc->interface->gswidth)=0;
-   for(i=0;i<4;i++) cc->interface->pinf(nsub,1+i,pmass+i,NULL);
-   *err=0;
-   if(pmass[0]+pmass[1] <= pmass[2]+pmass[3]) return 0;
-   for(i=0;i<16;i++) pvect[i]=0;
-
-   pcm= decayPcm(pmass[0]+pmass[1],pmass[2],pmass[3]);
-   for(i=0;i<2; i++) pvect[4*i]=pmass[i];
-   for(i=2;i<4; i++) pvect[4*i]=sqrt(pmass[i]*pmass[i] +pcm*pcm);
-   pvect[8+3]=pcm;
-   pvect[12+3]=-pcm;
-   r=cc->interface->sqme(nsub,GG,pvect,err);
-   return 3.8937966E8*r*pcm/(16*M_PI*pmass[0]*pmass[1]*(pmass[0]+pmass[1]));
-}
-
-
 
 /* ================ Basic Spectra  =====   hep-ph/0506298v5 ============== */
 
@@ -601,7 +573,7 @@ static void getSpectrum(int forSun, double M, double m1,double m2,char*n1,char*n
         numout * d2Proc;
         int l; 
         char* n[4];
-        REAL m[4];
+        double m[4];
         double tab_p[NZ];
         char process[40],plib[40];
         int ntot;

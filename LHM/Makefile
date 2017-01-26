@@ -16,11 +16,14 @@ SSS = $(wildcard lib/*.a) ../sources/micromegas.a  $(cLib)/dynamic_me.a ../sourc
  work/work_aux.a $(cLib)/sqme_aux.$(SO) $(cLib)/libSLHAplus.a   \
  ../CalcHEP_src/lib/num_c.a ../CalcHEP_src/lib/ntools.a   ../CalcHEP_src/lib/serv.a $(LX11) 
 
+ifeq (,$(main)) 
+  $(warning Main program is not specified. Use gmake main='<code of main program>')
+  $(warning Default  main=main.c)
+  main = main.c
+endif
+
 
 all: $(main) libs
-ifeq (,$(main)) 
-	@echo Main program is not specified. Use gmake main='<code of main program>'
-else  
   ifeq (.cpp,$(suffix $(main)))
 	$(CXX) $(CXXFLAGS) -o $(main:.cpp=) $(main)  $(SSS)  $(lDL)  -lm
   else  
@@ -38,7 +41,6 @@ else
       endif
     endif
   endif  
-endif
 
 
 libs:

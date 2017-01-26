@@ -17,10 +17,14 @@ SSS = $(wildcard lib/*.a) ../sources/micromegas.a  $(cLib)/dynamic_me.a ../sourc
  $(cLib)/num_c.a $(cLib)/ntools.a   $(cLib)/serv.a $(LX11)
 
 
-all: $(main) libs
 ifeq (,$(main)) 
-	@echo Main program is not specified. Use gmake main='<code of main program>'
-else  
+  $(warning Main program is not specified. Use gmake main='<code of main program>')
+  $(warning Default  main=main.c)
+  main = main.c
+endif
+
+
+all: $(main) libs
   ifeq (.cpp,$(suffix $(main)))
 	$(CXX) $(CXXFLAGS) -o $(main:.cpp=) $(main)  $(SSS)  $(lDL)  -lm
   else  
@@ -38,7 +42,7 @@ else
       endif
     endif
   endif  
-endif
+
 
 
 libs:

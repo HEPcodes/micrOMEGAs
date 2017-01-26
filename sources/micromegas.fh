@@ -48,7 +48,7 @@ c!      integer iargc
      >         gammaFlux,pbarFlux,posiFlux, pwidth,findbr,
      >         hProfileABG, hProfileEinasto,noClamps,pMass,
      >         darkOmegaFO,oneChannel, vSigma,captureAux,
-     >         darkOmega2, 
+     >         darkOmega2, width1CC,vSigmaCC,
      >         vs1120F,vs2200F,vs1100F,vs1210F,vs1122F,vs2211F,vs1110F,
      >         vs2220F,vs1112F,vs1222F,vs1220F,vs2210F,vs2221F,vs1211F
       real*8   cs22,pWidth2,decay2Info,findValW,calcSpectrum,
@@ -57,7 +57,7 @@ c!      integer iargc
      >         gammaFlux,pbarFlux,posiFlux,pwidth,findbr,
      >         hProfileABG, hProfileEinasto,noClamps,pMass,
      >         darkOmegaFO, oneChannel, vSigma,captureAux,
-     >         darkOmega2,
+     >         darkOmega2, width1CC,vSigmaCC,
      >         vs1120F,vs2200F,vs1100F,vs1210F,vs1122F,vs2211F,vs1110F,
      >         vs2220F,vs1112F,vs1222F,vs1220F,vs2210F,vs2221F,vs1211F
 C subroutines: newProcess,assignValW,printVar,printMasses,spectrInfo,

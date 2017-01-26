@@ -43,7 +43,7 @@ int  HBblocks(char * fname)
   fprintf(f," %12.4E  3    25    25    23 # higgs-higgs-Z \n",    0.   );
 
   LGGSM=lGGhSM(Mh,alphaQCD(Mh)/M_PI, Mcp,Mbp,Mtp,vev);
-  LAASM=lGGhSM(Mh,alphaQCD(Mh)/M_PI, Mcp,Mbp,Mtp,vev);
+  LAASM=lAAhSM(Mh,alphaQCD(Mh)/M_PI, Mcp,Mbp,Mtp,vev);
 
     fprintf(f," %12.4E  3    25    21    21 # higgs-gluon-gluon\n",  SQR(findValW("LGGh")/LGGSM) );           
     fprintf(f," %12.4E  3    25    22    22 # higgs-gamma-gamma\n",  SQR(findValW("LAAh")/LAASM) );
@@ -54,7 +54,7 @@ int  HBblocks(char * fname)
   fprintf(f," %12.4E  3    35    35    23 # higgs-higgs-Z \n",    0.  );
   
   LGGSM=lGGhSM(MH,alphaQCD(MH)/M_PI, Mcp,Mbp,Mtp,vev);
-  LAASM=lGGhSM(MH,alphaQCD(MH)/M_PI, Mcp,Mbp,Mtp,vev);
+  LAASM=lAAhSM(MH,alphaQCD(MH)/M_PI, Mcp,Mbp,Mtp,vev);
   
   fprintf(f," %12.4E  3    35    21    21 # higgs-gluon-gluon\n",SQR(findValW("LGGH")/LGGSM)  );   
   fprintf(f," %12.4E  3    35    22    22 # higgs-gamma-gamma\n",SQR(findValW("LAAH")/LAASM)  );  
@@ -63,7 +63,7 @@ int  HBblocks(char * fname)
   fprintf(f," %12.4E  3    36    23    23 # higgs-Z-Z \n",        0.  );
 
   LGGSM=lGGhSM(MH3,alphaQCD(MH3)/M_PI, Mcp,Mbp,Mtp,vev);
-  LAASM=lGGhSM(MH3,alphaQCD(MH3)/M_PI, Mcp,Mbp,Mtp,vev);
+  LAASM=lAAhSM(MH3,alphaQCD(MH3)/M_PI, Mcp,Mbp,Mtp,vev);
   
   fprintf(f," %12.4E  3    36    21    21 # higgs-gluon-gluon\n",SQR(findValW("LGGH3")/2/LGGSM) );
   fprintf(f," %12.4E  3    36    22    22 # higgs-gamma-gamma\n",SQR(findValW("LAAH3")/2/LAASM) );             

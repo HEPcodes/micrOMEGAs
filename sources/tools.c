@@ -542,8 +542,9 @@ int N0, double Nfact, double eps,double * dI)
 { vegasGrid *vegPtr=NULL;
   int k,l;
   double ti[MAXSTEP],dti[MAXSTEP];
-  vegPtr=vegas_init(ndim,50);
   double ii,dii,chi2;
+
+  vegPtr=vegas_init(ndim,50);
   
   for(k=0;k<MAXSTEP;k++)
   { double s0=0,s1=0,s2=0; 
@@ -560,14 +561,55 @@ int N0, double Nfact, double eps,double * dI)
         dii=1/sqrt(s0);
         chi2=(s2-s1*s1/s0)/(k-l+1);
         if(chi2> 1 )dii*=sqrt(chi2);
-//printf("ii=%e dii=%e chi2/N=%E\n", ii,dii,chi2);         
         if(dii<eps*fabs(ii)) break;
       }  
     }
     if(k && dii<eps*fabs(ii)) break;
     N0*=Nfact;    
-  }  
+  }
   vegas_finish(vegPtr);
   if(dI) *dI=dii;
   return ii;
 }  
+
+void spline(double x[], double y[], int n, double y2[])
+{
+	int i,k;
+	double p,qn,sig,un,*u;
+
+	u=malloc(n*sizeof(double));
+	
+	y2[0]=u[0]=0.0;
+	for (i=1;i<n-1;i++) 
+	{
+		sig=(x[i]-x[i-1])/(x[i+1]-x[i-1]);
+		p=sig*y2[i-1]+2;
+		y2[i]=(sig-1)/p;
+		u[i]=(y[i+1]-y[i])/(x[i+1]-x[i]) - (y[i]-y[i-1])/(x[i]-x[i-1]);
+		u[i]=(6*u[i]/(x[i+1]-x[i-1])-sig*u[i-1])/p;
+	}
+	
+	qn=un=0;
+	y2[n-1]=(un-qn*u[n-2])/(qn*y2[n-2]+1);
+	for (k=n-2;k>=0;k--) y2[k]=y2[k]*y2[k+1]+u[k];
+	free(u);
+}
+
+void splint(double xa[], double ya[], double y2a[], int n, double x, double *y)
+{
+	int klo,khi,k;
+	double h,b,a;
+
+        if(xa[0]<xa[n-1]) {klo=0;  khi=n-1;} 
+        else              {klo=n-1;khi=0;  }
+	while (abs(khi-klo) > 1) {
+		k=(khi+klo) >> 1;
+		if (xa[k] > x) khi=k;
+		else klo=k;
+	}   
+	h=xa[khi]-xa[klo];
+	if (h == 0.0) printf("Bad xa input to routine splint");
+	a=(xa[khi]-x)/h;
+	b=(x-xa[klo])/h;
+	*y=a*ya[klo]+b*ya[khi]+((a*a*a-a)*y2a[klo]+(b*b*b-b)*y2a[khi])*(h*h)/6.0;
+}

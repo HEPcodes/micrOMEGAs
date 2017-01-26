@@ -248,7 +248,7 @@ static double veg_intergrand(double *x, double w)
       }    
    } 
    if(fabs(cs45)>1) return 0;
-   r=  kinematic_23(pcmIn,i3+1,M45, cs_*(2*x[2]-1) ,cs45,M_PI*x[4],pmass, pvect)*4*M_PI*(M45_max-M45_min)*J45*cs_;
+   r=  kinematic_23(pcmIn,i3,M45, cs_*(2*x[2]-1) ,cs45,M_PI*x[4],pmass, pvect)*4*M_PI*(M45_max-M45_min)*J45*cs_/pcmIn;
    {   double q= Q_ren>0? Q_ren : M12;
        double x0=M12*M12/sMax;
       

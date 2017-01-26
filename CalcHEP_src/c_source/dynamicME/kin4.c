@@ -1002,7 +1002,7 @@ int  procInfo1(numout*cc, int *nsub, int * nin, int *nout)
   return 0;
 }
 
-int procInfo2(numout*cc,int nsub,char**name,REAL*mass)
+int procInfo2(numout*cc,int nsub,char**name,double*mass)
 {
   int i;
   int ntot=cc->interface->nin+cc->interface->nout;
@@ -1013,9 +1013,9 @@ int procInfo2(numout*cc,int nsub,char**name,REAL*mass)
   name[i]=(cc->interface->pinf)(nsub,i+1,NULL,NULL);
 
   if(mass)
-  {  
+  { REAL m;
     if(passParameters(cc)) return 4;
-    for(i=0;i<ntot ;i++) cc->interface->pinf(nsub,i+1,mass+i,NULL);     
+    for(i=0;i<ntot ;i++) { cc->interface->pinf(nsub,i+1,&m,NULL); mass[i]=m;}     
   }
   return 0;
 }
@@ -1108,3 +1108,17 @@ int slhaDecayPrint(char * name, int dVirt, FILE*f)
    fprintf(f,"\n");
    return PDG;
 } 
+
+double  width1CC(numout * cc, int * err)
+{  
+   double res;
+   *err=-1;
+   if(!cc || !cc->interface->nprc) { printf("empty code in width1ch\n"); return 0;}
+   if(cc->interface->nin!=1) {  printf("scattering reaction in width1ch\n"); return 0;}     
+   switch(cc->interface->nout)
+   { case 2: *err=0; return  pWidth2(cc,1);
+     case 3: return width13(cc,1,err); 
+     case 4: return width14(cc,err);
+     default: *err=-1; return 0;
+   }
+}

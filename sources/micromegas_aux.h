@@ -60,9 +60,9 @@ extern double vegas_chain(int ndim, double (*Integrand)(double*, double),
 extern int  odeint(double*ystart,int nvar,double x1,double x2, double eps,
                    double h1, void(*derivs)(double,double*,double *));
 
-extern int stiff(            double xstart, double xend, int n, double*y, double *yscal, double eps, double*htry,
+extern int stiff( int first,double xstart, double xend, int n, double*y, double *yscal, double eps, double*htry,
     void (*derivs)(double, double*, double*, double,double*,double*));
-extern int stiffbs(int first,double xstart, double xend, int nv, double*y, double *yscal, double eps, double*htry,
+extern int stifbs(int first,double xstart, double xend, int nv, double*y, double *yscal, double eps, double*htry,
     void (*derivs)(double,double*,double*,double,double*,double*));
    
     
@@ -73,6 +73,10 @@ extern double  polint3(double x, int n,  double *xa, double *ya);
 extern double  polint4(double x, int n,  double *xa, double *ya);
 extern int buildInterpolation( double (*Fun)(double), double x1,double x2, 
             double eps, double delt, int * N, double ** xa, double **ya);
+            
+extern void spline(double*x,double*y,int n,double*y2);            
+extern void splint(double*xa, double*ya, double*y2a, int n, double x, double *y);
+            
 /*======= special functions ========*/
 extern double bessk0(double x);
 extern double bessk1(double x);
@@ -100,8 +104,14 @@ extern double (*sqme22)(int nsub, double GG, REAL *pvect, int * err_code);
 
 extern int     kin22(double PcmIn,REAL * pmass);
 extern double  kinematic_23(double Pcm,int i3, double M45, double cs1, double cs2,  double fi,REAL*pmass, REAL*pvect);
+extern double  kinematic_24(double Pcm,int i3, int i4, double M1, double M2, double xcos,double xcos1, double xcos2, double fi1, double fi2,
+                            REAL*pmass, REAL * P);
+                            
 extern double  dSigma_dCos(double  cos_f);
 extern int  nsub22;
+
+extern double  vcs22(numout * cc,int nsub,int * err); 
+
 
 #define NTOF(X) extern forCalchep1 X; double X(double ok){return findValW(#X);}
 

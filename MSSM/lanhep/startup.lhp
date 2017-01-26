@@ -5,7 +5,7 @@
 %      SLHA  - slha input for calchep,
 %      Tree  - tree level EWSM MSSM
 
-keys scenario=micro.  % micro EWSB  SUGRA SLHA  Tree
+keys scenario=SLHA.  % micro EWSB  SUGRA SLHA  Tree
 
 %  default keys:
 keys gauge_fixing=Feynman.  % if not, then unitary
@@ -86,13 +86,13 @@ end_if.
 
 do_if scenario==SLHA.
    keys inputPar=Off.
-   keys calcSpect=file.
+   keys calcSpect=File.
    keys mix2g=Off.
    keys gi_neutralino=On.
    keys gi_higgs=On.
    keys gi_squarks=Off.
    keys hgg=Off. 
-   model 'MSSM(../slha.in)'/r.
+   model 'MSSM(../slha.in)'/5.
 end_if.
 
 do_if scenario==Tree.

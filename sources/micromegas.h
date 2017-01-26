@@ -1,7 +1,6 @@
 #ifndef  __MICROMEGAS__
 #define  __MICROMEGAS__
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif 
@@ -121,7 +120,7 @@ extern numout *  newProcess(char*Process);
 extern double GGscale;
 extern double cs22(numout * cc, int nsub,double P,  double cos1, double cos2 , int * err);
 extern int  procInfo1(numout*cc, int *nsub, int * nin, int *nout);
-extern int procInfo2(numout*cc,int nsub,char**name,REAL*mass);
+extern int procInfo2(numout*cc,int nsub,char**name,double*mass);
 extern REAL Helicity[2];
 extern double hCollider(double Pcm, int pp, int nf, double Qren,double Qfact, char * name1,char *name2,double pTmin);
 double pWidth(char *name, txtList *L);

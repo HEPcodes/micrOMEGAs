@@ -9,6 +9,7 @@ MbMb   |4.23         |Mb(Mb) running mass
 McMc   |1.27         |Mc(Mc) running mass
 GG     |1.117        |Drived by CalcHEP
 Q      |100          |QCD scale for running quark masses
-EE     |0.3123       |PDG value 4*pi/EE^2=128 corresponds to EE=0.3134
+EE     |0.3123       |PDG value 4*pi/EE^2=128 corresponds to EE=0.31
 Ml     |1.777        |mass of tau-lepton
 Maux   |1            |mass of aux particles
+=====================================================================

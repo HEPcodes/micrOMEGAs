@@ -30,7 +30,7 @@ static  int Iz(double z) { return NZ*pow(z/log(1.E-7),1./1.5)+1; }
 
 
 /* v*cs22 at v=0 */  
-static double  vcs22(numout * cc,int nsub,int * err)
+double  vcs22(numout * cc,int nsub,int * err)
 {
    int i;
    double pcm,r;
@@ -61,7 +61,7 @@ static double  vcs22(numout * cc,int nsub,int * err)
 }
  
 /* New 2->3 */ 
-static double pmass[5],pvect[20];
+static REAL pmass[5],pvect[20];
 static int code[5];
 static int iA,ix,iX;
 static numout* cc23;
@@ -656,7 +656,7 @@ static void getSpectrum(int wPol, double M, double m1,double m2,char*n1,char*n2,
         numout * d2Proc;
         int l; 
         char* n[4];
-        REAL m[4];
+        double m[4];
         double Y;
         double tab_p[NZ];
         char process[40],plib[40];
@@ -843,7 +843,7 @@ static double calcSpectrum0(char *name1,char*name2, int key, double **Spectra, t
    
   for(k=0;k<ntot ;k++) if(v_cs[k]>=0)
   { char * N[4];
-    REAL m[4];
+    double m[4];
     int l,charge3[2],spin2[2],pdg[2];
     int PlusAok=0;
 

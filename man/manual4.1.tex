@@ -619,7 +619,32 @@ contains a textual description of annihilation processes.\\
 The cross sections for  semi - annihilation processes  contribute to {\tt vSigma} with a
 factor $\frac{1}{2}$ as described in ~\cite{Belanger:2012vp}. Furthermore if an outgoing particle has a non-zero
 decay branching ratio to  odd particles, then the  annihilation  cross section  is reduced
-correspondingly.\\    
+correspondingly.\\
+
+\noindent
+ $\bullet$    \verb|vSigmaCC(T,cc)| calculates  thermal  averaged  $cross\;
+section
+\times velocity$ for $2\to2$ and $2\to3$ processes. $T$ is temperature in
+{\it GeV} units,  $cc$ is address of code of proces
+which can be obtained by the function {\tt newProcess} presented in  Section
+\ref{cross_section}.
+ Returned value  is precented in {\tt [pb]} units. {\tt vSigmaCC} defined by
+the
+integral
+$$ <v\cdot \sigma^{ab\to X}>_T=  \frac{1}{T m_a^2 m_b^2
+K_2(\frac{m_a}{T})K_2(\frac{m_b}{T})} \int d\sqrt{s}
+K_1(\frac{\sqrt{s}}{T})p_{cm}^2(s)\sigma^{ab\to X}(p_{cm}(s)) $$  
+where $p_{cm}$ is center of mass momentum of incoming particles.  The small
+temperatures limit for  {\tt
+vSigmaCC} should be the same as for
+$\sigma(p_{cm})\frac{p_{cm}(m_a+m_b)}{m_a m_b}$
+at $p_{cm}\to 0$.
+
+Note  that  result of {\tt vSigmaCC} can be different from result of {\tt
+vSigma} presented above in case of noticeable  NLSP contribution in total
+density of DM particles.    
+
+    
 \noindent 
 $\bullet$ \verb|darkOmega(&Xf,fast,Beps)|\\
 calculates the dark matter relic density $\Omega h^2$. 
@@ -1168,8 +1193,6 @@ The neutrino fluxes are expressed in \verb|[1/Year/km|$^2$\verb|]|.
 allows to display the corresponding spectrum on the screen.    
 
 
-
-
 \noindent
 $\bullet$ \verb|muonUpward(nu,Nu,rho, muon)|\\
 calculates the muon flux which results from interactions of
@@ -1196,7 +1219,8 @@ observation and the direction to the center of Earth. \verb|E|  is the  muon ene
 {\tt GeV}.\\
 \noindent $\bullet$  \verb|ATMmuonContained(cosFi, E, rho)| calculates the muon flux
 caused by atmospheric  neutrinos  produced in a given (detector)
-volume. The returned value for the flux is given in  \verb|1/Year/km|$^3$\verb|/GeV|. {\tt rho} is
+volume. The returned value for the flux is given in
+\verb|1/Year/km|$^3$\verb|/GeV/Sr|. {\tt rho} is
 the density of the detector in \verb|g/cm|$^3$ units. {\tt cosFi} and {\tt E} are the
 same as above. 
 
@@ -1286,6 +1310,14 @@ particle names \verb|N| and an array of particle  masses \verb|M| for the subpro
 arrays have size $nin+nout$ and the elements are listed in the same order
 as in CalcHEP starting with the initial state, see the example in 
 \verb|MSSM/main.c|.\\
+
+$\bullet$ \verb|widh1CC(address, &err)|\\
+calculate width of external process which {\it address} should be obtained
+by {\tt newProcess} command. {\tt widh1CC} is able to calculate widths for   $1\to2$,
+$1\to3$ and $1\to3$ processes. Internal resonances in  tested decay
+processe are not expected. In case of on sell subdecays retun value  can be
+incorrect. If {\it address} code contains several  subproceses, then
+only the first one is evaluated.  $err \ne 0$ is a signal of error. 
 
 
 
@@ -1379,8 +1411,8 @@ Note that the  propagation routines for $e^+,p^-,\gamma$ can be used after
 this routine as usual. Note that the result of {\tt basicSpectra}
 are not valid for ${\rm Mcdm} < 2$GeV as explained in the description of {\tt calcSpectrum}.  
 
-To get indirect detection signals one can substitute obtained spectra in 
-{\tt photon/posi/pbarFluxTab} routines. Until one keeps default setting  {\tt CDM1=CDM2=NULL} these routines will use {\tt Mcdm} parameter to calculate number density of {\tt DM} particles. 
+To get indirect detection signals one can substitute obtained spectra in\\ 
+{\tt [photon/posi/pbar]FluxTab} routines. Until one keeps default setting  {\tt CDM1=CDM2=NULL} these routines will use {\tt Mcdm} parameter to calculate number density of {\tt DM} particles. 
   
 
 \noindent $\bullet$ \verb|captureAux(f,forSun,csIp,csIn,csDp,csDn)|\\

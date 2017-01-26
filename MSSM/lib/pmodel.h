@@ -19,7 +19,7 @@ extern "C" {
 
 extern int  suspectEwsbMSSM(void);
 extern int  isajetEwsbMSSM(void);
-
+extern int  sphenoEwsbMSSM(void);
 /*=============================================
   MSSM Parameters motivated by SUGRA scenario
   =============================================*/

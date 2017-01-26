@@ -24,7 +24,8 @@ void newprocess_(char*Process, int * address, int len1)
 void  procinfo1_(int*ccf, int *ntot, int * nin, int *nout)
 {  numout*cc;
    memcpy(&cc,ccf,sizeof(cc));
-   procInfo1(cc, ntot, nin, nout);}
+   procInfo1(cc, ntot, nin, nout);
+}
 
 void procinfo2_(int*ccf,int*nsub,char*name,double*mass,int len)
 { int ntot, nin, nout,i;
@@ -36,5 +37,11 @@ void procinfo2_(int*ccf,int*nsub,char*name,double*mass,int len)
   
   procInfo2(cc,*nsub,cname, mass);
   for(i=0;i<nin+nout;i++) cName2f(cname[i],name+i*len,len);
+  free(cname);
 }
 
+double width1cc_(int*ccf, int *err)
+{ numout*cc;
+   memcpy(&cc,ccf,sizeof(cc));  
+  return width1CC(cc, err);
+}

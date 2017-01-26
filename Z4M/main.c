@@ -121,7 +121,8 @@ VZdecay=1; VWdecay=1;
   displayFunc(vs1211F, Tend, Tstart,"vs1211F");
 */
 
-
+displayFunc(dY1F,Tend, 1,"dY1");
+displayFunc(dY2F,Tend, 1,"dY2");
 
 printf("omega1=%.2E\n", Omega*(1-fracCDM2));
 printf("omega2=%.2E\n", Omega*fracCDM2);

@@ -1,5 +1,5 @@
 
-SPHENO   = $(CURDIR)/../../Packages/SPheno-3.3.3/bin
+SPHENO   = $(CURDIR)/../../Packages/SPheno-3.3.4/bin
 SOFTSUSY = $(CURDIR)/../../Packages/softsusy-3.5.1
 ISAJET   = $(CURDIR)/../../Packages/Isajet
 CERNLIB  = $(HOME)/Packages/cern/pro/lib

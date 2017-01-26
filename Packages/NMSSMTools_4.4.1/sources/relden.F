@@ -1,2 +1,0 @@
-      SUBROUTINE RELDEN(PAR,PROB)
-      END
