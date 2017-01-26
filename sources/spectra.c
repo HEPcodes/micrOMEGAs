@@ -757,6 +757,10 @@ static double calcSpectrum0(char *name1,char*name2, int key, double **Spectra, t
   libPtr=getMEcode(0,ForceUG,process,NULL,NULL,lib);
 
   if(!libPtr) return 0;
+  if(Qaddress && *Qaddress!=pMass(name1)+pMass(name2)) 
+  { *Qaddress=pMass(name1)+pMass(name2);
+     calcMainFunc;
+  }   
   passParameters(libPtr);
   if(plusA)
   { 

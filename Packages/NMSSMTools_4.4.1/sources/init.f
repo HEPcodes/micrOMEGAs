@@ -85,8 +85,18 @@
 
 *   The EXPCON_PATH variable is set:
 
-      CALL getenv('EXPCON_PATH',EXPCON_PATH)
-      if(EXPCON_PATH.eq.' ')  EXPCON_PATH='../EXPCON'
+c      CALL getenv('EXPCON_PATH',EXPCON_PATH)
+c      if(EXPCON_PATH.eq.' ')  EXPCON_PATH='../EXPCON'
+
+      call  getarg(0, EXPCON_PATH)
+      I=len(EXPCON_PATH)+1
+11    I=I-1      
+      if(EXPCON_PATH(I:I).eq.' ') goto 11
+22     EXPCON_PATH(I:I)=' '
+      I=I-1
+      if(EXPCON_PATH(I:I).ne.'/') goto 22
+      EXPCON_PATH(I:I)=' '
+      EXPCON_PATH=catpath(EXPCON_PATH,'../EXPCON')
 
 *   SM inputs:
 

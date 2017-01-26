@@ -177,6 +177,35 @@ double HaloFactor(double fi,double dfi)
    return res/(8*M_PI)*Rsun*sm_in_kpc;
 }
 
+static double b_, l1_,dl_;
+
+static double l_integrand(double l)
+{
+   fi_=acos(cos(b_)*cos(l));
+   dfi_=0;
+   return psiIntegrand(0.);
+}
+         
+static double b_integrand(double b)
+{ b_=b;
+   return cos(b)*simpson(l_integrand,l1_,l1_+dl_,1.E-3);
+}
+           
+static double HaloFactorGC(double l,double b,double dl,double db)
+{  double res;
+   double sm_in_kpc=3.0856775807E21;
+   double Norm;
+  
+   l1_=l, dl_=dl;
+
+   res=simpson(b_integrand,b,b+db,1.E-3);
+   if(dl<0) res*=-1;
+   if(db<0) res*=-1;
+   Norm=rhoDM/hProfile_(Rsun)/Mcdm;
+   return res*Norm*Norm/(8*M_PI)*Rsun*sm_in_kpc;
+}
+ 
+
 void gammaFluxTab(double fi,double dfi, double sigmaV, double *Sp, double *Sobs)
 {
   int i; 
@@ -190,9 +219,22 @@ void gammaFluxTab(double fi,double dfi, double sigmaV, double *Sp, double *Sobs)
   Sobs[0]=Sp[0]; 
 }
 
+void gammaFluxTabGC(double l,double b, double dl,double db, double sigmaV, double *Sp, double *Sobs)
+{
+  int i; 
+  double hf=HaloFactorGC(l,b,dl,db)*sigmaV; 
+  for(i=0;i<NZ;i++) Sobs[i]=hf*Sp[i]; 
+}
+
+
 double gammaFlux(double fi, double dfi,  double dSigmadE )
 {
   return  dSigmadE*HaloFactor(fi, dfi)*(1-cos(dfi))*2*M_PI;
+}
+
+double gammaFluxGC(double l, double b, double dl, double db, double dSigmadE )
+{
+  return  dSigmadE*HaloFactorGC(l,b,dl,db);
 }
 
 

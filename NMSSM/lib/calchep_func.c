@@ -39,7 +39,7 @@ static int runTools(char * cmd, char * fout,int mode)
    int err,nw;
    FILE*  f=fopen("inp","w");
    if(f==NULL) return -1;
-                                    
+                                       
    fprintf(f,"Block MODSEL    # Select model\n"   
              "  1    0           # EWSB input\n"
              "  3    1           # NMSSM PARTICLE CONTENT\n"
@@ -108,8 +108,8 @@ static int runTools(char * cmd, char * fout,int mode)
 }
 
 double sugraNMSSM( double m0, double mhf, double a0, double tb, double sgn,  
-     double Lambda,double aLambda, double aKappa, double xif, double xis,
-     double muP, double MSPQ,double M3HQ)
+     double Lambda,double aLambda, double aKappa, double mXiF, double mXiS,
+     double muP, double msP,double m3h)
 {
   int nw=0,err;
   FILE*  f=fopen("inp","w");  
@@ -141,11 +141,11 @@ double sugraNMSSM( double m0, double mhf, double a0, double tb, double sgn,
    fprintf(f," 63  %.8E        # A_LAMBDA\n", aLambda);
    fprintf(f," 64  %.8E        # A_K\n", aKappa);
 
-   fprintf(f," 66  %.8E        # XiF \n",  xif);
-   fprintf(f," 67  %.8E        # XiS \n",  xis);
+   fprintf(f," 66  %.8E        # XiF \n",  mXiF*fabs(mXiF));
+   fprintf(f," 67  %.8E        # XiS \n",  mXiS*mXiS*mXiS);
    fprintf(f," 68  %.8E        # muP \n", muP);
-   fprintf(f," 69  %.8E        # MS'2 \n", MSPQ);
-   fprintf(f," 72  %.8E        # M3H^2\n", M3HQ);
+   fprintf(f," 69  %.8E        # MS'2 \n", msP*fabs(msP));
+   fprintf(f," 72  %.8E        # M3H^2\n", m3h*fabs(m3h));
                            
    fclose(f);
      

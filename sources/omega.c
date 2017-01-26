@@ -690,7 +690,7 @@ static int  new_code(int k1,int k2, int ch)
              strcat(lib,"_2"); break;
      case  2: sprintf(process,"%s,%s->AllOdd1,AllOdd2{%s{%s",inP[k1],inP[k2],OddParticles(1),OddParticles(2));
                   strcat(lib,"_12"); break;                        
-   }           
+   } 
    cc=getMEcode(0,ForceUG,process,NULL,NULL,lib);
    if(cc) 
    {  int nprc,n;
@@ -773,7 +773,7 @@ static double aRate(double X, int average,int Fast, double * alpha, aChannel ** 
   int i,l1,l2;
   int nPrc=0;
   char* pname[5];
-  gridStr grid,grid1;
+  gridStr grid,grid1;  
   double MassCutOut=MassCut+Mcdm*log(100.)/X;
   double Msmall,Mlarge;
 
@@ -805,8 +805,12 @@ static double aRate(double X, int average,int Fast, double * alpha, aChannel ** 
     if(inC0[k1*NC+k2]<=0) continue;
 
     if(!code22_0[k1*NC+k2]->init)
-    { if(passParameters(code22_0[k1*NC+k2])) {FError=1; WIDTH_FOR_OMEGA=0;  return -1;}
-    
+    {
+      if(Qaddress && *Qaddress!=inMass[k1]+inMass[k2]) 
+      { *Qaddress=inMass[k1]+inMass[k2];
+         calcMainFunc();
+      }       
+      if(passParameters(code22_0[k1*NC+k2])) {FError=1; WIDTH_FOR_OMEGA=0;  return -1;}
       code22_0[k1*NC+k2]->init=1;
     }
 
@@ -845,13 +849,12 @@ static double aRate(double X, int average,int Fast, double * alpha, aChannel ** 
     factor=inC0[k1*NC+k2]*inG[k1]*inG[k2]*exp(-(M1+M2 -2*Mcdm)/T_);
     CI=code22_0[k1*NC+k2]->interface;
     AUX=code22Aux0[k1*NC+k2];
-//passParameters(code22[k1*NC+k2]);
     for(nsub22=1; nsub22<= CI->nprc;nsub22++,nPrc++)
     { double u_min=0.,smin;
       double a=0;
       double K=0;
-      
       for(i=0;i<4;i++) pname[i]=CI->pinf(nsub22,i+1,pmass+i,pdg+i);  
+      if(pmass[0]<Mcdm/2 || pmass[1]<Mcdm/2) continue; 
       if(wPrc) 
       { (*wPrc)[nPrc].weight=0;
         for(i=0;i<4;i++) (*wPrc)[nPrc].prtcl[i]=pname[i];
@@ -925,6 +928,7 @@ static double aRate(double X, int average,int Fast, double * alpha, aChannel ** 
       }
 //if(cc23)  printf("23  %s %s -> %s %s\n", pname[0],pname[1],pname[2],pname[3]);
     
+     
 //if(abs(pdg[2])!=24 && abs(pdg[3])!=24) continue; 
       if(smin>=MassCutOut) continue; 
       if(cc23==NULL) 
@@ -1024,9 +1028,9 @@ repeat:
       { *(CI->gswidth)=1;
          goto  repeat;
       }   
-/*
- printf("X=%.2E (%d) %.3E %s %s %s %s\n",X,average, a, pname[0],pname[1],pname[2],pname[3]);
-*/
+
+// printf("X=%.2E (%d) %.3E %s %s %s %s\n",X,average, a, pname[0],pname[1],pname[2],pname[3]);
+
 
       for(kk=2;kk<4;kk++) if(pmass[kk]>2*Mcdm && pname[kk][0]!='~')
       {  txtList LL;
@@ -1646,6 +1650,8 @@ for(N12=0;N12<=2;N12++)
      
       int z4[4];
       for(i=0;i<4;i++)  pname[i]=CI->pinf(nsub22,i+1,pmass+i,pdg+i);
+
+      if(pmass[0]==0) continue; // for the case of absence of process
       for(i=0;i<4;i++) z4[i]=Z4ch(pname[i]);
       smin=pmass[2]+pmass[3];      
       cc23=NULL;
@@ -2638,9 +2644,6 @@ double vSigmaCC(double T,numout* cc)
       sqrtSmin23=pmass[0]+pmass[1]; 
       if(pmass[2]+pmass[3]+pmass[4] > sqrtSmin23) sqrtSmin23=pmass[2]+pmass[3]+pmass[4];
       sqrtSmax23=sqrtSmin23-T*log(bEps); 
-
-printf("calculation vSigma(%s %s -> %s %s %s at T=%.2E GeV)\n",
-pname[0], pname[1],pname[2], pname[3],pname[4],T );    
 
             
       for(k0=0,k=0;k<3;k++)

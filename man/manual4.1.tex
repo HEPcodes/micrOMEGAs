@@ -46,7 +46,7 @@
 \begin{center}
 
 
-{\Large\bf The  micrOMEGAs user's manual, version 4.2} \\[8mm]
+{\Large\bf The  micrOMEGAs user's manual, version 4.1} \\[8mm]
 
 {\large   G.~B\'elanger$^1$, F.~Boudjema$^1$, A.~Pukhov$^2$,  A. Semenov$^3$.}\\[4mm]
 
@@ -410,6 +410,7 @@ SigmaFFPs   &   -0.046     &SigmaFFNs   &  -0.046   & \\
   Mcdm      &  GeV           & $\min(Mcdm1,Mcdm2)$ if both exist              & sortOddParticles  \\
   dmAsymm   &                & Asymmetry between relic density of ${DM}$- $\overline{DM}$ & darkOmega[FO]\\
   fracCDM2  &                & fraction of CDM2 in relic density.             & darkOmega2\\
+  Tstart  &   GeV              & Temperature in solution of differential equation            & darkOmega2\\  
 \hline
 \end{tabular}
 \end{center}
@@ -523,6 +524,7 @@ $\bullet$ \verb|findVal(name,&val)|\\
  variable  {\it name} and assigns it to parameter {\it val}. It returns a non-zero
 value  if it cannot recognize  a parameter name. \\
 
+\noindent
 $\bullet$ \verb|findValW(name)| 
 just returns the value of variable {\it name} and writes an error message
 if it cannot recognize  a parameter name.
@@ -593,7 +595,7 @@ allows to substitute a new cross-section for a given process. Here \verb|p1,p2| 
 All routines to calculate the relic density in  version 3 are still available in this version. For these routines,  the difference between 
 the two dark sectors DM is ignored. These routines are intended for models with either a $Z_2$ or $Z_3$ discrete symmetry.
   
-
+\noindent
 $\bullet$ \verb|vSigma(T,Beps,fast)|\\
 calculates the thermally averaged cross section for DM annihilation  times velocity  
 at a  temperature T [GeV], see formula (2.6) in ~\cite{Belanger:2001fz}. The value for $\sigma v$ 
@@ -696,7 +698,7 @@ in the total relic density
   \Omega &=& \Omega_1+\Omega_2\\
   \verb|fracCDM2|&=&\frac{\Omega_2}{\Omega}
 \end{eqnarray}
-This parameter is then used in routines which calculate the total signal from both  DM candidates in direct, indirect and neutrino telescope experiments,
+This parameter is then used in routines which calculate the total signal from both  DM candidates in direct and indirect detection experiments,
  \verb|nucleusRecoil|, \verb|calcSpectrum|,  and \verb|neutrinoFlux|.  The user can change the global {\tt  fracCDM2} parameter before the calculation of these observables
 to take into account the fact that the value of the DM fraction in the Milky Way could be different than   in the early Universe.
 
@@ -704,12 +706,12 @@ The routines that were described in section ~\ref{sec:one_component} are not ava
  After calling  {\tt  darkOmega2}  the user can check the  cross sections  
 for each class of reactions (but not for individual processes) which were tabulated during the calculation of the relic density. 
 The functions\\
-$\bullet$\verb|vsaabbF(T)|\\
-computes the sum of  cross sections  
-for each class of reactions ($a,b=0,1,2$) tabulated during the calculation of the relic density. 
+$\bullet$\verb|vs|{\it abcd} \verb|F(T)|\\
+computes the sum of  the cross sections  
+for each class of reactions ($a,b,c,d=0,1,2$) tabulated during the calculation of the relic density. 
 Here  \verb|T| is the temperature in [GeV] and the 
 return value is $v\sigma$ in [pb].  These functions are defined in the interval [{\tt Tstart} , {\tt Tend}] where
-{\tt Tstart} is defined by \verb|darkOmega2|, {\tt Tend}=$10^{-3}{\rm GeV}$. Specifically the functions available are
+{\tt Tstart} is a global parameter defined by \verb|darkOmega2|, {\tt Tend}=$10^{-3}{\rm GeV}$. Specifically the functions available are
 
 \begin{center}
 \begin{tabular}{ l l l l l l l }
@@ -718,10 +720,10 @@ vs1220F&vs1222F&vs2200F&vs2210F&vs2220F&vs2211F& vs2221F
 \end{tabular}
 \end{center} 
 
-The  temperature dependence  of the equilibrium abundances can also be called by the user, the functions are named {\tt Y\_1(T)} and {\tt Y\_2(T)} and are defined only in the  interval ${\tt T}\in
+The  temperature dependence  of the abundances can also be called by the user, the functions are named {\tt Y1F(T)} and {\tt Y2F(T)} and are defined only in the  interval ${\tt T}\in
 [\rm{Tend},\rm{Tstart}]$. The equilibrium abundances are accessible via  the  { \tt Yeq1(T)}, { \tt Yeq2(T)} functions and the deviation from equilibrium  
 by the functions
- {\tt dY1F(T)= Y1F(T)-Y1eq(T)}  and   { \tt dY2F(T)=Y2F(T)-Y2F(T)}.
+ {\tt dY1F(T)= Y1F(T)-Y1eq(T)}  and   { \tt dY2F(T)=Y2F(T)-Y2eq(T)}.
  
  
 
@@ -885,7 +887,7 @@ spectrum computed with
 \noindent
 $\bullet$ \verb|cutRecoilResult(dNdE,E1,E2)|\\
 calculates the number of events in an energy interval defined by the
-values \verb|E1,E2| in keV .
+values \verb|E1,E2| in keV.
 
 \noindent
 $\bullet$ \verb|displayRecoilPlot(dNdE,title,E1,E2)|\\
@@ -913,13 +915,12 @@ $\bullet$ \verb|displaySpectrum(spectTab,message,Emin,Emax)|\\
 where  \verb|message| is a text string which gives a title to the  
 plot and  \verb|Emin| and \verb|Emax| define  energy cuts.
 
-Although structure of spectrum array actually does not need  for the user, we present it below.
-The first (zeroth) element of array contains the maximum of spectrum energy $E_{max}$. As a rule   $E_{max}$ is a mass of DM particle.    
+Even though the user does not need to know the structure of the  spectrum array, we describe it below.
+The first (zeroth) element of the array contains the maximum of the energy $E_{max}$. As a rule   $E_{max}$ is the mass of the DM particle.    
 The $i^{th}$ element $(1\le i < NZ-1)$ of the spectrum array contains
 the value of $E_i \frac{ dN}{dE_i} $ where  $E_i=E_{max} e^{Zi(i)}$,\\   
-$\bullet$ \verb|Zi(i)=|$ -7\left(\frac{i-1}{NZ}\right)^{1.5}\log10$.\\
- That is the
-array points cover the  energy interval  $ Emax \ge E > 10^{-7}Emax$. 
+$\bullet$ \verb|Zi(i)=|$ -7 \ln 10 \left(\frac{i-1}{NZ}\right)^{1.5}$.\\
+ That is the array  covers the  energy interval  $ Emax \ge E > 10^{-7}Emax$. 
 
 \subsection{Annihilation spectra}
 $\bullet$ \verb|calcSpectrum(key,Sg,Se,Sp,Sne,Snm,Snl,&err)|\\
@@ -1028,16 +1029,24 @@ into photons
 $\bullet$ \verb|gammaFluxTab(fi,dfi,sigmav,Sg,Sobs)|\\
 multiplies the annihilation photon spectrum  with the integral over the line of sight
 and over the opening angle to give the photon flux. 
-%\verb|fi| is the angle between the line of sight 
-%and over angle of sight.
 \verb|fi| is the angle between the line of sight and the center of the
 galaxy,   \verb|dfi| is half the cone angle which characterizes the detector resolution
 (the solid angle is  $2\pi (1-cos(dfi)$) ,  
  \verb|sigmav| is the annihilation cross section, \verb|Sg| is the DM annihilation spectra.
-\verb|Sobs| is the spectra observed.
+\verb|Sobs| is the spectra observed in \verb|1/(GeV cm^2 s )| units. 
 
 
 The function \verb|gammaFluxTab| can be used  for the neutrino spectra as well.
+
+\noindent
+$\bullet$ \verb|gammaFluxTabGC(l,b,dl,db,sigmav,Sg,Sobs)|\\
+is similar to {\tt gammaFluxTab}  but uses standard galactic
+coordinates. Here $l$ is  the galactic longitude (measured along the galactic   
+equator from the galactic center, and $b$ is the latitude (the angle above the galactic    
+plane). Both $l$ and $b$ are given in radians. The relation between the angle $fi$ used
+above and the galactic coordinates is  $fi=\cos^{-1}(\cos(l)\cos(b))$.  
+ {\tt gammaFluxTabGC} integrates the flux over a     
+rectangle $[(l,b) - (l+dl,b+db)]$. 
 
 \noindent
 $\bullet$ \verb|gammaFlux(fi,dfi,vcs)|\\
@@ -1048,6 +1057,10 @@ returns the number of photons per $cm^2$ of detector surface
  per second. Note that for $\chi\chi \to \gamma\gamma$ the  
 result should be multiplied by a factor $2$ as each annihilation leads to the 
 production of two photons. 
+
+\noindent
+$\bullet$ \verb|gammaFluxGC(l,b,dl,db,vcs)|\\
+is the analog of  \verb|gammaFlux| when using standard galactic coordinates.
 
 \subsection{Propagation of charged particles.}
 
@@ -1286,13 +1299,13 @@ section for particle production at hadron colliders. Here \verb|Pcm|
 is the beam energy  in the center-of-mass frame. \verb|pp| is
 $1$($-1$) for $pp$($p\bar{p}$) collisions, $ nf \le 5$  defines the
 number of quark flavors taken into account.
-Parameters  {\it Qren} and  {\it Qfac} define the renormalisation and factorization
+The parameters  {\it Qren} and  {\it Qfac} define the renormalisation and factorization
  scales respectively. {\tt pName1} and {\tt pName2} are the names of outgoing
 particles. If $T_{\rm min} \le 0 $ then {\tt hCollider} calculates the total  
 cross section for the 2-body final state  process. Otherwise it calculates the cross
 section for
 \begin{verbatim}
-  proton, [a]proton -> pName1, pName1, jet
+  proton, [a]proton -> pName1, pName2, jet
 \end{verbatim} 
 where $ T_{\rm min}>0 $  defines the cut on the  jet transversee momentum. 
 The jet contents is defined by the  parameter $nf$. 
@@ -1570,7 +1583,7 @@ $\frac{cm^3}{s}$. In case of a problem the function returns a non-zero value.
 
 As in the {\tt MSSM} there are specific routines to compute the  
 parameters of the model as  specified in SLHA. The spectrum calculator is \verb|NMSPEC|~\cite{Ellwanger:2006rn}
- in the \verb|NMSSMTools_4.0| package~\cite{nmssmtools}.
+ in the \verb|NMSSMTools_4.4.1| package~\cite{nmssmtools}.
 
 \noindent$\bullet$ \verb|nmssmEWSB(void)|\\
 calculates the masses of Higgs and supersymmetric particles in the NMSSM
@@ -1727,11 +1740,10 @@ the model.  LanHEP is a  tool for Feynman  rules  generation. A few minor
 modifications to the default format of LanHEP have to be taken into account to get the model files into
 the \micro~ format. 
 \begin{itemize}
-\item  The {\bf lhep}  command has to be launched with the {-evl 2} flag  
+\item  The {\bf lhep}  command has to be launched with the {-ca} flag  
 \begin{verbatim}
-    lhep  source_file -evl 2
+    lhep  -ca source_file 
 \end{verbatim}
-Such a flag provides the correct level of optimization for  the model's Feynman rules.
 
 \item The default format for the file \verb|prtcls1.mdl| which specifies the particle content has to be
 modified to include a column containing the PDG code of particles. 
@@ -2209,76 +2221,6 @@ The two codes agree within 5\% most of the time.
 the vertical lines show the $3\sigma$ experimentally measured value.
 }
 \end{figure}
-
-\section{Solution of equation for relic density in case of 2 DM
-components.}
-
-
-In terms of  $\Delta Y_i = Y_i - \overline{Y}_i$,  where $\overline{Y}_i$
-denotes equilibrium abundence,  evolution equation  takes a  form 
-\begin{equation}
-\label{MatrixZ4Eq}
-        3H\frac{\Delta Y_i}{ds} = -C_i +A_{ij}(T)\Delta Y_j +Q_{ijk}(T) \Delta Y_j \Delta Y_k,
-\end{equation}
-where
-\begin{eqnarray}
- C_i &=& 3H\frac{d \overline{Y}_i}{ds},\\
- A&=&\left( \begin{array}{cc}
-2 (\sigma_v^{1100}+\sigma_v^{1122}+\sigma_v^{1120}) \overline{Y}_1 &-(\sigma_v^{1120}+2\sigma_v^{1122})\frac{\overline{Y}_1^2}{\overline{Y}_2}   \\
--\sigma_v^{1120} \overline{Y}_1 -2\sigma_v^{1122}\overline{Y}_1    &  2(\sigma_v^{2200}+\sigma_v^{2211})\overline{Y}_2
-+ 0.5(\sigma_v^{1210} + \sigma_v^{1120}\frac{\overline{Y}_1}{\overline{Y}_2} )\overline{Y}_1
-\end{array} \right), \\
- Q_1 &=& \left( \begin{array}{cc}
-\sigma_v^{1100}+\sigma_v^{1122}+\sigma_v^{1120}  & 0 \\
-0       & -\sigma_v^{2211}
-\end{array} \right),\\
-  Q_2&=&\left( \begin{array}{cc}
--\sigma_v^{1120} -\sigma_v^{1122} & \frac{1}{2}\sigma_v^{1210} \\
-0 & \sigma_v^{2200}+\sigma_v^{2211} 
-\end{array} \right). \\
-\end{eqnarray}  
-
-At large temperatures we expect the densities of  both DM components
-to be close to their equilibrium values.  Here solution can be presented in
-the form 
-\begin{equation}
-    \label{largeTz4}
-    \Delta Y_i(s)=  A^{-1}_{ij}(s) C_j(s).
-\end{equation}
-where  exponential factors in $A$ and $C$ are cancell one other, thus
- $\Delta Y_i(s)$ slow depends on temperature that retroactively justifies
-neglecting of left part of Eq.\ref{MatrixZ4Eq}. Solution (\ref{largeTz4})
-can be used as a stating point for  complete Eq.\ref{MatrixZ4Eq}. 
-
-
- In general in micrOMEGAs~\cite{Belanger:2001fz} 
-the equation for the abundance is solved numerically starting from large temperatures. 
-However, this procedure poses a problem for Eq.~(\ref{MatrixZ4Eq}). 
-The step of the numerical solution is inversely proportional to $A(T)$  and as long as  $A(T)$ 
-is not suppressed by the  Boltzmann factor included in $\overline{Y}$,
-   the step is too small and the numerical method fails. 
-
-To avoid this problem,  we use the fact that at large temperatures 
-one  can neglect the $Q$ term in Eq.~(\ref{MatrixZ4Eq}) and write the explicit solution for  the linearised equation.
-The approximate solution in the case of large $A$ is 
-One can use Eq.~(\ref{largeTz4}) to find the lowest temperature where $\Delta Y_i \approx 0.05 Y_i $ and start solving numerically  
-Eq.~(\ref{MatrixZ4Eq}) from this temperature. In the general case  it gives a   reasonable step for the numerical solution $\delta s/s \approx 0.1$, where $s$ is the variable of integration.  
-This method can, however, lead to some numerical problems if  the masses of the two dark matter particles are very different. Let us call the light particle $\mathpzc{l}$ and the heavy particle $\mathpzc{h}$.
-We have to start the  numerical solution at a  temperature $T$ above the  freeze-out temperature  of the heaviest DM, 
-\begin{equation} 
-T_{{\rm fo}\mathpzc{h}} \approx M_{\mathpzc{h}}/25.
-\end{equation}
- At this temperature,
-\begin{equation} 
-\frac{Y_{\mathpzc{l}}}{Y_{\mathpzc{h}}} \approx \exp{\frac{M_{\mathpzc{h}}-M_{\mathpzc{l}}}{T_{{\rm fo}\mathpzc{h}}}},
-\end{equation}
-and the step in the numerical   solution of the  two component equations will be
-suppressed by a factor $\exp{(-M_{\mathpzc{h}}-M_{\mathpzc{l}}) / T_{{\rm fo}\mathpzc{h}}}$. This small step size is problematic when solving numerically the equation with the Runge-Kutta method. This occurs when $M_{\mathpzc{h}}/M_{\mathpzc{l}} >2$. In this case
-the equation for the heavy component must be solved independently
-assuming that the light component has reached its equilibrium density.  
-If $M_{\mathpzc{h}}/M_{\mathpzc{l}} <2$, the
-Runge-Kutta procedure can be used to successfully solve the  thermal evolution equations~(\ref{MatrixZ4Eq}).
-
 
 
 \begin{thebibliography}{}

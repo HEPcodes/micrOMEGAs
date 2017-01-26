@@ -4,8 +4,8 @@
   Otherwise the program should read SLHA file.
 =======================================*/ 
 
-//#define SUGRA 
-#define EWSB
+#define SUGRA 
+//#define EWSB
 
 /*====== Modules ===============
    Keys to switch on 
@@ -57,6 +57,8 @@
       */
 /*===== end of Modules  ======*/
 
+#define CLEAN
+
 /*===== Options ========*/
 /* #define SHOWPLOTS */
      /* Display  graphical plots on the screen */ 
@@ -76,14 +78,14 @@ int main(int argc,char** argv)
    int spin2, charge3,cdim;
    double laMax;   
 
-  ForceUG=1;  /* to Force Unitary Gauge assign 1 */
-   VWdecay=0; VZdecay=0;
+  ForceUG=0;  /* to Force Unitary Gauge assign 1 */
+//   VWdecay=0; VZdecay=0;
    
 #ifdef SUGRA
 {
   double m0,mhf,a0,tb;
   double Lambda, aLambda,aKappa,sgn;
-  double xif=0,xis=0,muP=0,MSPQ=0,M3HQ=0;
+  double mXiF=0,mXiS=0,muP=0,msP=0,m3h=0;
 
   if(argc<7) 
   { 
@@ -120,8 +122,7 @@ int main(int argc,char** argv)
      if(argc>11){ sscanf(argv[11],"%lf",&alfSMZ); assignValW("alfSMZ",alfSMZ);}
   }
 
-  err=nmssmSUGRA( m0,mhf, a0,tb, sgn,  Lambda, aLambda, aKappa,xif,xis,muP,MSPQ,M3HQ);
-  printf("err=%d\n", err);  
+  err=nmssmSUGRA( m0,mhf, a0,tb, sgn,  Lambda, aLambda, aKappa,mXiF,mXiS,muP,msP,m3h);
 }
 #elif defined(EWSB)
 {
@@ -214,13 +215,17 @@ int main(int argc,char** argv)
 
 #ifdef OMEGA
 { int fast=1;
-  double Beps=1.E-3, cut=0.01;
+  double Beps=1.E-4, cut=0.01;
   double Omega,Xf;   
-  printf("\n==== Calculation of relic density =====\n");  
-//  Omega=darkOmega(&Xf,fast,Beps);
-  Omega=darkOmegaFO(&Xf,fast,Beps);
+  printf("\n==== Calculation of relic density =====\n");
+// to exclude processes with virtual W/Z in DM   annihilation
+  VWdecay=0; VZdecay=0; cleanDecayTable();  
+  Omega=darkOmega(&Xf,fast,Beps);
   printf("Xf=%.2e Omega=%.2e\n",Xf,Omega);
   printChannels(Xf,cut,Beps,1,stdout);
+  
+// to restore default switches  
+  VZdecay=1; VWdecay=1; cleanDecayTable();  
 }
 #endif
 
@@ -258,7 +263,7 @@ printf("\n==== Indirect detection =======\n");
      
 #ifdef SHOWPLOTS
      sprintf(txt,"Photon flux[cm^2 s GeV]^{1} at f=%.2f[rad], cone angle %.2f[rad]",fi,2*dfi);
-     displaySpectrum(FluxA,txt,Emin,Mcdm,1);
+     displaySpectrum(FluxA,txt,Emin,Mcdm);
 #endif
      printf("Photon flux = %.2E[cm^2 s GeV]^{-1} for E=%.1f[GeV]\n",SpectdNdE(Etest, SpA), Etest);       
   }
@@ -267,7 +272,7 @@ printf("\n==== Indirect detection =======\n");
   { 
     posiFluxTab(Emin, sigmaV, SpE,  FluxE);
 #ifdef SHOWPLOTS     
-    displaySpectrum(FluxE,"positron flux [cm^2 s sr GeV]^{-1}" ,Emin,Mcdm,1);
+    displaySpectrum(FluxE,"positron flux [cm^2 s sr GeV]^{-1}" ,Emin,Mcdm);
 #endif
     printf("Positron flux  =  %.2E[cm^2 sr s GeV]^{-1} for E=%.1f[GeV] \n",
     SpectdNdE(Etest, FluxE),  Etest);           
@@ -277,7 +282,7 @@ printf("\n==== Indirect detection =======\n");
   { 
     pbarFluxTab(Emin, sigmaV, SpP, FluxP  ); 
 #ifdef SHOWPLOTS    
-     displaySpectrum(FluxP,"antiproton flux [cm^2 s sr GeV]^{-1}" ,Emin,Mcdm,1);
+     displaySpectrum(FluxP,"antiproton flux [cm^2 s sr GeV]^{-1}" ,Emin,Mcdm);
 #endif
     printf("Antiproton flux  =  %.2E[cm^2 sr s GeV]^{-1} for E=%.1f[GeV] \n",
     SpectdNdE(Etest, FluxP),  Etest);             
@@ -409,9 +414,6 @@ printf("\n======== Direct Detection ========\n");
 
   err=neutrinoFlux(Maxwell,forSun, nu,nu_bar);
 #ifdef SHOWPLOTS
-
-printf(  "nu[0]=%E nu_bar[0]=%E\n", nu[0], nu_bar[0]);
-
   displaySpectrum(nu,"nu flux from Sun [1/Year/km^2/GeV]",Emin,Mcdm);
   displaySpectrum(nu_bar,"nu-bar from Sun [1/Year/km^2/GeV]",Emin,Mcdm);
 #endif
@@ -505,7 +507,11 @@ printf(" e^+, e^- annihilation\n");
 }
 #endif
 
+#ifdef CLEAN
   killPlots();
+  system("rm -f inp spectr nngg.out ");
+#endif
+
   return 0;
 
 }

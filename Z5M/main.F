@@ -234,7 +234,7 @@ C   calculates and rewrites Scalar form factors
       write(*,*)
       write(*,*) '==== Calculation of CDM-nucleons amplitudes  ====='   
 
-      err=nucleonAmplitudes(NoLoop, pA0,pA5,nA0,nA5)
+      err=nucleonAmplitudes(CDM1,NoLoop, pA0,pA5,nA0,nA5)
       write(*,*) cdmName,  ' -nucleon amplitudes:'
       write(*,fmt="(' proton:  SI=',1PE9.2,' SD=',E9.2)")pA0(1),pA5(1)
       write(*,fmt="(' neutron: SI=',1PE9.2,' SD=',E9.2)")nA0(1),nA5(1) 

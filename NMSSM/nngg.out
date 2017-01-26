@@ -1,3 +1,0 @@
-BLOCK lGamma  # AZ and AA cross sections
-  1   1.1295E-04 # ~o1,~o1->A,Z [pb]
-  2   2.2844E-04 # ~o1,~o1->A,A [pb]

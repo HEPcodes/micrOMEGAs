@@ -670,6 +670,10 @@ static double calcSpectrum0(char *name1,char*name2, int forSun,   double *Spectr
   
   
   if(!libPtr) return 0;
+  if(Qaddress && *Qaddress!=pMass(name1)+pMass(name2)) 
+  { *Qaddress=pMass(name1)+pMass(name2);
+     calcMainFunc();
+  }   
   passParameters(libPtr);
   procInfo1(libPtr,&ntot,NULL,NULL); 
   

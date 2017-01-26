@@ -24,6 +24,10 @@ C     Compute spectra of gamma/positron/neutrinos
 C     for DM annihilation; calculate <sigma*v> and
 C     integrate gamma signal over DM galactic squared
 C     density for given line of sight.
+C#define LoopGAMMA
+C     Calculate discrete  photon spectrum caused by annihilation of
+C      neutralinos into two photons and Z-photon
+
 C!#define RESET_FORMFACTORS
 C     Modify default nucleus form factors, 
 C     DM velocity distribution,
@@ -38,6 +42,7 @@ C     and recoil energy distibution for various nuclei
 C#define DECAYS
 C     Calculates particle widths and branchings
 
+
 C#define CROSS_SECTIONS
 C     Calculate cross sections and widths for
 C      reactions specified by the user
@@ -49,6 +54,8 @@ C===== Options ========
 C#define SHOWPLOTS
 C     Display  graphical plots on the screen
 
+#define CLEAN    to clean intermidiate files
+
 C===== End of DEFINE  settings ===== 
 
 
@@ -59,9 +66,10 @@ C! external functions
 
 C! local  Parameters   
       INTEGER fast/1/
-      REAL*8  Beps/1.E-5/,cut/0.01/
-      REAL*8  m0,mhf,a0,tb,sgn
-      REAL*8 m32
+      REAL*8  Beps/1.E-4/,cut/0.01/
+      REAL*8  m0,mhf,a0,tb,sgn,mXiF/0/,mXiS/0/,muP/0/,msP/0/,m3h/0/
+      REAL*8  m32
+      
 
 C Variables      
       INTEGER err
@@ -89,6 +97,9 @@ C  for CONSTRAINTS
 C  for INDIRECT 
       real*8 N_tot, SpA(NZ),SpE(NZ), SpP(NZ) 
       real*8 FluxA(NZ),FluxE(NZ), FluxP(NZ)
+C  for LoopGAMMA
+      real*8 vcs_zg, vcs_gg
+
 C for CDM_NUCLEON
       real*8  pA0(2),pA5(2),nA0(2),nA5(2),Nmass,SCcoeff,
      >ffS0P(3),ffS0N(3),ffbuff(3)
@@ -164,7 +175,7 @@ c       call delFiles(0)
         endif 
       endif
   
-      err=nmssmSUGRA(m0,mhf,a0,tb,sgn,Lambda,aLambda,aKappa)
+      err=nmssmSUGRA(m0,mhf,a0,tb,sgn,Lambda,aLambda,aKappa,mXiF,mXiS,muP,msP,m3h)
       if(err.ne.0) goto 100
 
 #elif defined(EWSB)
@@ -334,7 +345,7 @@ C  Use SpectdNdE(E, SpX) to calculate energy distribution in 1/GeV units.
 #ifdef SHOWPLOTS      
       write(mess,fmt="('gamma flux[cm^2 s GeV]^{-1} at fi=',F4.2,
      > ' from cone with angle=',F4.2,'[rad]')")fi,dfi*2  
-      err= displaySpectrum(FluxA,mess,Emin,Mcdm,1)
+      err= displaySpectrum(FluxA,mess,Emin,Mcdm)
 #endif
       write(*,fmt="('Photon flux =',1PE8.2,
      >'[cm^2 s GeV]^{-1} for E=',0PF5.1,'[GeV]')")
@@ -345,7 +356,7 @@ C  Use SpectdNdE(E, SpX) to calculate energy distribution in 1/GeV units.
 
 #ifdef SHOWPLOTS      
       err=displaySpectrum(FluxE,'positron flux [cm^2 s sr GeV]^{-1}',
-     >Emin,Mcdm,1)
+     >Emin,Mcdm)
 #endif
       write(*,fmt="('Positron flux  = ',1PE8.2,
      >'[cm^2 sr s GeV]^{-1} for E=',0PF6.1,'[GeV]')")
@@ -356,7 +367,7 @@ C  Use SpectdNdE(E, SpX) to calculate energy distribution in 1/GeV units.
 
 #ifdef SHOWPLOTS      
       err=displaySpectrum(FluxP,'a-proton flux [cm^2 s sr GeV]^{-1}',
-     >Emin,Mcdm,1)
+     >Emin,Mcdm)
 #endif
 
       write(*,fmt="('Anti proton flux  = ',1PE8.2,
@@ -364,6 +375,25 @@ C  Use SpectdNdE(E, SpX) to calculate energy distribution in 1/GeV units.
      > SpectdNdE(Etest, FluxP),  Etest     
 
 #endif
+
+#ifdef LoopGAMMA
+        
+      if(loopGamma(vcs_zg, vcs_gg).eq.0) then 
+         write(*,*) '=========== Gamma ray lines =============:'
+         write(*,*)    
+         write(*,fmt="('E=',F6.1,'[GeV] vcs(Z,A)=', 1PE8.2,
+     >        '[cm^2/s] flux=',E8.2,'[cm^2 s]^{-1}')") 
+     >   Mcdm-91.19*91.19/4/Mcdm, vcs_zg, 
+     >   gammaFlux(fi,dfi,vcs_zg)
+
+         write(*,fmt="('E=',F6.1,'[GeV] vcs(A,A)=', 1PE8.2,
+     >        '[cm^2/s] flux=',E8.2,'[cm^2 s]^{-1}')") 
+     >   Mcdm, vcs_gg, 
+     >   2*gammaFlux(fi,dfi,vcs_gg)
+
+      endif
+#endif   
+
 
 #ifdef RESET_FORMFACTORS
 
@@ -402,7 +432,7 @@ C    All parameters are  in [km/s] units.
       write(*,*) '==== Calculation of CDM-nucleons amplitudes  ====='   
 
 
-      err=nucleonAmplitudes(NoLoop, pA0,pA5,nA0,nA5)
+      err=nucleonAmplitudes(CDM1,FeScLoop, pA0,pA5,nA0,nA5)
       write(*,*)'CDM-nucleon amplitudes:'
       write(*,fmt="(' proton:  SI=',1PE9.2,' SD=',E9.2)")pA0(1),pA5(1)
       write(*,fmt="(' neutron: SI=',1PE9.2,' SD=',E9.2)")nA0(1),nA5(1) 

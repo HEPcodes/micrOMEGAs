@@ -185,7 +185,7 @@ int nmssmEWSB(void)
    err=ewsbNMSSM(V(tb),V(MG1),V(MG2),V(MG3),V(Ml2),V(Ml3),V(Mr2),V(Mr3),
      V(Mq2),V(Mq3),V(Mu2),V(Mu3),V(Md2),V(Md3),V(At),V(Ab),V(Al),V(mu),
      V(Lambda),V(Kappa),V(aLambda),V(aKappa),
-     V(xif),V(xis),V(muP),V(MSP),V(MM3));
+     V(mXiF),V(mXiS),V(muP),V(msP),V(m3h));
 
    if(err) return err;
    FillVal(0);
@@ -196,12 +196,12 @@ int nmssmEWSB(void)
 #undef V
 
 int nmssmSUGRA(double  m0,double mhf, double a0,double tb, double sgn,
-double  Lambda, double aLambda, double aKappa, double xif, double xis,  
-     double muP, double MSPQ,double M3HQ)
+double  Lambda, double aLambda, double aKappa, double mXiF, double mXiS,  
+     double muP, double msP,double m3h)
 {  int err;
 
    err= sugraNMSSM(m0, mhf, a0, tb, sgn, Lambda, aLambda,aKappa, 
-    xif, xis, muP, MSPQ, M3HQ);
+    mXiF, mXiS, muP,msP, m3h);
    if(err==0)
    { 
      FillVal(1);

@@ -712,7 +712,7 @@ printf(" e^+, e^- annihilation\n");
 
 #ifdef CLEAN
   killPlots();
-  system("rm -f suspect2_lha.in suspect2_lha.out suspect2.out  Key.dat nngg.in  nngg.out output.flha ");
+  system("rm -f suspect2_lha.in suspect2_lha.out suspect2.out  Key.dat  nngg.out output.flha ");
   system("rm -f HB.in HB.out HS.in HS.out hb.stdout hs.stdout  debug_channels.txt debug_predratio.txt");
 #endif 
 

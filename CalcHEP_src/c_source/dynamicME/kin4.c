@@ -663,6 +663,7 @@ static double decay22List(char * pname, txtList *LL)
   cc=getMEcode(0,ForceUG,process,NULL,"",plib);
   if(!cc) { if(LL) *LL=NULL; return -1;} 
   procInfo1(cc,&ntot,NULL,NULL);
+  passParameters(cc);
   for(wtot=0,i=1;i<=ntot;i++)  if(chOpen(cc,i))
   {     
     w=pWidth2(cc,i);

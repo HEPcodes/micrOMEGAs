@@ -1694,7 +1694,7 @@ L178:
 //    do_lio(&c__3, &c__1, (char *)&(*nmax), (ftnlen)sizeof(integer));
 //    do_lio(&c__9, &c__1, "STEPS ARE NEEDED", (ftnlen)16);
 //    e_wsle();
-       printf("MORE THAN NMAX =%s STEPS ARE NEEDED\n",nmax); 
+       printf("MORE THAN NMAX =%d STEPS ARE NEEDED\n",nmax); 
 /*<       IDID=-2 >*/
     *idid = -2;
 /*<       RETURN >*/

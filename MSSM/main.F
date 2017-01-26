@@ -775,10 +775,8 @@ C ======  Contained events
 #endif
 
 #ifdef CLEAN
-      call system("rm -f suspect2_lha.in suspect2_lha.out  suspect2.out HB.slha Key.dat  nngg.in nngg.out  output.flha debug_channels.txt")
-      call system("rm -f HB.in HB.out HS.in HS.out hb.stdout hs.stdout debug_predratio.txt HBslha.in HBslha.out")
-
+      call system("rm -f inp spectr nngg.out ")
 #endif 
+     call killPlots
 
-         call killPlots
       END

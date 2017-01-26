@@ -259,9 +259,11 @@ extern double HaloFactor(double fi,double dfi);
 extern int Gtot_style;
 extern void gammaFluxTab(double fi,double  dfi, double sigmaV, double *Sp, double *Sobs);
 extern double gammaFlux(double fi, double dfi,  double dSigmadE); 
+
+extern void gammaFluxTabGC(double l,double b, double dl,double db, double sigmaV, double *Sp, double *Sobs);
+extern double gammaFluxGC(double l, double b, double dl,double db, double dSigmadE);
       
 extern void solarModulation(double PHI, double mass, double * inTab, double * outTab);
-
    
 extern double hProfileZhao(double r);
 extern void setProfileZhao(double alpha, double beta ,double gamma,double Rc);
