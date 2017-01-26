@@ -1094,10 +1094,11 @@ exi:;
 static int find3charge(void)
 {
   int i,cont;
-
+  for(i=0;i<nparticles;i++) if(prtclbase[i].nHerm) prtclbase[i].q3=0;
+  
   for(cont=1;cont;)
   { cont=0;  
-    for(i=0;i<nparticles;i++) if(prtclbase[i].hlp!='*' &&   ghostmother(i+1)==i+1 && prtclbase[i].q3==unknownQ3)
+    for(i=0;i<nparticles;i++) if(/*prtclbase[i].hlp!='*' &&*/   ghostmother(i+1)==i+1 && prtclbase[i].q3==unknownQ3)
     { decaylink dec=prtclbase[i].top;
       for(;dec;dec=dec->next)
       { int j,ch,br ;
